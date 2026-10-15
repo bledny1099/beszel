@@ -214,6 +214,8 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 		// get container info
 		apiAuth.GET("/containers/info", h.getContainerInfo)
 	}
+	// register security hub routes
+	h.registerSecurityRoutes(se)
 	return nil
 }
 

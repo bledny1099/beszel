@@ -1,74 +1,89 @@
-# Beszel
+# Beszel (Enhanced Edition)
 
-Beszel is a lightweight server monitoring platform that includes Docker statistics, historical data, and alert functions.
+Lightweight server monitoring platform with **Security Radar**, **Vulnerability Tracking**, **Custom Dashboard Drag-and-Drop Layouts**, and **Optimized Single-Agent Telemetry**.
 
-It has a friendly web interface, simple configuration, and is ready to use out of the box. It supports automatic backup, multi-user, OAuth authentication, and API access.
+Written **100% in Go** with zero Python dependencies. Based on upstream [Beszel](https://github.com/henrygd/beszel).
 
-[![agent Docker Image Size](https://img.shields.io/docker/image-size/henrygd/beszel-agent/latest?logo=docker&label=agent%20image%20size)](https://hub.docker.com/r/henrygd/beszel-agent)
-[![hub Docker Image Size](https://img.shields.io/docker/image-size/henrygd/beszel/latest?logo=docker&label=hub%20image%20size)](https://hub.docker.com/r/henrygd/beszel)
-[![MIT license](https://img.shields.io/github/license/henrygd/beszel?color=%239944ee)](https://github.com/henrygd/beszel/blob/main/LICENSE)
-[![Crowdin](https://badges.crowdin.net/beszel/localized.svg)](https://crowdin.com/project/beszel)
+---
 
-![Screenshot of Beszel dashboard and system page, side by side. The dashboard shows metrics from multiple connected systems, while the system page shows detailed metrics for a single system.](https://henrygd-assets.b-cdn.net/beszel/screenshot-new.png)
+## Key Enhancements in this Fork
 
-## Features
+- **Dashboard Rearrangement Mode**: Customize and reorder all system charts, category cards, service pills, and tabs per-server using drag & drop, complete with visibility toggles and layout persistence.
+- **100% Pure Go Architecture**: All security routing, port checks, CVE tracking, and telemetry collectors are written in native Go with zero external runtimes (no Python needed).
+- **Integrated Security Hub**: Real-time CVE vulnerability scanning, automated security patch tracking, SSH login auditing, and Fail2ban integration with instant IP unban capabilities.
+- **Unified Single-Agent Installer**: Deploy hardware metrics, security telemetry, vulnerability checks, and non-disruptive daily updates in one single command.
+- **Ultra-low Memory Footprint**: Agent memory optimizations (Go GC tuning, memory limits, and madvise hooks) keeping RAM consumption below 32 MB.
+- **Turnkey Hub Deployment**: One-command launch with Docker Compose including reverse proxy and dynamic asset injection.
 
-- **Lightweight**: Smaller and less resource-intensive than leading solutions.
-- **Simple**: Easy setup with little manual configuration required.
-- **Alerts**: Configurable alerts for most metrics. Supports many notification services.
-- **Docker stats**: Tracks CPU, memory, and network usage history for each container.
-- **Network monitoring**: Monitor response time and interruptions directly from agents.
-- **S.M.A.R.T.**: Disk health data and notifications on drive failure.
-- **Multi-user**: Users manage their own systems. Admins can share systems across users.
-- **OAuth / OIDC**: Supports many OAuth2 providers. Password auth can be disabled.
-- **Automatic backups**: Save to and restore from disk or S3-compatible storage.
-<!-- - **REST API**: Use or update your data in your own scripts and applications. -->
+---
 
-## Architecture
+## Quick Start
 
-Beszel consists of two main components: the **hub** and the **agent**.
+### 1. Hub Setup (Central Server)
 
-- **Hub**: A web application built on [PocketBase](https://pocketbase.io/) that provides a dashboard for viewing and managing connected systems.
-- **Agent**: Runs on each system you want to monitor and communicates system metrics to the hub.
+Run the quick-start script on your central server:
 
-## Getting started
+```bash
+git clone https://github.com/bledny1099/beszel.git
+cd beszel
+./quick-start.sh
+```
 
-The [quick start guide](https://beszel.dev/guide/getting-started) and other documentation is available on our website, [beszel.dev](https://beszel.dev). You'll be up and running in a few minutes.
+Or run directly with Docker Compose:
 
-## Screenshots
+```bash
+docker compose up -d
+```
 
-![Dashboard](https://beszel.dev/image/dashboard.png)
-![System page](https://beszel.dev/image/system-full.png)
-![Notification Settings](https://beszel.dev/image/settings-notifications.png)
+The web dashboard will be available at `http://<SERVER_IP>:8090`.
 
-## Supported metrics
+### 2. Connect Your Systems (Agents)
+
+1. Open `http://<SERVER_IP>:8090` and create your admin account.
+2. Click **Add System** and copy your Hub Public Key.
+3. On any server you want to monitor, run the unified installer:
+
+```bash
+curl -sL http://<HUB_IP>:8090/install-agent.sh | bash -s -- --key "<YOUR_HUB_KEY>"
+```
+
+The agent runs as an isolated systemd service, auto-discovers running containers and services, and streams hardware and security telemetry immediately.
+
+---
+
+## Configuration
+
+### Environment Variables (`.env`)
+
+| Variable | Default | Description |
+|---|---|---|
+| `PORT` | `8090` | Public web port for Beszel Hub |
+| `BESZEL_SECURITY_TOKEN` | *(auto-generated)* | Shared secret for security telemetry between Hub and Agents |
+
+### Agent Installer Flags
+
+```bash
+curl -sL http://<HUB_IP>:8090/install-agent.sh | bash -s -- [FLAGS]
+```
+
+- `--key`, `-k`: Beszel Hub Public Key (required)
+- `--hub`, `-h`: Hub URL (default: `http://<HUB_IP>:8090`)
+- `--port`, `-p`: Agent listening port (default: `45876`)
+- `--token`, `-t`: Custom security token
+
+---
+
+## Supported Metrics
 
 - **CPU usage** - Host system and Docker / Podman containers.
 - **Memory usage** - Host system and containers. Includes swap and ZFS ARC.
-- **Disk usage** - Host system. Supports multiple partitions and devices.
-- **Disk I/O** - Host system. Supports multiple partitions and devices.
-- **Network usage** - Host system and containers.
-- **Load average** - Host system.
-- **Temperature** - Host system sensors.
-- **Fan speed** - Host system sensors (Linux, via `/sys/class/hwmon`).
-- **GPU usage / power draw** - Nvidia, AMD, and Intel.
-- **Battery charge** - Host system and some peripherals.
-- **Containers** - Status and metrics of all running Docker / Podman containers.
-- **S.M.A.R.T.** - Host system disk health (includes eMMC wear/EOL and Linux mdraid array health via sysfs when available).
-- **ZFS** - Pool capacity, usage, health, I/O throughput, scrub status, and per-dataset usage.
-
-## Help and discussion
-
-Please search existing issues and discussions before opening a new one. I try my best to respond, but may not always have time to do so.
-
-#### Bug reports and feature requests
-
-Bug reports and feature requests can be posted on [GitHub issues](https://github.com/henrygd/beszel/issues).
-
-#### Support and general discussion
-
-Support requests and general discussion can be posted on [GitHub discussions](https://github.com/henrygd/beszel/discussions) or the community-run [Matrix room](https://matrix.to/#/#beszel:matrix.org): `#beszel:matrix.org`.
+- **Disk usage** - Host system partitions and mount points.
+- **Disk I/O** - Read / write throughput and IOPS.
+- **Network usage** - Host system interfaces and containers.
+- **Load average** - Host system 1m, 5m, 15m.
+- **Security Radar** - Open firewall ports, active connections, SSH login attempts, Fail2ban jails, CVE patch backlog.
+- **Services & Stack** - Automatic tracking of Docker containers, systemd services, and web endpoints.
 
 ## License
 
-Beszel is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+MIT License. See [LICENSE](LICENSE) for details.

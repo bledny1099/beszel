@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"os"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/agent"
@@ -50,6 +52,23 @@ func (opts *cmdOptions) parse() bool {
 		return true
 	case "fingerprint":
 		handleFingerprint()
+		return true
+	case "security":
+		hubURL, _ := utils.GetEnv("HUB_URL")
+		token, _ := utils.GetEnv("SECURITY_TOKEN")
+		sysID, _ := utils.GetEnv("SYSTEM_ID")
+		sc := agent.NewSecurityCollector(sysID, "", hubURL, token)
+		report := sc.CollectReport()
+		if hubURL != "" {
+			if err := sc.SendReport(report); err != nil {
+				log.Fatalf("Failed to send security report to Hub: %v", err)
+			}
+			fmt.Println("Security report successfully synced with Hub")
+		} else {
+			enc := json.NewEncoder(os.Stdout)
+			enc.SetIndent("", "  ")
+			_ = enc.Encode(report)
+		}
 		return true
 	}
 
@@ -215,6 +234,21 @@ func main() {
 	a, err := agent.NewAgent()
 	if err != nil {
 		log.Fatal("Failed to create agent: ", err)
+	}
+
+	// Start security telemetry loop in background if hub URL is configured
+	targetHub := opts.hubURL
+	if targetHub == "" {
+		targetHub, _ = utils.GetEnv("HUB_URL")
+	}
+	if targetHub != "" {
+		secToken, _ := utils.GetEnv("SECURITY_TOKEN")
+		if secToken == "" {
+			secToken = opts.token
+		}
+		sysID, _ := utils.GetEnv("SYSTEM_ID")
+		sc := agent.NewSecurityCollector(sysID, "", targetHub, secToken)
+		go sc.StartSecurityAuditLoop(context.Background(), time.Hour)
 	}
 
 	if err := a.Start(context.Background(), serverConfig); err != nil {

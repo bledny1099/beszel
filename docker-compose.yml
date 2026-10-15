@@ -1,0 +1,36 @@
+# ==============================================================================
+# Beszel Hub (Pure Go Edition)
+# Turnkey deployment with customizable dashboard, real-time security radar,
+# vulnerability watcher, and one-line agent installer.
+#
+# Quick start:
+#   docker compose up -d
+#
+# Web Interface:
+#   http://<YOUR_IP>:8090
+# ==============================================================================
+
+services:
+  beszel:
+    image: 'henrygd/beszel:latest'
+    container_name: 'beszel'
+    restart: unless-stopped
+    environment:
+      - BESZEL_SECURITY_TOKEN=${BESZEL_SECURITY_TOKEN:-}
+    ports:
+      - '127.0.0.1:8091:8090'
+    volumes:
+      - ./beszel_data:/beszel_data
+
+  beszel-gateway:
+    image: 'nginx:alpine'
+    container_name: 'beszel-gateway'
+    restart: unless-stopped
+    ports:
+      - '${PORT:-8090}:8090'
+    depends_on:
+      - beszel
+    volumes:
+      - ./custom_assets/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./custom_assets:/var/www/custom_assets:ro
+      - ./packaging:/var/www/packaging:ro
