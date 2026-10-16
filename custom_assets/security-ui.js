@@ -4227,9 +4227,17 @@ function bindHeaderButtons(panel, sysId) {
   }
 }
 
+function updateFooterLinks() {
+  const links = document.querySelectorAll('a[href*="github.com/henrygd/beszel"]');
+  links.forEach((a) => {
+    a.href = a.href.replace("github.com/henrygd/beszel", "github.com/bledny1099/beszel");
+  });
+}
+
 function renderAll() {
   renderTopNavbarLangSwitcher();
   renderNotificationsPage();
+  updateFooterLinks();
   if (!state.notificationsPageOpen) {
     renderHomeTable();
     renderSystemDetailPage();
