@@ -8,8 +8,7 @@ It has a friendly web interface, simple configuration, and is ready to use out o
 [![hub Docker Image Size](https://img.shields.io/docker/image-size/henrygd/beszel/latest?logo=docker&label=hub%20image%20size)](https://hub.docker.com/r/henrygd/beszel)
 [![MIT license](https://img.shields.io/github/license/henrygd/beszel?color=%239944ee)](LICENSE)
 [![Crowdin](https://badges.crowdin.net/beszel/localized.svg)](https://crowdin.com/project/beszel)
-
-![Screenshot of Beszel dashboard and system page, side by side. The dashboard shows metrics from multiple connected systems, while the system page shows detailed metrics for a single system.](https://henrygd-assets.b-cdn.net/beszel/screenshot-new.png)
+![Beszel System Overview with Security Radar](assets/images/beszel-system-overview.png)
 
 ## Features
 
@@ -69,9 +68,92 @@ The agent runs as an isolated systemd service, auto-discovers running containers
 
 ## Screenshots
 
-![Dashboard](https://beszel.dev/image/dashboard.png)
-![System page](https://beszel.dev/image/system-full.png)
-![Notification Settings](https://beszel.dev/image/settings-notifications.png)
+### System Overview & Security Radar
+Integrated CVE checks, active ports, Fail2ban monitor, and system telemetry:
+
+![System Overview](assets/images/beszel-system-overview.png)
+
+### Drag & Drop Dashboard Rearrange Mode
+Rearrange system charts, stack tabs, and visibility controls directly on the live page:
+
+![Rearrange Mode](assets/images/beszel-rearrange-mode.png)
+
+### All-in-One Agent Installer
+1-liner installer for hardware monitoring and automatic security auditing:
+
+![All-in-One Installer](assets/images/beszel-agent-installer.png)
+
+## Tailscale Setup
+
+Running Beszel over [Tailscale](https://tailscale.com) allows monitoring your fleet across clouds, home labs, and VPS instances with zero open firewall ports on the public internet. See the [Tailscale deployment guide](TAILSCALE.md) for complete details on ACL policies, sidecars, and troubleshooting.
+
+### Option 1: Native Host Setup (Recommended)
+
+If your nodes already run Tailscale:
+
+1. **Find your Hub Tailscale IP or MagicDNS name:**
+   ```bash
+   tailscale ip -4
+   # Example: 100.64.0.2
+   ```
+
+2. **Access the Hub web dashboard:**
+   Open `http://100.64.0.2:8090` (or `http://<hub-name>.<your-tailnet>.ts.net:8090`) in your browser.
+
+3. **Install the Agent on any Tailscale node:**
+   ```bash
+   curl -sL http://100.64.0.2:8090/install-agent.sh | bash -s -- --key "<YOUR_HUB_KEY>"
+   ```
+
+4. **Firewall security:**
+   Lock down ports `8090` (hub) and `45876` (agent) to only accept traffic from the `tailscale0` network interface:
+   ```bash
+   ufw allow in on tailscale0 to any port 8090 proto tcp
+   ufw allow in on tailscale0 to any port 45876 proto tcp
+   ```
+
+### Option 2: Docker Compose with Tailscale Sidecar
+
+To isolate the Hub inside a container while exposing it strictly to your Tailnet:
+
+```yaml
+services:
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: tailscale-beszel
+    hostname: beszel-hub
+    environment:
+      - TS_AUTHKEY=tskey-auth-YOUR_AUTH_KEY_HERE
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=false
+    volumes:
+      - ./tailscale-data:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    restart: unless-stopped
+
+  beszel:
+    image: henrygd/beszel:latest
+    container_name: beszel-hub
+    network_mode: service:tailscale
+    depends_on:
+      - tailscale
+    volumes:
+      - ./beszel_data:/beszel_data
+    restart: unless-stopped
+```
+
+### Option 3: Automatic HTTPS with Tailscale Serve
+
+Tailscale can automatically issue Let's Encrypt certificates and terminate HTTPS for your Hub:
+
+```bash
+tailscale serve --bg 8090
+```
+
+Your Beszel dashboard is now securely available at `https://<hub-name>.<your-tailnet>.ts.net` with zero certificate configuration needed.
 
 ## Supported metrics
 
