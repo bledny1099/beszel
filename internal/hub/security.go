@@ -241,7 +241,7 @@ func (h *Hub) handlePostSecurityEvent(e *core.RequestEvent) error {
 
 	notifs = append([]map[string]any{event}, notifs...)
 	if len(notifs) > 100 {
-		notifs = notifs[:100:]
+		notifs = notifs[:100]
 	}
 	_ = writeJSONFile(notifsFile, notifs)
 
@@ -420,7 +420,7 @@ func (h *Hub) syncNotificationsFromReport(report map[string]any) {
 	}
 
 	if len(notifs) > 100 {
-		notifs = notifs[:100:]
+		notifs = notifs[:100]
 	}
 	_ = writeJSONFile(notifsFile, notifs)
 }
