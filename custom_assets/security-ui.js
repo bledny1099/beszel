@@ -2445,8 +2445,17 @@ function applySystemChartsLayout(sysId) {
   if (chartsGrid) {
     const chartCards = Array.from(chartsGrid.children);
     const hiddenSet = new Set(layout.hiddenCharts || []);
+    const rep = getReport(sysId);
+    const hasDocker = Boolean(
+      (rep && rep.docker_storage && rep.docker_storage.total_containers > 0) ||
+      (rep && rep.stack?.items && rep.stack.items.some((i) => i.type === "docker"))
+    );
     chartCards.forEach((card, fallbackIdx) => {
       const cid = detectNativeChartId(card, fallbackIdx);
+      if (!hasDocker && (cid === "docker_cpu" || cid === "docker_memory" || cid === "docker_net")) {
+        card.style.display = "none";
+        return;
+      }
       const orderIdx = layout.chartsOrder.indexOf(cid);
       card.style.order = String(orderIdx === -1 ? 50 + fallbackIdx : orderIdx + 1);
       card.style.display = hiddenSet.has(cid) && !state.rearrangeMode ? "none" : "";
@@ -2943,21 +2952,43 @@ function renderSystemDetailPage() {
   if (!rep) return;
 
   const layout = getServerLayout(sysId);
-  const visibleTabs = layout.tabsOrder.filter((tId) => !layout.hiddenTabs.includes(tId));
+  const up = rep.updates || {};
+  const pendingCount = up.pending_count || 0;
+  const up24hCount = up.upgraded_24h_count || 0;
+  const dockerStorage = rep.docker_storage || {};
+  const dockerContainers = Array.isArray(dockerStorage.containers_io)
+    ? dockerStorage.containers_io
+    : Array.isArray(up.docker?.containers)
+    ? up.docker.containers
+    : [];
+  const stack = rep.stack || { total: 0, running: 0, items: [] };
+  const stackItems = stack.items || [];
+  const hasDocker = Boolean(
+    dockerContainers.length > 0 ||
+    (dockerStorage.total_containers && dockerStorage.total_containers > 0) ||
+    stackItems.some((i) => i.type === "docker")
+  );
+  const hasUpdates = Boolean(
+    pendingCount > 0 || up24hCount > 0 || (up.packages && up.packages.length > 0)
+  );
+
+  const visibleTabs = layout.tabsOrder.filter((tId) => {
+    if (layout.hiddenTabs.includes(tId)) return false;
+    if (tId === "docker" && !hasDocker) return false;
+    if (tId === "updates" && !hasUpdates && !up.pkg_manager?.includes("apt")) return false;
+    return true;
+  });
   let activeTab = state.activeTabBySystem[sysId] || visibleTabs[0] || "overview";
   if (!visibleTabs.includes(activeTab) && !state.rearrangeMode) {
     activeTab = visibleTabs[0] || "overview";
   }
 
   const isChecking = state.loadingSystem === `${sysId}:check`;
-  const up = rep.updates || {};
   const fb = state.portFeedback[sysId];
-  const stack = rep.stack || { total: 0, running: 0, items: [] };
-  const stackItems = stack.items || [];
   const selectedItem = state.selectedProgramId
     ? stackItems.find((i) => i.id === state.selectedProgramId) || null
     : null;
-  const renderKey = `${sysId}:${rep.checked_at_iso}:${activeTab}:${state.loadingSystem}:${state.portBusyKey}:${state.serviceBusyKey || ""}:${state.configBusyKey || ""}:${state.lang}:${state.panelCollapsed}:${state.checksStripExpanded ? 1 : 0}:${state.rearrangeMode ? 1 : 0}:${fb?.ts || 0}:${stackItems.length}:${selectedItem?.id || ""}:${JSON.stringify(layout)}`;
+  const renderKey = `${sysId}:${rep.checked_at_iso}:${activeTab}:${state.loadingSystem}:${state.portBusyKey}:${state.serviceBusyKey || ""}:${state.configBusyKey || ""}:${state.lang}:${state.panelCollapsed}:${state.checksStripExpanded ? 1 : 0}:${state.rearrangeMode ? 1 : 0}:${fb?.ts || 0}:${stackItems.length}:${selectedItem?.id || ""}:${hasDocker ? 1 : 0}:${JSON.stringify(layout)}`;
   if (panel.getAttribute("data-render-key") === renderKey) return;
   panel.setAttribute("data-render-key", renderKey);
 
@@ -2967,14 +2998,6 @@ function renderSystemDetailPage() {
   const fwCheck = allChecks.find((c) => c.id === "firewall");
   const portsList = portsCheck?.metrics?.ports || [];
   const fwRules = fwCheck?.metrics?.rules || [];
-  const pendingCount = up.pending_count || 0;
-  const up24hCount = up.upgraded_24h_count || 0;
-  const dockerStorage = rep.docker_storage || {};
-  const dockerContainers = Array.isArray(dockerStorage.containers_io)
-    ? dockerStorage.containers_io
-    : Array.isArray(up.docker?.containers)
-    ? up.docker.containers
-    : [];
   const netInfo = rep.network_health || rep.network || {};
   const stDot = rep.overall_status === "ok" ? "bszl-dot--ok" : "bszl-dot--warn";
   const isEn = state.lang === "en";
@@ -2987,7 +3010,11 @@ function renderSystemDetailPage() {
     updates: `${t("tabUpdates")} (${pendingCount > 0 ? pendingCount : `+${up24hCount}`})`,
   };
 
-  const tabsToRender = state.rearrangeMode ? layout.tabsOrder : visibleTabs;
+  const tabsToRender = (state.rearrangeMode ? layout.tabsOrder : visibleTabs).filter((tId) => {
+    if (tId === "docker" && !hasDocker) return false;
+    if (tId === "updates" && !hasUpdates && !up.pkg_manager?.includes("apt")) return false;
+    return true;
+  });
   const tabsButtonsHtml = tabsToRender
     .map((tId) => {
       const isHid = layout.hiddenTabs.includes(tId);
@@ -3071,16 +3098,25 @@ function renderSystemDetailPage() {
       </div>
 
       <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
+        <button type="button" id="bszl-btn-srv-rearrange" class="bszl-icon-btn ${state.rearrangeMode ? "is-active" : ""}" title="${escapeHtml(t("rearrangeTitle"))}">
+          ${ICONS.sliders}
+          <span>${state.rearrangeMode ? escapeHtml(t("rearrangeDone")) : (isEn ? "Rearrange" : "Сортировка")}</span>
+        </button>
         <button type="button" id="bszl-btn-srv-check" class="bszl-icon-btn" title="${escapeHtml(t("checkNow"))}" ${state.loadingSystem ? "disabled" : ""}>
           ${ICONS.sync(isChecking)}
           <span>${escapeHtml(t("checkNow"))}</span>
         </button>
+        ${
+          hasUpdates || (up.pkg_manager && up.pkg_manager.includes("apt"))
+            ? `
         <button type="button" id="bszl-btn-srv-update" class="bszl-icon-btn" title="${escapeHtml(t("updateNow"))}" ${state.loadingSystem ? "disabled" : ""}>
           <span>${escapeHtml(t("updateNow"))}${pendingCount > 0 ? ` (${pendingCount})` : ""}</span>
         </button>
         <button type="button" id="bszl-btn-srv-rollback" class="bszl-icon-btn" title="${escapeHtml(t("rollbackNow"))}" ${state.loadingSystem || !up.rollback_available ? "disabled" : ""}>
           <span>${state.loadingSystem === `${sysId}:rollback` ? "..." : escapeHtml(t("rollbackNow"))}</span>
-        </button>
+        </button>`
+            : ""
+        }
         <button type="button" id="bszl-btn-panel-collapse" class="bszl-icon-btn" title="${escapeHtml(state.panelCollapsed ? t("expand") : t("hide"))}">
           ${state.panelCollapsed ? ICONS.chevronDown : ICONS.chevronUp}
         </button>
@@ -4139,6 +4175,16 @@ function renderSystemDetailPage() {
 }
 
 function bindHeaderButtons(panel, sysId) {
+  const btnRearrange = panel.querySelector("#bszl-btn-srv-rearrange");
+  if (btnRearrange) {
+    btnRearrange.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      state.rearrangeMode = !state.rearrangeMode;
+      renderAll();
+    };
+  }
+
   const btnCollapse = panel.querySelector("#bszl-btn-panel-collapse");
   if (btnCollapse) btnCollapse.onclick = togglePanelCollapsed;
 
