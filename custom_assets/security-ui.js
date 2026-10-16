@@ -4229,15 +4229,15 @@ function bindHeaderButtons(panel, sysId) {
 
 function updateFooterLinks() {
   if (typeof globalThis !== "undefined" && globalThis.BESZEL) {
-    globalThis.BESZEL.HUB_VERSION = "0.21.1";
+    globalThis.BESZEL.HUB_VERSION = "0.0.1";
   }
   const links = document.querySelectorAll('a[href*="github.com/henrygd/beszel"]');
   links.forEach((a) => {
     a.href = a.href.replace("github.com/henrygd/beszel", "github.com/bledny1099/beszel");
   });
   document.querySelectorAll('a[href*="/releases"]').forEach((a) => {
-    if (a.textContent && a.textContent.includes("0.21.0")) {
-      a.textContent = a.textContent.replace("0.21.0", "0.21.1");
+    if (a.textContent) {
+      a.textContent = a.textContent.replace("0.21.0", "0.0.1").replace("0.21.1", "0.0.1");
     }
   });
 }

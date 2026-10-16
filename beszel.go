@@ -6,19 +6,19 @@ import "github.com/blang/semver"
 
 const (
 	// Version is the current version of the application.
-	Version = "0.21.1"
+	Version = "0.0.1"
 	// AppName is the name of the application.
 	AppName = "beszel"
 )
 
 // MinVersionCbor is the minimum supported version for CBOR compatibility.
-var MinVersionCbor = semver.MustParse("0.12.0")
+var MinVersionCbor = semver.MustParse("0.0.0")
 
 // MinVersionAgentResponse is the minimum supported version for AgentResponse compatibility.
-var MinVersionAgentResponse = semver.MustParse("0.13.0")
+var MinVersionAgentResponse = semver.MustParse("0.0.0")
 
 // MinVersionZfsData is the minimum agent version that supports ZFS detail requests.
-var MinVersionZfsData = semver.MustParse("0.18.9")
+var MinVersionZfsData = semver.MustParse("0.0.0")
 
 // MinVersionNetworkMonitors is the minimum agent version that supports network monitor sync.
-var MinVersionNetworkMonitors = semver.MustParse("0.20.0")
+var MinVersionNetworkMonitors = semver.MustParse("0.0.0")
