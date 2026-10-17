@@ -1346,7 +1346,7 @@ function openAgentInstallModal() {
 
   const isEn = state.lang === "en";
   const origin = window.location.origin;
-  const cmd = (reportsData && reportsData.install_command) || `curl -sL ${origin}/install-agent.sh | bash`;
+  const cmd = `curl -sL ${origin}/install-agent.sh | bash`;
   const overlay = document.createElement("div");
   overlay.id = "bszl-agent-modal-overlay";
   overlay.className = "bszl-dialog-overlay";
@@ -1807,9 +1807,7 @@ function renderNotificationsPage() {
     .sort()
     .join(",");
   const rbKey = `${state.rollbackNotifBusyId || ""}:${state.notifications.filter((x) => x.rolled_back).length}`;
-  const rKey = `${state.lang}:${state.notifFilterType}:${state.notifFilterServer}:${state.scanPatchBusy ? 1 : 0}:${state.notifications.length}:${openVulnsTotal}:${uniquePatchedCves.size}:${totalUpgradedPkgs}:${expKey}:${rbKey}`;
   if (npage.getAttribute("data-render-key") === rKey) return;
-  npage.setAttribute("data-render-key", rKey);
 
   const isEn = state.lang === "en";
   const filtered = state.notifications.filter((n) => {
@@ -1831,10 +1829,20 @@ function renderNotificationsPage() {
     return true;
   });
 
-  const knownSystems = (reportsData && reportsData.registered_systems) || {};
   const serversList = [{ id: "all", name: t("allServers") }];
-  for (const [sid, sdata] of Object.entries(knownSystems)) {
-    serversList.push({ id: sid, name: sdata.name || sid });
+  const seenSrvIds = new Set();
+  for (const [sid, rep] of Object.entries(state.reports || {})) {
+    const sId = rep?.system_id || sid;
+    if (sId && !seenSrvIds.has(sId)) {
+      seenSrvIds.add(sId);
+      serversList.push({ id: sId, name: rep?.system_name || rep?.hostname || sId });
+    }
+  }
+  for (const n of state.notifications || []) {
+    if (n.system_id && !seenSrvIds.has(n.system_id)) {
+      seenSrvIds.add(n.system_id);
+      serversList.push({ id: n.system_id, name: n.system_name || n.system_id });
+    }
   }
 
   const cardsHtml = filtered.length
@@ -2110,6 +2118,8 @@ function renderNotificationsPage() {
       }
     };
   });
+
+  npage.setAttribute("data-render-key", rKey);
 }
 
 function buildBriefTableCellHtml(rep) {
@@ -4310,10 +4320,14 @@ function init() {
   });
   observer.observe(document.body, { childList: true, subtree: true });
 
-  window.addEventListener("popstate", () => {
+  const onUrlChange = () => {
     state.notificationsPageOpen = window.location.hash === "#notifications";
+    const npage = document.getElementById("bszl-notifications-page");
+    if (npage) npage.removeAttribute("data-render-key");
     scheduleRender(50);
-  });
+  };
+  window.addEventListener("popstate", onUrlChange);
+  window.addEventListener("hashchange", onUrlChange);
 }
 
 if (document.readyState === "loading") {
