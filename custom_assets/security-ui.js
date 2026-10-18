@@ -790,26 +790,12 @@ function getReport(key) {
   return null;
 }
 
-function updateFaviconBadge() {
-  let hasCrit = false;
-  let hasWarn = false;
-  for (const rep of Object.values(state.reports)) {
-    const v = rep.vulnerabilities || rep.updates?.vulnerabilities || {};
-    if ((v.open_vulns_count || 0) > 0 || rep.overall_status === "crit") {
-      hasCrit = true;
-    } else if (rep.overall_status === "warn") {
-      hasWarn = true;
-    }
-  }
-  const fState = hasCrit ? "crit" : hasWarn ? "warn" : "ok";
-  if (state.lastFaviconState === fState) return;
-  state.lastFaviconState = fState;
+function restoreNativeFavicon() {
   try {
     let link = document.querySelector('link[rel*="icon"]');
-    if (!link) return;
-    const color = fState === "crit" ? "#ef4444" : fState === "warn" ? "#eab308" : "#10b981";
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#18181b"/><path d="M16 5L7 9v7c0 6.2 3.8 11.8 9 13.5 5.2-1.7 9-7.3 9-13.5V9l-9-4z" fill="none" stroke="#e4e4e7" stroke-width="2.4"/><circle cx="24" cy="8" r="5.5" fill="${color}" stroke="#18181b" stroke-width="2"/></svg>`;
-    link.href = `data:image/svg+xml,${encodeURIComponent(svg)}`;
+    if (link && link.href && link.href.startsWith("data:")) {
+      link.href = "/static/icon.svg";
+    }
   } catch (e) {
     // Ignore
   }
@@ -830,7 +816,7 @@ function applyReportsPayload(data) {
     }
     if (changed) persistLayoutsLocally();
   }
-  updateFaviconBadge();
+  restoreNativeFavicon();
   if (Array.isArray(data.notifications)) {
     const incoming = data.notifications;
     if (state.seenNotifIds === null) {
@@ -1647,8 +1633,14 @@ function renderTopNavbarLangSwitcher() {
     searchBtn.insertAdjacentElement("afterend", topNotifBtn);
   }
 
-  const badgeCount = openVulnsTotal > 0 ? openVulnsTotal : state.unreadCount;
-  const notifKey = `${state.lang}:${state.notificationsPageOpen ? 1 : 0}:${badgeCount}:${openVulnsTotal}:${state.notifications.length}`;
+  const unreadTotal = state.unreadCount > 0 ? state.unreadCount : 0;
+  const badgeCount =
+    openVulnsTotal > 0
+      ? openVulnsTotal
+      : unreadTotal > 0
+      ? unreadTotal
+      : state.notifications.length;
+  const notifKey = `${state.lang}:${state.notificationsPageOpen ? 1 : 0}:${badgeCount}:${openVulnsTotal}:${state.notifications.length}:${unreadTotal}`;
   if (topNotifBtn.getAttribute("data-nkey") !== notifKey) {
     topNotifBtn.setAttribute("data-nkey", notifKey);
     topNotifBtn.className = `${baseClass.replace(/\bhidden\b|\bmd:grid\b/g, "")} bszl-notif-btn ${
@@ -1656,9 +1648,15 @@ function renderTopNavbarLangSwitcher() {
     }`;
     topNotifBtn.title = t("notifBtnTitle");
     topNotifBtn.setAttribute("aria-label", t("notifBtnTitle"));
+    const badgeCls =
+      openVulnsTotal > 0
+        ? "bszl-notif-badge--warn"
+        : unreadTotal > 0
+        ? ""
+        : "bszl-notif-badge--neutral";
     const badgeHtml =
       badgeCount > 0
-        ? `<span class="bszl-notif-badge ${openVulnsTotal > 0 ? "bszl-notif-badge--warn" : ""}">${badgeCount}</span>`
+        ? `<span class="bszl-notif-badge ${badgeCls}">${badgeCount}</span>`
         : "";
     topNotifBtn.innerHTML = `${ICONS.bell}${badgeHtml}`;
     topNotifBtn.onclick = (e) => {
@@ -1807,6 +1805,7 @@ function renderNotificationsPage() {
     .sort()
     .join(",");
   const rbKey = `${state.rollbackNotifBusyId || ""}:${state.notifications.filter((x) => x.rolled_back).length}`;
+  const rKey = `${state.lang}:${state.notifFilterType}:${state.notifFilterServer}:${state.scanPatchBusy ? 1 : 0}:${state.notifications.length}:${openVulnsTotal}:${uniquePatchedCves.size}:${totalUpgradedPkgs}:${expKey}:${rbKey}`;
   if (npage.getAttribute("data-render-key") === rKey) return;
 
   const isEn = state.lang === "en";

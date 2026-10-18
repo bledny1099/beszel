@@ -1085,6 +1085,11 @@ html.dark .bszl-svc-tag--off {
   background: #ef4444;
 }
 
+.bszl-notif-badge--neutral {
+  background: var(--muted-foreground);
+  opacity: 0.85;
+}
+
 /* --- Dedicated Notifications Page (#bszl-notifications-page) --- */
 #bszl-notifications-page {
   max-width: 1200px;
