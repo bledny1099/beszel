@@ -594,7 +594,7 @@ async function saveServerLayout(sysId, nextLayout, applyToAll = false) {
   renderAll();
 
   try {
-    await fetch("/api/security-layout", {
+    await secFetch("/api/security-layout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -654,6 +654,25 @@ function escapeHtml(str) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+// The security API sits behind nginx auth_request, which validates the same
+// PocketBase token the Beszel UI keeps in localStorage. Without it every call
+// to /api/security-* gets 401.
+function getBeszelAuthToken() {
+  try {
+    const raw = localStorage.getItem("pocketbase_auth");
+    return raw ? JSON.parse(raw).token || "" : "";
+  } catch (e) {
+    return "";
+  }
+}
+
+function secFetch(url, opts = {}) {
+  const headers = new Headers(opts.headers || {});
+  const token = getBeszelAuthToken();
+  if (token) headers.set("Authorization", token);
+  return fetch(url, { ...opts, headers });
 }
 
 async function syncBeszelNativeLang(lang) {
@@ -856,7 +875,7 @@ function applyReportsPayload(data) {
 
 async function fetchReports() {
   try {
-    const res = await fetch("/api/security-reports", { cache: "no-store" });
+    const res = await secFetch("/api/security-reports", { cache: "no-store" });
     if (!res.ok) return;
     const data = await res.json();
     applyReportsPayload(data);
@@ -874,7 +893,7 @@ async function triggerAgentConfigUpdate(systemId, partialCfg) {
   if (panel) panel.removeAttribute("data-render-key");
   renderSystemDetailPage();
   try {
-    const res = await fetch("/api/security-agent-config", {
+    const res = await secFetch("/api/security-agent-config", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ system_id: systemId, config: partialCfg }),
@@ -910,7 +929,7 @@ async function markNotificationsRead() {
     state.unreadCount = 0;
     state.notifications.forEach((n) => (n.read = true));
     renderTopNavbarLangSwitcher();
-    const res = await fetch("/api/security-notifications-action", {
+    const res = await secFetch("/api/security-notifications-action", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "mark_read" }),
@@ -932,7 +951,7 @@ async function triggerVulnScanAndPatch(systemId = "all") {
   if (npage) npage.removeAttribute("data-render-key");
   renderAll();
   try {
-    const res = await fetch("/api/security-notifications-action", {
+    const res = await secFetch("/api/security-notifications-action", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "scan_patch", system_id: systemId }),
@@ -969,7 +988,7 @@ async function triggerNotificationRollback(notif) {
   if (npage) npage.removeAttribute("data-render-key");
   renderAll();
   try {
-    const res = await fetch("/api/security-notifications-action", {
+    const res = await secFetch("/api/security-notifications-action", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -1118,7 +1137,7 @@ async function triggerAudit(systemId = "all", mode = "check") {
   if (panel) panel.removeAttribute("data-render-key");
   renderAll();
   try {
-    const res = await fetch("/api/security-trigger", {
+    const res = await secFetch("/api/security-trigger", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ system_id: systemId, mode }),
@@ -1193,7 +1212,7 @@ async function triggerPortAction(systemId, payload, busyKey) {
   if (panel) panel.removeAttribute("data-render-key");
   renderSystemDetailPage();
   try {
-    const res = await fetch("/api/security-port", {
+    const res = await secFetch("/api/security-port", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ system_id: systemId, ...payload }),
@@ -1234,7 +1253,7 @@ async function triggerServiceToggle(systemId, serviceId, serviceName) {
   if (panel) panel.removeAttribute("data-render-key");
   renderSystemDetailPage();
   try {
-    const res = await fetch("/api/security-service", {
+    const res = await secFetch("/api/security-service", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ system_id: systemId, service_id: serviceId, action: "toggle" }),
@@ -1289,7 +1308,7 @@ async function triggerServiceDelete(systemId, serviceId, serviceName) {
   if (panel) panel.removeAttribute("data-render-key");
   renderSystemDetailPage();
   try {
-    const res = await fetch("/api/security-service", {
+    const res = await secFetch("/api/security-service", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ system_id: systemId, service_id: serviceId, action: "delete" }),
@@ -1506,7 +1525,7 @@ async function openServiceLogsModal(systemId, serviceId, serviceName) {
     if (!preEl) return;
     preEl.textContent = isEn ? "Loading logs..." : "Загрузка логов...";
     try {
-      const res = await fetch("/api/security-logs", {
+      const res = await secFetch("/api/security-logs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ system_id: systemId, service_id: serviceId, lines: 60 }),
@@ -1548,7 +1567,7 @@ async function triggerFail2banAction(systemId, action, ipAddr) {
   if (panel) panel.removeAttribute("data-render-key");
   renderSystemDetailPage();
   try {
-    const res = await fetch("/api/security-fail2ban", {
+    const res = await secFetch("/api/security-fail2ban", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ system_id: systemId, action, ip: ipAddr }),
