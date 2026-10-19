@@ -66,6 +66,54 @@ curl -sL http://<HUB_IP>:8090/install-agent.sh | bash -s -- --key "<YOUR_HUB_KEY
 
 The agent runs as an isolated systemd service, auto-discovers running containers and services, and streams hardware and security telemetry immediately.
 
+## Security Agent
+
+Each monitored server runs a built-in Go security subsystem (`agent/security.go` and `agent/security_actions.go`) that reports to the Hub (`internal/hub/security.go`). On the server detail page (`/system/:id`), telemetry and controls are split into three independent, collapsible cards:
+
+1. **Security**: 8 core security checks + 4 system health indicators (hidden by default when all 12 pass, with a toggle to expand all checks), UFW port manager, Fail2ban jail monitor, SSH login log, and CVE patch status.
+2. **Services**: auto-discovered Docker containers and systemd units grouped by category (`Containers`, `VPN & Proxy`, `Databases`, `Web`, `Monitoring`, `System`), with start/stop/restart controls, live log viewer, Docker storage breakdown, and disk cleanup actions.
+3. **Network & domains**: ICMP/TCP latency probes (`1.1.1.1`, `8.8.8.8`, `9.9.9.9`), on-demand bandwidth speedtest, and SSL certificate expiration monitoring for configured domains. This card is automatically hidden on nodes without domains or external network probes.
+
+### 8 Core Security Checks
+
+| Check ID | Name | What It Inspects | Warning / Critical Condition |
+| :--- | :--- | :--- | :--- |
+| `ssh_auth` | SSH & Auth | `sshd -T` (`PasswordAuthentication`), `/root/.ssh/authorized_keys` key count & SHA-256 fingerprint, 24h failed logins in `journalctl` | `warn` if password auth is enabled or 24h failed attempts exceed 500 |
+| `firewall` | Firewall (UFW) | `ufw status numbered`, active state, and rules covering protected ports (`22`, `2244`, `8090`, `45876`) | `warn` if UFW is inactive |
+| `fail2ban` | Fail2ban | `fail2ban-client status sshd` active state and currently banned IPs | `warn` if `fail2ban` service is inactive |
+| `open_ports` | Listening Ports | `ss -H -tulpn` public vs. local/Tailscale listening sockets and owning processes | Reports total and public listening ports |
+| `users_priv` | Users & Privileges | `/etc/passwd` accounts with UID `0` | `crit` if any account other than `root` has UID `0` |
+| `processes_integrity` | Process Integrity | `/proc/*/exe` symlinks checked for binaries executing from `/tmp`, `/var/tmp`, or `/dev/shm` | `crit` if any process runs from temporary/shared memory directories |
+| `cron_timers` | Cron & Timers | `systemctl is-active beszel-security-audit.timer` and root cron jobs | Reports timer status |
+| `kernel_sysctl` | Kernel & Sysctl | `/proc/sys/kernel/randomize_va_space` (ASLR) and `/proc/sys/net/ipv4/tcp_syncookies` | `warn` if ASLR is not `2` |
+
+### 4 System Health Indicators
+
+| Indicator ID | What It Tracks | Thresholds |
+| :--- | :--- | :--- |
+| `inodes` | Root filesystem inode utilization (`df -i /`) | `warn` at 80%, `crit` at 90% |
+| `disk_trend` | Root partition usage (`df -BM /`), daily growth rate (`MB/day`), and estimated days until full | Alerts when projected disk exhaustion is under 14 days |
+| `cpu_steal` | Hypervisor CPU steal time percentage calculated from `/proc/stat` | `warn` at 10%, `crit` at 20% |
+| `oom_reboot` | 7-day kernel Out-Of-Memory kills (`journalctl -k`) and `/proc/sys/kernel/random/boot_id` changes | `warn` if any OOM kill occurred in the last 7 days |
+
+### Schedules, Non-Restart Policy & Auto-Rollback Guard
+
+- **10-Minute Vulnerability Watch (`beszel-vuln-watch.timer`)**: runs `beszel-agent security --vuln-watch` every 10 minutes. Checks `apt-get -s dist-upgrade` for pending security patches, installs security-only upgrades (`apt-get install -y --only-upgrade`), and sends a `vuln_patched` notification to the Hub.
+- **Nightly Audit & Upgrade (`beszel-security-audit.timer`)**: runs daily at `04:00` (`beszel-agent security --full`). Performs a full non-interactive upgrade (`apt-get dist-upgrade -y`) and syncs the complete audit report.
+- **Strict No-Restart Policy**: before running `apt-get`, the agent writes `/etc/apt/apt.conf.d/99-beszel-norestart` (`--force-confdef`, `--force-confold`) and `/etc/needrestart/conf.d/99-beszel-norestart.conf` (`$nrconf{restart} = 'l'`). Package upgrades never reboot the server or restart active SSH, VPN, or container sessions.
+- **Pre-Flight Snapshot & Automatic Rollback**:
+  1. Before installing packages, the agent saves `/var/lib/beszel-security/preflight-snapshot.json` (current package versions, expected listening ports, and failed systemd units) and copies cached `.deb` files from `/var/cache/apt/archives` to `/var/lib/beszel-security/rollback-debs`.
+  2. After the upgrade finishes, the agent verifies `dpkg --audit`, `sshd -t`, `nginx -t`, expected listening ports, and checks for any newly failed systemd units.
+  3. If verification fails and a broken service cannot be restarted, the agent automatically downgrades the affected packages (`apt-get install -y --allow-downgrades` or `dpkg -i` from `rollback-debs`), places them on `apt-mark hold`, and sends an `auto_rollback` alert to the Hub.
+
+### Active Management & API Authentication
+
+- **Firewall Ports**: open or close UFW ports directly from the Security card (`POST /api/security-port`). Protected ports (`22`, `2244`, `8090`, `45876`, or custom `protected_ports` in `/etc/beszel-security/config.json`) are locked against remote closure.
+- **Fail2ban & SSH**: ban or unban IP addresses in Fail2ban (`POST /api/security-f2b`) and inspect recent SSH logins.
+- **Services & Logs**: start, stop, or restart Docker containers and systemd units (`POST /api/security-service`) and view the last 80 log lines (`POST /api/security-service-logs`). Critical units (`ssh`, `beszel`) cannot be stopped remotely.
+- **Maintenance Actions**: trigger on-demand telemetry sync, CVE patching, package rollback, Docker prune (`docker system prune -af`), disk cleanup (`journalctl --vacuum-time=7d`, `apt-get clean`), or bandwidth speedtest (`POST /api/security-trigger` with an explicit mode whitelist).
+- **Authentication**: all browser-facing `/api/security-*` endpoints are protected by Nginx `auth_request` against PocketBase (`/api/collections/users/auth-refresh`), requiring a valid user bearer token. Agent-to-Hub report ingestion (`POST /api/security-report` and `POST /api/security-event`) authenticates via the `X-Beszel-Security-Token` header.
+
 ## Screenshots
 
 ### System Overview & Security Radar

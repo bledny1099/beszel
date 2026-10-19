@@ -66,12 +66,15 @@ func (h *Hub) registerSecurityRoutes(se *core.ServeEvent) {
 
 	se.Router.GET("/api/security-reports", h.handleGetSecurityReports)
 	se.Router.GET("/api/security-notifications", h.handleGetSecurityNotifications)
+	se.Router.GET("/api/security-layouts", h.handleGetSecurityLayouts)
 	se.Router.POST("/api/security-report", h.handlePostSecurityReport)
 	se.Router.POST("/api/security-event", h.handlePostSecurityEvent)
 	se.Router.POST("/api/security-notifications-action", h.handlePostNotificationAction)
 	se.Router.POST("/api/security-trigger", h.handlePostSecurityTrigger)
 	se.Router.POST("/api/security-port", h.handlePostSecurityPort)
 	se.Router.POST("/api/security-service", h.handlePostSecurityService)
+	se.Router.POST("/api/security-service-logs", h.handlePostSecurityServiceLogs)
+	se.Router.POST("/api/security-f2b", h.handlePostSecurityFail2ban)
 	se.Router.POST("/api/security-layout", h.handlePostSecurityLayout)
 }
 
@@ -274,6 +277,16 @@ func (h *Hub) handlePostNotificationAction(e *core.RequestEvent) error {
 	return e.JSON(http.StatusOK, map[string]any{"ok": true})
 }
 
+func (h *Hub) handleGetSecurityLayouts(e *core.RequestEvent) error {
+	securityLock.RLock()
+	defer securityLock.RUnlock()
+
+	layoutsFile := filepath.Join(h.getSecurityDir(), "layouts.json")
+	layouts := make(map[string]any)
+	_ = readJSONFile(layoutsFile, &layouts)
+	return e.JSON(http.StatusOK, map[string]any{"ok": true, "layouts": layouts})
+}
+
 func (h *Hub) handlePostSecurityLayout(e *core.RequestEvent) error {
 	var body struct {
 		SystemID string `json:"system_id"`
@@ -300,17 +313,43 @@ func (h *Hub) handlePostSecurityLayout(e *core.RequestEvent) error {
 	return e.JSON(http.StatusOK, map[string]any{"ok": true})
 }
 
+var allowedTriggerFlags = map[string]string{
+	"telemetry":       "--telemetry",
+	"vuln_watch":      "--vuln-watch",
+	"full":            "--full",
+	"rollback":        "--rollback",
+	"docker_update":   "--update-docker",
+	"docker_rollback": "--docker-rollback",
+	"docker_prune":    "--docker-prune",
+	"disk_cleanup":    "--disk-cleanup",
+	"speedtest":       "--speedtest",
+}
+
 func (h *Hub) handlePostSecurityTrigger(e *core.RequestEvent) error {
 	var body struct {
 		SystemID string `json:"system_id"`
 		Action   string `json:"action"`
+		Mode     string `json:"mode"`
 	}
 	if err := e.BindBody(&body); err != nil {
 		return e.JSON(http.StatusBadRequest, map[string]any{"ok": false, "error": err.Error()})
 	}
 
-	slog.Info("Triggering security action", "system_id", body.SystemID, "action", body.Action)
-	return e.JSON(http.StatusOK, map[string]any{"ok": true, "status": "triggered"})
+	mode := body.Mode
+	if mode == "" {
+		mode = body.Action
+	}
+	if mode == "" {
+		mode = "telemetry"
+	}
+
+	flag, ok := allowedTriggerFlags[mode]
+	if !ok {
+		return e.JSON(http.StatusBadRequest, map[string]any{"ok": false, "error": fmt.Sprintf("Unsupported trigger mode: %s", mode)})
+	}
+
+	slog.Info("Triggering security action", "system_id", body.SystemID, "mode", mode, "flag", flag)
+	return e.JSON(http.StatusOK, map[string]any{"ok": true, "status": "triggered", "mode": mode})
 }
 
 func (h *Hub) handlePostSecurityPort(e *core.RequestEvent) error {
@@ -323,6 +362,9 @@ func (h *Hub) handlePostSecurityPort(e *core.RequestEvent) error {
 	if err := e.BindBody(&body); err != nil {
 		return e.JSON(http.StatusBadRequest, map[string]any{"ok": false, "error": err.Error()})
 	}
+	if body.Port < 1 || body.Port > 65535 {
+		return e.JSON(http.StatusBadRequest, map[string]any{"ok": false, "error": "Invalid port"})
+	}
 
 	slog.Info("Executing security port action", "system_id", body.SystemID, "action", body.Action, "port", body.Port)
 	return e.JSON(http.StatusOK, map[string]any{"ok": true, "action": body.Action, "port": body.Port})
@@ -332,14 +374,49 @@ func (h *Hub) handlePostSecurityService(e *core.RequestEvent) error {
 	var body struct {
 		SystemID string `json:"system_id"`
 		Action   string `json:"action"`
+		Kind     string `json:"kind"`
 		Service  string `json:"service"`
+		Unit     string `json:"unit"`
+	}
+	if err := e.BindBody(&body); err != nil {
+		return e.JSON(http.StatusBadRequest, map[string]any{"ok": false, "error": err.Error()})
+	}
+	svc := body.Service
+	if svc == "" {
+		svc = body.Unit
+	}
+
+	slog.Info("Executing security service action", "system_id", body.SystemID, "action", body.Action, "kind", body.Kind, "service", svc)
+	return e.JSON(http.StatusOK, map[string]any{"ok": true, "action": body.Action, "service": svc})
+}
+
+func (h *Hub) handlePostSecurityServiceLogs(e *core.RequestEvent) error {
+	var body struct {
+		SystemID string `json:"system_id"`
+		Kind     string `json:"kind"`
+		Unit     string `json:"unit"`
 	}
 	if err := e.BindBody(&body); err != nil {
 		return e.JSON(http.StatusBadRequest, map[string]any{"ok": false, "error": err.Error()})
 	}
 
-	slog.Info("Executing security service action", "system_id", body.SystemID, "action", body.Action, "service", body.Service)
-	return e.JSON(http.StatusOK, map[string]any{"ok": true, "action": body.Action, "service": body.Service})
+	slog.Info("Fetching security service logs", "system_id", body.SystemID, "kind", body.Kind, "unit", body.Unit)
+	return e.JSON(http.StatusOK, map[string]any{"ok": true, "unit": body.Unit, "logs": ""})
+}
+
+func (h *Hub) handlePostSecurityFail2ban(e *core.RequestEvent) error {
+	var body struct {
+		SystemID string `json:"system_id"`
+		Action   string `json:"action"`
+		IP       string `json:"ip"`
+		Jail     string `json:"jail"`
+	}
+	if err := e.BindBody(&body); err != nil {
+		return e.JSON(http.StatusBadRequest, map[string]any{"ok": false, "error": err.Error()})
+	}
+
+	slog.Info("Executing security fail2ban action", "system_id", body.SystemID, "action", body.Action, "ip", body.IP, "jail", body.Jail)
+	return e.JSON(http.StatusOK, map[string]any{"ok": true, "action": body.Action, "ip": body.IP, "jail": body.Jail})
 }
 
 func (h *Hub) syncNotificationsFromReport(report map[string]any) {

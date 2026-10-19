@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -54,21 +53,7 @@ func (opts *cmdOptions) parse() bool {
 		handleFingerprint()
 		return true
 	case "security":
-		hubURL, _ := utils.GetEnv("HUB_URL")
-		token, _ := utils.GetEnv("SECURITY_TOKEN")
-		sysID, _ := utils.GetEnv("SYSTEM_ID")
-		sc := agent.NewSecurityCollector(sysID, "", hubURL, token)
-		report := sc.CollectReport()
-		if hubURL != "" {
-			if err := sc.SendReport(report); err != nil {
-				log.Fatalf("Failed to send security report to Hub: %v", err)
-			}
-			fmt.Println("Security report successfully synced with Hub")
-		} else {
-			enc := json.NewEncoder(os.Stdout)
-			enc.SetIndent("", "  ")
-			_ = enc.Encode(report)
-		}
+		agent.RunSecurityCLI(os.Args[2:])
 		return true
 	}
 

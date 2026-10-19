@@ -351,6 +351,93 @@ html.light .bszl-pill--warn {
   padding: 12px 22px;
 }
 
+/* --- Server page: three separate cards (Security / Services / Network) --- */
+.bszl-cards-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.bszl-card {
+  border-radius: var(--radius, 0.8rem);
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid color-mix(in oklab, var(--border) 60%, transparent);
+  overflow: hidden;
+}
+
+.bszl-card-hdr {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 18px;
+}
+
+.bszl-card:not(.is-collapsed) .bszl-card-hdr {
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 55%, transparent);
+}
+
+.bszl-card-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.bszl-card-ico {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  opacity: 0.8;
+}
+
+.bszl-card-ico svg {
+  width: 16px;
+  height: 16px;
+}
+
+.bszl-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+
+.bszl-card-collapse {
+  padding: 0 9px;
+}
+
+.bszl-card-body {
+  padding: 14px 18px 16px;
+}
+
+.bszl-card-tabs {
+  margin: 4px 0 10px;
+  flex-wrap: wrap;
+  height: auto;
+  min-height: 2.25rem;
+}
+
+.bszl-card-subhdr {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted-foreground);
+  margin-bottom: 6px;
+}
+
+.bszl-card-empty {
+  text-align: center;
+  padding: 18px 12px;
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+}
+
 /* --- Native Outline Action Buttons (Matches Beszel standard h-9 buttons) --- */
 .bszl-icon-btn {
   display: inline-flex;
