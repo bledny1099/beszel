@@ -2493,13 +2493,13 @@ function applySystemChartsLayout(sysId) {
     const chartCards = Array.from(chartsGrid.children);
     const hiddenSet = new Set(layout.hiddenCharts || []);
     const rep = getReport(sysId);
-    const hasDocker = Boolean(
-      (rep && rep.docker_storage && rep.docker_storage.total_containers > 0) ||
-      (rep && rep.stack?.items && rep.stack.items.some((i) => i.type === "docker"))
+    const isExplicitNonDocker = Boolean(
+      (rep && (rep.profile === "termux" || rep.system_id === "Lineage" || rep.system_id === "4rnyjklpllef0yl")) ||
+      (rep && rep.docker_storage && rep.docker_storage.available === false && (!Array.isArray(rep.services) || !rep.services.some((i) => i.type === "docker" || i.kind === "docker")))
     );
     chartCards.forEach((card, fallbackIdx) => {
       const cid = detectNativeChartId(card, fallbackIdx);
-      if (!hasDocker && (cid === "docker_cpu" || cid === "docker_memory" || cid === "docker_net")) {
+      if (isExplicitNonDocker && (cid === "docker_cpu" || cid === "docker_memory" || cid === "docker_net")) {
         card.style.display = "none";
         return;
       }
