@@ -4335,7 +4335,7 @@ function bindHeaderButtons(panel, sysId) {
 
 function updateFooterLinks() {
   if (typeof globalThis !== "undefined" && globalThis.BESZEL) {
-    globalThis.BESZEL.HUB_VERSION = "0.0.1";
+    globalThis.BESZEL.HUB_VERSION = "0.0.2";
   }
   const links = document.querySelectorAll('a[href*="github.com/henrygd/beszel"]');
   links.forEach((a) => {
@@ -4343,7 +4343,7 @@ function updateFooterLinks() {
   });
   document.querySelectorAll('a[href*="/releases"]').forEach((a) => {
     if (a.textContent) {
-      a.textContent = a.textContent.replace("0.21.0", "0.0.1").replace("0.21.1", "0.0.1");
+      a.textContent = a.textContent.replace("0.21.0", "0.0.2").replace("0.21.1", "0.0.2").replace("0.0.1", "0.0.2");
     }
   });
 }
