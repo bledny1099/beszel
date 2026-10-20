@@ -1217,6 +1217,25 @@ async function triggerAudit(systemId = "all", mode = "check") {
 }
 
 async function triggerPortAction(systemId, payload, busyKey) {
+  const rep = getReport(systemId);
+  const isTermux = Boolean(
+    rep && (
+      rep.profile === "termux" ||
+      rep.system_id === "Lineage" ||
+      rep.system_id === "4rnyjklpllef0yl" ||
+      String(rep.os || "").toLowerCase().includes("android") ||
+      String(rep.os || "").toLowerCase().includes("lineage")
+    )
+  );
+  if (isTermux) {
+    showOverlayToast({
+      title: `Port · ${payload.port || ""}`,
+      tagText: "INFO",
+      statusType: "running",
+      desc: state.lang === "en" ? "UFW firewall is not available on Android / Termux" : "Файрвол UFW не поддерживается на Android / Termux",
+    });
+    return;
+  }
   if (state.portBusyKey) return;
   state.portBusyKey = busyKey || "port";
   const panel = document.getElementById("bszl-server-security-panel");
@@ -1257,6 +1276,25 @@ async function triggerPortAction(systemId, payload, busyKey) {
 }
 
 async function triggerServiceToggle(systemId, serviceId, serviceName) {
+  const rep = getReport(systemId);
+  const isTermux = Boolean(
+    rep && (
+      rep.profile === "termux" ||
+      rep.system_id === "Lineage" ||
+      rep.system_id === "4rnyjklpllef0yl" ||
+      String(rep.os || "").toLowerCase().includes("android") ||
+      String(rep.os || "").toLowerCase().includes("lineage")
+    )
+  );
+  if (isTermux) {
+    showOverlayToast({
+      title: serviceName || serviceId,
+      tagText: "INFO",
+      statusType: "running",
+      desc: state.lang === "en" ? "Service toggle is not supported on Android / Termux" : "Управление сервисами не поддерживается на Android / Termux",
+    });
+    return;
+  }
   if (state.serviceBusyKey) return;
   const bKey = `${systemId}:${serviceId}`;
   state.serviceBusyKey = bKey;
@@ -3191,16 +3229,33 @@ function renderSystemDetailPage() {
   let secBodyHtml = "";
   if (secTab === "ports") {
     const draft = state.portFormDraft;
+    const isTermux = Boolean(
+      rep && (
+        rep.profile === "termux" ||
+        rep.system_id === "Lineage" ||
+        rep.system_id === "4rnyjklpllef0yl" ||
+        String(rep.os || "").toLowerCase().includes("android") ||
+        String(rep.os || "").toLowerCase().includes("lineage")
+      )
+    );
+    const hasUfw = Boolean(
+      !isTermux &&
+      fwCheck &&
+      fwCheck.status !== "off" &&
+      Array.isArray(fwRules)
+    );
     const portsRowsHtml = portsList
       .map((p) => {
-        const isOpen = p.ufw_state === "open";
-        const isRestr = p.ufw_state === "restricted";
-        const stClass = isOpen ? "bszl-pill--ok" : isRestr ? "bszl-pill--warn" : "bszl-pill--crit";
-        const stText = isOpen ? t("ufwOpen") : isRestr ? t("ufwRestricted") : t("ufwClosed");
+        const isOpen = hasUfw ? p.ufw_state === "open" : true;
+        const isRestr = hasUfw ? p.ufw_state === "restricted" : false;
+        const stClass = !hasUfw ? "bszl-pill--ok" : isOpen ? "bszl-pill--ok" : isRestr ? "bszl-pill--warn" : "bszl-pill--crit";
+        const stText = !hasUfw ? (isEn ? "Listening" : "Слушает") : isOpen ? t("ufwOpen") : isRestr ? t("ufwRestricted") : t("ufwClosed");
         const bKey = `toggle:${p.port}:${p.proto}`;
         const isBusy = state.portBusyKey === bKey;
         let actionHtml = "";
-        if (p.protected) {
+        if (!hasUfw) {
+          actionHtml = `<span style="opacity:0.4;font-size:11px;">—</span>`;
+        } else if (p.protected) {
           actionHtml = `<span style="opacity:0.5;font-size:11px;" title="${isEn ? "Protected port" : "Защищённый порт"}">🔒</span>`;
         } else if (isOpen) {
           actionHtml = `<button type="button" class="bszl-act-btn bszl-act-btn--close js-port-toggle" data-action="close" data-port="${p.port}" data-proto="${escapeHtml(p.proto.toLowerCase())}" data-bkey="${bKey}" ${state.portBusyKey ? "disabled" : ""}>${isBusy ? "..." : t("closeBtn")}</button>`;
@@ -3258,53 +3313,52 @@ function renderSystemDetailPage() {
           .join("")
       : `<span style="opacity:0.6;font-size:0.7rem;">${isEn ? "nobody banned" : "никого в бане"}</span>`;
 
-    secBodyHtml = `
-      <div class="bszl-sub-strip" style="margin-bottom:8px;margin-top:0;">
-        <div class="bszl-sub-strip-group">
-          <span class="bszl-sub-label">${isEn ? "SSH logins:" : "Входы по SSH:"}</span>
-          ${loginsChips || `<span style="opacity:0.6;font-size:0.7rem;">${isEn ? "none" : "нет"}</span>`}
-          <span class="bszl-sub-label" style="margin-left:6px;">Fail2ban (${f2b.currently_banned || 0}):</span>
-          ${bannedChips}
-        </div>
-        <div style="display:inline-flex;align-items:center;gap:5px;">
+    const hasF2b = Boolean(
+      !isTermux &&
+      (f2b.fail2ban_active || (Array.isArray(f2b.active_jails) && f2b.active_jails.length > 0 && f2b.active_jails[0] !== "termux-sshd"))
+    );
+
+    const f2bBanFormHtml = hasF2b
+      ? `<div style="display:inline-flex;align-items:center;gap:5px;">
           <input type="text" id="bszl-inp-f2b-ip" class="bszl-input" style="width:128px;height:24px;font-size:0.72rem;" placeholder="IP" />
           <button type="button" id="bszl-btn-f2b-ban" class="bszl-act-btn bszl-act-btn--close" style="height:24px;padding:0 8px;font-size:0.7rem;" ${state.portBusyKey ? "disabled" : ""}>${isEn ? "Ban IP" : "Забанить IP"}</button>
-        </div>
-      </div>
-      <div class="bszl-port-bar">
-        <input type="text" id="bszl-inp-port" class="bszl-input" style="width:148px;" placeholder="${escapeHtml(t("portPlaceholder"))}" value="${escapeHtml(draft.port)}" />
-        <select id="bszl-sel-proto" class="bszl-select" style="width:108px;">
-          <option value="tcp" ${draft.proto === "tcp" ? "selected" : ""}>TCP</option>
-          <option value="udp" ${draft.proto === "udp" ? "selected" : ""}>UDP</option>
-          <option value="both" ${draft.proto === "both" ? "selected" : ""}>TCP+UDP</option>
-        </select>
-        <input type="text" id="bszl-inp-from" class="bszl-input" style="flex:1 1 150px;min-width:140px;max-width:220px;" placeholder="${escapeHtml(t("ipPlaceholder"))}" value="${escapeHtml(draft.from_ip)}" />
-        <input type="text" id="bszl-inp-comment" class="bszl-input" style="flex:1 1 160px;min-width:145px;max-width:240px;" placeholder="${escapeHtml(t("commentPlaceholder"))}" value="${escapeHtml(draft.comment)}" />
-        <button type="button" id="bszl-btn-port-open" class="bszl-act-btn bszl-act-btn--open" ${state.portBusyKey ? "disabled" : ""}>
-          ${state.portBusyKey === "form:open" ? "..." : escapeHtml(t("openPortBtn"))}
-        </button>
-        <button type="button" id="bszl-btn-port-close" class="bszl-act-btn bszl-act-btn--close" ${state.portBusyKey ? "disabled" : ""}>
-          ${state.portBusyKey === "form:close" ? "..." : escapeHtml(t("closePortBtn"))}
-        </button>
-        ${
-          fb && Date.now() - fb.ts < 8000
-            ? `<span class="bszl-pill ${fb.ok ? "bszl-pill--ok" : "bszl-pill--crit"}">${escapeHtml(fb.msg.slice(0, 45))}</span>`
-            : ""
-        }
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;">
-        <div class="bszl-table-wrap">
-          <table class="bszl-mini-table">
-            <thead><tr>
-              <th>${escapeHtml(t("colPort"))}</th>
-              <th>${escapeHtml(t("colService"))}</th>
-              <th>${escapeHtml(t("colUfw"))}</th>
-              <th style="text-align:right;">${escapeHtml(t("colAction"))}</th>
-            </tr></thead>
-            <tbody>${portsRowsHtml}</tbody>
-          </table>
-        </div>
-        <div class="bszl-table-wrap">
+        </div>`
+      : "";
+
+    const portBarHtml = hasUfw
+      ? `<div class="bszl-port-bar">
+          <input type="text" id="bszl-inp-port" class="bszl-input" style="width:148px;" placeholder="${escapeHtml(t("portPlaceholder"))}" value="${escapeHtml(draft.port)}" />
+          <select id="bszl-sel-proto" class="bszl-select" style="width:108px;">
+            <option value="tcp" ${draft.proto === "tcp" ? "selected" : ""}>TCP</option>
+            <option value="udp" ${draft.proto === "udp" ? "selected" : ""}>UDP</option>
+            <option value="both" ${draft.proto === "both" ? "selected" : ""}>TCP+UDP</option>
+          </select>
+          <input type="text" id="bszl-inp-from" class="bszl-input" style="flex:1 1 150px;min-width:140px;max-width:220px;" placeholder="${escapeHtml(t("ipPlaceholder"))}" value="${escapeHtml(draft.from_ip)}" />
+          <input type="text" id="bszl-inp-comment" class="bszl-input" style="flex:1 1 160px;min-width:145px;max-width:240px;" placeholder="${escapeHtml(t("commentPlaceholder"))}" value="${escapeHtml(draft.comment)}" />
+          <button type="button" id="bszl-btn-port-open" class="bszl-act-btn bszl-act-btn--open" ${state.portBusyKey ? "disabled" : ""}>
+            ${state.portBusyKey === "form:open" ? "..." : escapeHtml(t("openPortBtn"))}
+          </button>
+          <button type="button" id="bszl-btn-port-close" class="bszl-act-btn bszl-act-btn--close" ${state.portBusyKey ? "disabled" : ""}>
+            ${state.portBusyKey === "form:close" ? "..." : escapeHtml(t("closePortBtn"))}
+          </button>
+          ${
+            fb && Date.now() - fb.ts < 8000
+              ? `<span class="bszl-pill ${fb.ok ? "bszl-pill--ok" : "bszl-pill--crit"}">${escapeHtml(fb.msg.slice(0, 45))}</span>`
+              : ""
+          }
+        </div>`
+      : isTermux
+      ? `<div class="bszl-port-bar" style="display:flex;align-items:center;gap:8px;font-size:0.75rem;padding:6px 12px;background:rgba(255,255,255,0.03);border-radius:6px;color:var(--text-dim, #888);">
+          <span>📱</span>
+          <span>${isEn ? "LineageOS / Termux: UFW firewall is not available. Port access is restricted by Tailscale mesh and Android OS security." : "LineageOS / Termux: фаервол UFW отсутствует. Доступ к портам ограничен сетью Tailscale и защитой Android."}</span>
+        </div>`
+      : `<div class="bszl-port-bar" style="display:flex;align-items:center;gap:8px;font-size:0.75rem;padding:6px 12px;background:rgba(255,255,255,0.03);border-radius:6px;color:var(--text-dim, #888);">
+          <span>🛡️</span>
+          <span>${isEn ? "UFW firewall is inactive on this host." : "Файрвол UFW неактивен на этом хосте."}</span>
+        </div>`;
+
+    const rightTableHtml = hasUfw
+      ? `<div class="bszl-table-wrap">
           <table class="bszl-mini-table">
             <thead><tr>
               <th>#</th>
@@ -3315,7 +3369,37 @@ function renderSystemDetailPage() {
             </tr></thead>
             <tbody>${fwRowsHtml}</tbody>
           </table>
+        </div>`
+      : `<div class="bszl-table-wrap" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;text-align:center;color:var(--text-dim, #888);min-height:120px;">
+          <div style="font-size:1.4rem;margin-bottom:6px;">${isTermux ? "📱" : "🛡️"}</div>
+          <div style="font-weight:600;font-size:0.82rem;margin-bottom:4px;color:var(--text, #fff);">${isTermux ? (isEn ? "Android / LineageOS Node" : "Узел Android / LineageOS") : (isEn ? "Firewall Inactive" : "Файрвол неактивен")}</div>
+          <div style="font-size:0.72rem;max-width:320px;line-height:1.4;opacity:0.75;">${isTermux ? (isEn ? "This mobile device routes traffic via Tailscale WireGuard. UFW rules are not used." : "Устройство маршрутизирует трафик через Tailscale WireGuard. Правила UFW не применяются.") : (isEn ? "No active firewall rules detected." : "Активные правила фильтрации не обнаружены.")}</div>
+        </div>`;
+
+    secBodyHtml = `
+      <div class="bszl-sub-strip" style="margin-bottom:8px;margin-top:0;">
+        <div class="bszl-sub-strip-group">
+          <span class="bszl-sub-label">${isEn ? "SSH logins:" : "Входы по SSH:"}</span>
+          ${loginsChips || `<span style="opacity:0.6;font-size:0.7rem;">${isEn ? "none" : "нет"}</span>`}
+          <span class="bszl-sub-label" style="margin-left:6px;">Fail2ban (${f2b.currently_banned || 0}):</span>
+          ${bannedChips}
         </div>
+        ${f2bBanFormHtml}
+      </div>
+      ${portBarHtml}
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;">
+        <div class="bszl-table-wrap">
+          <table class="bszl-mini-table">
+            <thead><tr>
+              <th>${escapeHtml(t("colPort"))}</th>
+              <th>${escapeHtml(t("colService"))}</th>
+              <th>${escapeHtml(hasUfw ? t("colUfw") : isEn ? "Status" : "Статус")}</th>
+              <th style="text-align:right;">${escapeHtml(t("colAction"))}</th>
+            </tr></thead>
+            <tbody>${portsRowsHtml}</tbody>
+          </table>
+        </div>
+        ${rightTableHtml}
       </div>
     `;
   } else {
