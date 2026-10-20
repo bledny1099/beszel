@@ -89,6 +89,11 @@ const I18N = {
     catBots: "TG-боты",
     catServers: "Серверы и веб",
     catUtils: "Утилиты и MCP",
+    catWeb: "Веб-панели и дашборд",
+    catAgent: "Агент и мониторинг",
+    catSecurity: "Доступ и безопасность",
+    catNetwork: "Сеть и VPN",
+    catTools: "Инструменты и OSINT",
     rollbackNow: "↺ Откат",
     autoRollbackOn: "Авто-откат: ВКЛ",
     snapshotCount: "Снимок",
@@ -189,6 +194,11 @@ const I18N = {
     catBots: "TG Bots",
     catServers: "Servers & Web",
     catUtils: "Utils & MCP",
+    catWeb: "Web Apps & Dashboard",
+    catAgent: "Agent & Monitoring",
+    catSecurity: "Access & Security",
+    catNetwork: "Network & VPN",
+    catTools: "Tools & OSINT",
     rollbackNow: "↺ Rollback",
     autoRollbackOn: "Auto-Rollback: ON",
     snapshotCount: "Snapshot",
@@ -369,6 +379,30 @@ const PROGRAM_INFO = {
     ru: "Фоновый контейнер синхронизации данных между локальными базами SQLite и сервером PostgreSQL (sqlite_pg_sync). Обеспечивает актуальность резервных копий и аналитических таблиц.",
     en: "Background container synchronizing records between local SQLite databases and PostgreSQL (sqlite_pg_sync). Keeps analytical tables and backups continuously in sync.",
   },
+  "osint-dash": {
+    ru: "Веб-интерфейс OSINT Dashboard в Termux (порт 8080). Позволяет запускать поиск по соцсетям, телефонам и открытым источникам прямо со смартфона.",
+    en: "Web-based OSINT Dashboard running in Termux on port 8080. Allows executing social media and intelligence investigations directly on the device.",
+  },
+  "beszel-agent": {
+    ru: "Нативный легковесный агент мониторинга Beszel (порт 45876). Собирает аппаратные метрики CPU, RAM, дисков, батареи и температуры устройства.",
+    en: "Native lightweight Beszel monitoring agent (port 45876). Collects CPU, memory, storage, battery level, and thermal metrics.",
+  },
+  "termux-sshd": {
+    ru: "Защищенный SSH-сервер OpenSSH в Termux (порт 8022). Обеспечивает удаленный доступ и выполнение команд по ed25519-ключам.",
+    en: "OpenSSH daemon inside Termux on port 8022. Provides remote shell access and automation using ed25519 public key authentication.",
+  },
+  sherlock: {
+    ru: "Утилита поиска аккаунтов по открытым источникам (OSINT). Проверяет заданный никнейм на сотнях сайтов и сервисов.",
+    en: "OSINT username search tool. Finds social media accounts across hundreds of online platforms and communities.",
+  },
+  theharvester: {
+    ru: "Инструмент сбора информации о доменах, поддоменах, сотрудниках и почтах из открытых источников и поисковых систем.",
+    en: "Information gathering tool for mapping domain emails, names, subdomains, IPs, and URLs from open sources.",
+  },
+  "sing-box": {
+    ru: "Универсальный сетевой прокси-клиент sing-box в Termux. Обеспечивает маршрутизацию трафика и сетевые туннели.",
+    en: "Universal proxy client sing-box in Termux. Manages network routing and secure egress tunnels.",
+  },
 };
 
 function decodeDomainPunycode(str) {
@@ -419,7 +453,7 @@ const DEFAULT_CHECKS_ORDER = [
   "oom_reboot",
 ];
 
-const DEFAULT_CATS_ORDER = ["vpn", "bots", "servers", "utils"];
+const DEFAULT_CATS_ORDER = ["vpn", "bots", "servers", "utils", "web", "agent", "security", "network", "tools"];
 
 const DEFAULT_TABS_ORDER = ["overview", "ports", "docker", "net", "updates"];
 
@@ -1080,7 +1114,7 @@ function updateToastStackLayout() {
   });
 }
 
-function showOverlayToast({ title, tagText = "ON", statusType = "running", desc = "", progId = null }) {
+function showOverlayToast({ title, tagText = "ON", statusType = "running", desc = "", progId = null, linkUrl = null, linkText = null }) {
   let stack = document.getElementById("bszl-toast-stack");
   if (!stack) {
     stack = document.createElement("div");
@@ -1107,7 +1141,10 @@ function showOverlayToast({ title, tagText = "ON", statusType = "running", desc 
         <span>${escapeHtml(title)}</span>
         ${tagText ? `<span class="bszl-svc-tag ${tagCls}">${escapeHtml(tagText)}</span>` : ""}
       </div>
-      <div class="bszl-prog-info-desc">${escapeHtml(desc)}</div>
+      <div class="bszl-prog-info-desc">
+        ${escapeHtml(desc)}
+        ${linkUrl ? `<div style="margin-top:8px;"><a href="${escapeHtml(linkUrl)}" target="_blank" rel="noopener noreferrer" class="bszl-act-btn bszl-act-btn--open" style="display:inline-flex;align-items:center;gap:5px;text-decoration:none;padding:3px 9px;font-size:0.72rem;"><span>${escapeHtml(linkText || "Open Web App ↗")}</span></a></div>` : ""}
+      </div>
     </div>
     <button type="button" class="bszl-prog-info-close" title="Close">✕</button>
     <div class="bszl-toast-progress">
@@ -1276,25 +1313,6 @@ async function triggerPortAction(systemId, payload, busyKey) {
 }
 
 async function triggerServiceToggle(systemId, serviceId, serviceName) {
-  const rep = getReport(systemId);
-  const isTermux = Boolean(
-    rep && (
-      rep.profile === "termux" ||
-      rep.system_id === "Lineage" ||
-      rep.system_id === "4rnyjklpllef0yl" ||
-      String(rep.os || "").toLowerCase().includes("android") ||
-      String(rep.os || "").toLowerCase().includes("lineage")
-    )
-  );
-  if (isTermux) {
-    showOverlayToast({
-      title: serviceName || serviceId,
-      tagText: "INFO",
-      statusType: "running",
-      desc: state.lang === "en" ? "Service toggle is not supported on Android / Termux" : "Управление сервисами не поддерживается на Android / Termux",
-    });
-    return;
-  }
   if (state.serviceBusyKey) return;
   const bKey = `${systemId}:${serviceId}`;
   state.serviceBusyKey = bKey;
@@ -2726,6 +2744,11 @@ function enhanceSettings2Menu() {
     bots: t("catBots"),
     servers: t("catServers"),
     utils: t("catUtils"),
+    web: t("catWeb"),
+    agent: t("catAgent"),
+    security: t("catSecurity"),
+    network: t("catNetwork"),
+    tools: t("catTools"),
   };
 
   let itemsHtml = "";
@@ -3505,15 +3528,38 @@ function renderSystemDetailPage() {
     bots: { id: "bots", title: t("catBots"), icon: ICONS.procMemory },
     servers: { id: "servers", title: t("catServers"), icon: ICONS.kernelDisk },
     utils: { id: "utils", title: t("catUtils"), icon: ICONS.shield },
+    web: { id: "web", title: t("catWeb"), icon: ICONS.gauge },
+    agent: { id: "agent", title: t("catAgent"), icon: ICONS.radarPorts },
+    security: { id: "security", title: t("catSecurity"), icon: ICONS.sshLock },
+    network: { id: "network", title: t("catNetwork"), icon: ICONS.firewall },
+    tools: { id: "tools", title: t("catTools"), icon: ICONS.terminal },
   };
+
+  for (const item of stackItems) {
+    const cid = item.cat || item.category || "utils";
+    if (!catDefsMap[cid]) {
+      catDefsMap[cid] = {
+        id: cid,
+        title: item.category_name || cid.charAt(0).toUpperCase() + cid.slice(1),
+        icon: ICONS.shield,
+      };
+    }
+  }
+
   const orderedCats = layout.catsOrder
     .filter((catId) => catDefsMap[catId] && (state.rearrangeMode || !layout.hiddenCats.includes(catId)))
     .map((catId) => catDefsMap[catId]);
 
+  for (const cid of Object.keys(catDefsMap)) {
+    if (!layout.catsOrder.includes(cid) && !orderedCats.find((c) => c.id === cid)) {
+      orderedCats.push(catDefsMap[cid]);
+    }
+  }
+
   const stackCatsHtml = orderedCats
     .map((cat) => {
       const items = stackItems
-        .filter((i) => i.cat === cat.id)
+        .filter((i) => (i.cat || i.category || "utils") === cat.id)
         .sort((a, b) => {
           const ia = (layout.itemsOrder || []).indexOf(a.id);
           const ib = (layout.itemsOrder || []).indexOf(b.id);
@@ -3538,12 +3584,14 @@ function renderSystemDetailPage() {
             : isEn
             ? item.status_en || (isOn ? "ON" : isOd ? "On-Demand" : "OFF")
             : item.status_ru || (isOn ? "ON" : isOd ? "По запросу" : "OFF");
+          const openUrl = item.url || (item.port && (item.id === "osint-dash" || item.cat === "web" || item.category === "web") ? `http://${rep.ip || "100.64.0.5"}:${item.port}` : null);
           return `
             <div class="bszl-svc-pill ${isOn || isOd ? "" : "is-off"} ${isSel ? "is-selected" : ""} ${state.rearrangeMode ? "is-draggable-item" : ""}" data-prog-id="${escapeHtml(item.id)}" ${state.rearrangeMode ? 'draggable="true"' : ""} style="cursor:${state.rearrangeMode ? "grab" : "pointer"};user-select:none;" title="${isEn ? "Click: info · Double-click: on/off · Triple-click: delete" : "Клик: описание · Двойной клик: вкл/выкл · Тройной клик: удалить"}">
               ${state.rearrangeMode ? `<span class="bszl-inline-grip">${ICONS.grip}</span>` : ""}
               <span class="bszl-dot ${dotCls}"></span>
               <span>${escapeHtml(item.name)}</span>
               <span class="bszl-svc-tag ${tagCls}">${escapeHtml(stLabel)}</span>
+              ${openUrl ? `<a href="${escapeHtml(openUrl)}" target="_blank" rel="noopener noreferrer" class="bszl-svc-log-btn js-svc-link" title="${isEn ? "Open Web App" : "Открыть веб-интерфейс"}" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;font-size:0.75rem;">↗</a>` : ""}
               <button type="button" class="bszl-svc-log-btn js-svc-logs" data-log-id="${escapeHtml(item.id)}" data-log-name="${escapeHtml(item.name)}" title="${isEn ? "Logs" : "Логи"}">&gt;_</button>
             </div>
           `;
@@ -4093,7 +4141,7 @@ function renderSystemDetailPage() {
 
     pill.onclick = (e) => {
       if (state.rearrangeMode) return;
-      if (e.target.closest(".js-svc-logs")) return;
+      if (e.target.closest(".js-svc-logs") || e.target.closest(".js-svc-link")) return;
       e.preventDefault();
       const item = stackItems.find((i) => i.id === pid);
       if (!item) return;
@@ -4143,12 +4191,15 @@ function renderSystemDetailPage() {
           : state.lang === "en"
           ? `${item.name} service detected on this server.`
           : `Сервис ${item.name}, установленный на этом сервере.`;
+        const openUrl = item.url || (item.port && (item.id === "osint-dash" || item.cat === "web" || item.category === "web") ? `http://${rep.ip || "100.64.0.5"}:${item.port}` : null);
         showOverlayToast({
           title: item.name,
           tagText: stText,
           statusType: item.status,
           desc: descText,
           progId: item.id,
+          linkUrl: openUrl,
+          linkText: isEn ? "Open Dashboard ↗" : "Открыть дашборд ↗",
         });
       }, 280);
     };
