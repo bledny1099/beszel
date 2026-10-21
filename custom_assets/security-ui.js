@@ -86,9 +86,11 @@ const I18N = {
     colNew: "Стало",
     colTime: "Время",
     catVpn: "VPN и ядра",
-    catBots: "TG-боты",
+    catBots: "Боты и AI-агенты",
     catServers: "Серверы и веб",
-    catUtils: "Утилиты и MCP",
+    catDb: "Базы данных и кэш",
+    catUtils: "Инфра и MCP",
+    catSystem: "Система и защита",
     catWeb: "Веб-панели и дашборд",
     catAgent: "Агент и мониторинг",
     catSecurity: "Доступ и безопасность",
@@ -191,9 +193,11 @@ const I18N = {
     colNew: "New",
     colTime: "Time",
     catVpn: "VPN & Cores",
-    catBots: "TG Bots",
+    catBots: "Bots & AI Agents",
     catServers: "Servers & Web",
-    catUtils: "Utils & MCP",
+    catDb: "Databases & Cache",
+    catUtils: "Infra & MCP",
+    catSystem: "System & Security",
     catWeb: "Web Apps & Dashboard",
     catAgent: "Agent & Monitoring",
     catSecurity: "Access & Security",
@@ -268,6 +272,14 @@ const PROGRAM_INFO = {
     ru: "Высокопроизводительное сетевое ядро маршрутизации и обхода блокировок (VLESS Reality, XTLS, SOCKS/HTTP). Принимает и перенаправляет зашифрованный трафик клиентов с маскировкой под обычный веб-трафик.",
     en: "High-performance network routing and circumvention core supporting VLESS Reality, XTLS, and SOCKS/HTTP. It processes and forwards encrypted client connections while disguising traffic as standard HTTPS.",
   },
+  "xray-client": {
+    ru: "Клиентский сервис Xray (xray-client.service) для исходящего проксирования и защищенной маршрутизации запросов к внешним API.",
+    en: "Outbound Xray client service (xray-client.service) providing encrypted proxy routing for external API requests.",
+  },
+  "amnezia-xray": {
+    ru: "Изолированный Docker-контейнер Amnezia Xray (порт 4433) с протоколом VLESS Reality и защитой от активного зондирования DPI.",
+    en: "Isolated Amnezia Xray Docker container (port 4433) running VLESS Reality with active DPI probing protection.",
+  },
   "amnezia-awg": {
     ru: "Контейнер AmneziaWG, модифицированная версия протокола WireGuard с защитой от глубокого анализа пакетов (DPI). Меняет заголовки и размер рукопожатий, чтобы VPN-трафик не распознавался провайдерами.",
     en: "AmneziaWG container running an obfuscated version of the WireGuard protocol with Deep Packet Inspection (DPI) resistance. It randomizes packet headers and handshake sizes so VPN traffic is not fingerprinted by ISPs.",
@@ -288,6 +300,14 @@ const PROGRAM_INFO = {
     ru: "Два локальных шифрующих DNS-прокси (anon и fast) с поддержкой DoH и DNSCrypt. Защищают DNS-запросы сервера и VPN-клиентов от перехвата, подмены и утечек провайдерам.",
     en: "Dual local encrypted DNS proxies (anon and fast) supporting DNS-over-HTTPS and DNSCrypt. They protect server and VPN client DNS lookups from spoofing, interception, and ISP leaks.",
   },
+  "dnscrypt-anon": {
+    ru: "Анонимизирующий шифрующий DNS-прокси (dnscrypt-proxy-anon) с релеями DNSCrypt и DoH для приватного разрешения имен.",
+    en: "Anonymized encrypted DNS proxy (dnscrypt-proxy-anon) using DNSCrypt relays and DoH for private DNS resolution.",
+  },
+  "dnscrypt-fast": {
+    ru: "Быстрый локальный DNS-прокси (dnscrypt-proxy-fast) с кэшированием и минимальной задержкой для системных и VPN-запросов.",
+    en: "Low-latency caching encrypted DNS proxy (dnscrypt-proxy-fast) serving system and VPN DNS queries.",
+  },
   tor: {
     ru: "Локальный SOCKS-прокси и демон сети Tor (порт 9050). Используется сервисами и скриптами на сервере для маршрутизации отдельных исходящих запросов через цепочку узлов Tor.",
     en: "Local Tor network daemon and SOCKS proxy listening on port 9050. It allows server applications and scripts to route specific outbound requests through the Tor onion network.",
@@ -295,7 +315,92 @@ const PROGRAM_INFO = {
   trusttunnel: {
     ru: "Клиент и эндпоинт защищенного туннелирования TrustTunnel в каталоге /opt/trusttunnel. На данный момент установлен на диске в качестве резервного инструмента, но в фоне не запущен.",
     en: "TrustTunnel secure endpoint binary installed in /opt/trusttunnel. It is currently kept on disk as a standby tunneling tool and is not running in the background.",
-  },  vaultwarden: {
+  },
+  "claude-session": {
+    ru: "Автономная сессия Claude Code (claude-sessions.service / screen --remote-control) с автоматическим восстановлением контекста и удаленным управлением.",
+    en: "Persistent Claude Code remote-control session managed by claude-sessions.service / screen with automatic session recovery.",
+  },
+  "dosimple-bot": {
+    ru: "Основной Telegram-бот экосистемы doSimple. Работает как постоянный сервис и обрабатывает команды пользователей, уведомления и интеграции с БД.",
+    en: "Primary Telegram bot for the doSimple ecosystem handling user commands, notifications, and database integrations.",
+  },
+  "scribe-bot": {
+    ru: "Telegram-бот сервиса Scribe для расшифровки аудио, голосовых сообщений и управления отчетами.",
+    en: "Scribe Telegram bot for audio transcription, voice message processing, and report management.",
+  },
+  screenertg: {
+    ru: "Торговый и аналитический Telegram-бот ScreenerTG для отслеживания рыночных сигналов и котировок в реальном времени.",
+    en: "ScreenerTG trading and market analytics Telegram bot monitoring real-time market signals.",
+  },
+  "screenertg-demo": {
+    ru: "Демо-инстанс бота ScreenerTG для тестирования новых фильтров и сигнальных стратегий.",
+    en: "Demo instance of the ScreenerTG bot used for testing new filters and signal strategies.",
+  },
+  demotradebot: {
+    ru: "Торговый бот-симулятор DemoTrade Bot для проверки торговых гипотез без риска реальным депозитом.",
+    en: "DemoTrade Bot paper-trading simulator for testing automated execution strategies.",
+  },
+  "minecraft-bot": {
+    ru: "Telegram-бот управления игровым сервером Minecraft (статус игроков, вайтлист, оповещения и команды консоли).",
+    en: "Minecraft server management Telegram bot providing player status, whitelist control, and console alerts.",
+  },
+  "nasad-tgbot": {
+    ru: "Telegram-бот игрового проекта NASAD SMP для связи чата с сервером, заявок игроков и модерации.",
+    en: "NASAD SMP Telegram bot linking server chat, player applications, and moderation actions.",
+  },
+  buybot: {
+    ru: "Специализированный Telegram-бот BuyBot для автоматизации уведомлений о покупках и транзакциях.",
+    en: "BuyBot Telegram service automating purchase and transaction notifications.",
+  },
+  "nasad-smp": {
+    ru: "Основной игровой сервер Minecraft проекта NASAD SMP (nasad-smp.service). Работает в выделенном окружении с контролем памяти и TPS.",
+    en: "Main NASAD SMP Minecraft game server (nasad-smp.service) running with dedicated memory and TPS monitoring.",
+  },
+  "nasad-acjudge": {
+    ru: "Античит-анализатор ACJudge (nasad-acjudge.service) для автоматической проверки боевых логов и выявления читов на сервере NASAD SMP.",
+    en: "ACJudge anti-cheat analysis service (nasad-acjudge.service) inspecting combat telemetry on NASAD SMP.",
+  },
+  "nasad-web": {
+    ru: "Веб-приложение и API сайта проекта NASAD SMP (nasad.dosimple.app).",
+    en: "Web application and backend API for the NASAD SMP website (nasad.dosimple.app).",
+  },
+  "nasad-hostwatch": {
+    ru: "Сервис мониторинга хоста и игровых узлов NASAD HostWatch (/root/nasadsmp/tools/hostwatch.py).",
+    en: "NASAD HostWatch monitoring daemon (/root/nasadsmp/tools/hostwatch.py) tracking host and game node health.",
+  },
+  "mc-dashboard": {
+    ru: "Веб-панель управления и мониторинга игрового сервера Minecraft (minecraft-dashboard.service).",
+    en: "Minecraft web dashboard (minecraft-dashboard.service) for live server administration and metrics.",
+  },
+  "mc-autostart": {
+    ru: "Системная служба автозапуска и контроля состояния сервера Minecraft (minecraft-autostart.service).",
+    en: "Minecraft autostart and watchdog service (minecraft-autostart.service).",
+  },
+  "dosimple-app": {
+    ru: "Веб-приложение и бэкенд платформы doSimple Lab (dosimple.app, порт 3110).",
+    en: "doSimple Lab web platform and backend service (dosimple.app, port 3110).",
+  },
+  "dosimple-site": {
+    ru: "Основной веб-сайт и API проекта doSimple Bot (dosimplebot.com, порт 3101).",
+    en: "Main website and web service for doSimple Bot (dosimplebot.com, port 3101).",
+  },
+  "dosimple-min": {
+    ru: "Легковесный веб-сервис doSimple Min (dosimple-min.service).",
+    en: "Lightweight doSimple Min web service (dosimple-min.service).",
+  },
+  "evolve-site": {
+    ru: "Веб-сервер проекта Evolve (evolve-site.service).",
+    en: "Evolve project web server (evolve-site.service).",
+  },
+  "scribe-api": {
+    ru: "Сервер отчетов и веб-API приложения Scribe (scribe.dosimple.app, scribe-report-api.service).",
+    en: "Scribe report API and web backend (scribe.dosimple.app, scribe-report-api.service).",
+  },
+  omniroute: {
+    ru: "Сервис маршрутизации и API-шлюз OmniRoute (omniroute.service, порт 20128).",
+    en: "OmniRoute routing service and API gateway (omniroute.service, port 20128).",
+  },
+  vaultwarden: {
     ru: "Собственный защищенный сервер менеджера паролей Bitwarden (Vaultwarden в Docker). Хранит пароли, ключи и секреты в зашифрованном виде под вашим полным контролем.",
     en: "Self-hosted Bitwarden-compatible password manager server (Vaultwarden in Docker). It stores your encrypted vault, credentials, and secrets under your own infrastructure.",
   },
@@ -304,16 +409,24 @@ const PROGRAM_INFO = {
     en: "Open Design platform container for inspecting and managing design files and visual assets. Runs in Docker with continuous health monitoring.",
   },
   microbin: {
-    ru: "Легковесный приватный pastebin-сервис и файлообменник MicroBin в Docker. Позволяет быстро и безопасно делиться фрагментами кода, конфигами и временными ссылками.",
-    en: "Lightweight self-hosted pastebin and file-sharing service (MicroBin in Docker). Used for securely sharing code snippets, configs, and expiring links.",
+    ru: "Легковесный приватный pastebin-сервис и файлообменник MicroBin в Docker (порт 4515). Позволяет быстро и безопасно делиться фрагментами кода, конфигами и временными ссылками.",
+    en: "Lightweight self-hosted pastebin and file-sharing service (MicroBin in Docker, port 4515). Used for securely sharing code snippets, configs, and expiring links.",
   },
   jesse: {
     ru: "Алгоритмический фреймворк Jesse для бэктестинга и автоматической крипто-торговли. Контейнер сохранен на сервере, но сейчас остановлен (запускается по необходимости).",
     en: "Jesse algorithmic crypto trading and backtesting framework. The Docker container is preserved on the server and is currently stopped until needed.",
   },
   "beszel-hub": {
-    ru: "Центральный сервер мониторинга Beszel Hub вместе с модулем безопасности и управления портами (beszel-security-hub). Собирает метрики со всех подключенных серверов, проверяет стек и координирует ежедневные обновления безопасности.",
-    en: "Central Beszel Hub monitoring server paired with the beszel-security-hub API. It aggregates real-time metrics across all connected servers, audits the software stack, and coordinates daily automated security updates.",
+    ru: "Центральный контейнер мониторинга Beszel Hub (PocketBase + веб-интерфейс). Собирает метрики со всех подключенных серверов, контейнеров и systemd-служб.",
+    en: "Central Beszel Hub monitoring container (PocketBase + Web UI) aggregating metrics across all connected servers, containers, and systemd units.",
+  },
+  "security-hub": {
+    ru: "API-сервер управления безопасностью Beszel Security Hub (beszel-security-hub.service, порт 8092). Координирует аудит серверов, UFW-порты, CVE-патчи и управление службами.",
+    en: "Beszel Security Hub API daemon (beszel-security-hub.service, port 8092) coordinating fleet security audits, UFW rules, CVE patches, and service control.",
+  },
+  "beszel-gateway": {
+    ru: "Шлюз Nginx (beszel-gateway, порт 8090), объединяющий интерфейс Beszel с модулем безопасности security-ui и авторизацией PocketBase.",
+    en: "Nginx gateway container (beszel-gateway, port 8090) serving the Beszel UI injected with security-ui and PocketBase auth verification.",
   },
   "beszel-agent": {
     ru: "Легковесный агент мониторинга Beszel, передающий в реальном времени загрузку CPU, памяти, диска, сети и список доступных обновлений в центральный хаб.",
@@ -324,12 +437,20 @@ const PROGRAM_INFO = {
     en: "Modern web server and reverse proxy with automatic HTTPS certificate provisioning and HTTP/3 support. It terminates public TLS traffic on ports 80/443 and routes requests to internal apps.",
   },
   nginx: {
-    ru: "Высокопроизводительный обратный прокси Nginx (включая шлюз beszel-gateway и acme-companion). Маршрутизирует трафик контейнеров и встраивает панель безопасности прямо в интерфейс Beszel.",
-    en: "High-performance Nginx reverse proxy (including beszel-gateway and acme-companion). It routes container traffic and injects the custom security and stack UI directly into Beszel.",
+    ru: "Высокопроизводительный обратный прокси Nginx (nginx-proxy). Маршрутизирует трафик контейнеров и доменов.",
+    en: "High-performance Nginx reverse proxy (nginx-proxy) routing traffic across containers and virtual hosts.",
+  },
+  "acme-companion": {
+    ru: "Контейнер автоматического выпуска и продления Let's Encrypt SSL-сертификатов (nginx-proxy-acme) для связки с nginx-proxy.",
+    en: "Automated Let's Encrypt SSL certificate provisioning companion container (nginx-proxy-acme) for nginx-proxy.",
   },
   postgres: {
-    ru: "Реляционная база данных PostgreSQL (системный кластер и Docker-контейнеры для ботов и сервисов). Хранит основные данные пользователей, транзакций и приложений.",
-    en: "PostgreSQL relational database server (both host cluster and Docker instances). It stores persistent user data, bot state, and application records.",
+    ru: "Реляционная база данных PostgreSQL (системный кластер 18-main и Docker-контейнер postgres:14). Хранит основные данные пользователей и приложений.",
+    en: "PostgreSQL relational database server (host 18-main cluster and Docker postgres:14) storing primary application data.",
+  },
+  "bot-postgres": {
+    ru: "Выделенный контейнер базы данных PostgreSQL 15 (bot_postgres) для Telegram-ботов и микросервисов.",
+    en: "Dedicated PostgreSQL 15 database container (bot_postgres) serving Telegram bots and microservices.",
   },
   redis: {
     ru: "Быстрое хранилище данных в оперативной памяти Redis. Используется ботами и веб-сервисами для кэширования, очередей задач, сессий и rate-лимитов.",
@@ -339,6 +460,10 @@ const PROGRAM_INFO = {
     ru: "Демон контейнеризации Docker Engine. Обеспечивает изолированный запуск контейнеров (VPN-ядер, ботов, баз данных и веб-сервисов) с автоматическим перезапуском.",
     en: "Docker Engine container runtime managing isolated containers across VPN cores, bots, databases, and web services with automatic restart policies.",
   },
+  containerd: {
+    ru: "Низкоуровневый рантайм контейнеров containerd.service, управляющий жизненным циклом контейнеров и образов для Docker.",
+    en: "Industry-standard container runtime daemon (containerd.service) managing container execution and image transfer.",
+  },
   fail2ban: {
     ru: "Система защиты от перебора паролей и сетевых атак (Fail2ban). Анализирует системные логи в реальном времени и автоматически блокирует IP-адреса злоумышленников в файрволе.",
     en: "Intrusion prevention daemon (Fail2ban) that scans authentication logs in real time and automatically bans offending IP addresses in the firewall.",
@@ -346,6 +471,46 @@ const PROGRAM_INFO = {
   ufw: {
     ru: "Межсетевой экран Uncomplicated Firewall (UFW), управляющий правилами фильтрации пакетов Netfilter/iptables. Блокирует все неразрешенные входящие подключения и управляется прямо из вкладки Порты.",
     en: "Uncomplicated Firewall (UFW) managing host packet filtering rules. It blocks unauthorized inbound connections and is controlled directly from the Ports tab.",
+  },
+  sshd: {
+    ru: "Системный SSH-сервер OpenSSH (порт 2244) с авторизацией строго по криптографическим ключам.",
+    en: "System OpenSSH server (port 2244) configured for public-key authentication.",
+  },
+  "beszel-vuln-watch": {
+    ru: "Таймер оперативного мониторинга уязвимостей (beszel-vuln-watch.timer). Каждые 10 минут проверяет наличие CVE-обновлений безопасности и автоматически устанавливает патчи с защитным откатом.",
+    en: "Vulnerability watcher timer (beszel-vuln-watch.timer) checking every 10 minutes for Ubuntu CVE security patches with automatic rollback protection.",
+  },
+  "beszel-audit-timer": {
+    ru: "Ежедневный таймер полного аудита безопасности, проверки доменов/SSL и обновления системы (beszel-security-audit.timer, 04:00 DXB).",
+    en: "Nightly security audit, SSL certificate check, and maintenance timer (beszel-security-audit.timer, 04:00 DXB).",
+  },
+  "unattended-upgrades": {
+    ru: "Системный демон автоматической установки критических обновлений Debian/Ubuntu (unattended-upgrades.service).",
+    en: "Debian/Ubuntu unattended-upgrades daemon handling background security package maintenance.",
+  },
+  livepatch: {
+    ru: "Служба Canonical Livepatch для применения патчей безопасности ядра Linux на лету без перезагрузки сервера.",
+    en: "Canonical Livepatch daemon applying critical Linux kernel security patches without rebooting.",
+  },
+  "qemu-guest-agent": {
+    ru: "Гостевой агент виртуализации QEMU/KVM для корректного взаимодействия виртуальной машины с гипервизором и создания снапшотов.",
+    en: "QEMU Guest Agent daemon enabling clean hypervisor snapshots, time sync, and VM lifecycle management.",
+  },
+  chrony: {
+    ru: "Служба точной синхронизации системного времени по протоколу NTP (chrony / systemd-timesyncd).",
+    en: "NTP time synchronization daemon (chrony / systemd-timesyncd) keeping system clocks accurate.",
+  },
+  "systemd-resolved": {
+    ru: "Системный резолвер и кэш DNS-запросов systemd-resolved.",
+    en: "Systemd network name resolution daemon (systemd-resolved).",
+  },
+  cron: {
+    ru: "Планировщик периодических системных задач Cron (cron.service).",
+    en: "Cron background job scheduler daemon (cron.service).",
+  },
+  rsyslog: {
+    ru: "Системный демон сбора и ротации журналов событий (rsyslog.service).",
+    en: "Rocket-fast system logging daemon (rsyslog.service).",
   },
   "youtube-mcp": {
     ru: "Постоянно работающий MCP-сервер YouTube в Docker. Позволяет AI-агентам искать видео, получать транскрипты, метаданные каналов и управлять плейлистами YouTube.",
@@ -358,6 +523,10 @@ const PROGRAM_INFO = {
   "tryhackme-mcp": {
     ru: "Постоянный MCP-сервер платформы кибербезопасности TryHackMe (порт 8775). Позволяет AI-агентам получать задания комнат, описания уязвимостей и учебные материалы TryHackMe.",
     en: "Persistent Model Context Protocol server for TryHackMe (port 8775). It allows AI agents to query cybersecurity rooms, tasks, and training labs.",
+  },
+  "pdf-mcp": {
+    ru: "MCP-сервер обработки и чтения PDF-документов (mcp-pdf-server) для AI-агентов Claude.",
+    en: "Model Context Protocol server (mcp-pdf-server) enabling AI agents to parse and extract content from PDF documents.",
   },
   "playwright-mcp": {
     ru: "On-demand MCP-сервер браузерной автоматизации Playwright (слушает сокет на порту 8784). В режиме ожидания не тратит оперативную память: прокси автоматически запускает браузерный сервер только в момент реального запроса и выключает его через 5 минут простоя.",
@@ -383,13 +552,17 @@ const PROGRAM_INFO = {
     ru: "Веб-интерфейс OSINT Dashboard в Termux (порт 8080). Позволяет запускать поиск по соцсетям, телефонам и открытым источникам прямо со смартфона.",
     en: "Web-based OSINT Dashboard running in Termux on port 8080. Allows executing social media and intelligence investigations directly on the device.",
   },
-  "beszel-agent": {
-    ru: "Нативный легковесный агент мониторинга Beszel (порт 45876). Собирает аппаратные метрики CPU, RAM, дисков, батареи и температуры устройства.",
-    en: "Native lightweight Beszel monitoring agent (port 45876). Collects CPU, memory, storage, battery level, and thermal metrics.",
-  },
   "termux-sshd": {
     ru: "Защищенный SSH-сервер OpenSSH в Termux (порт 8022). Обеспечивает удаленный доступ и выполнение команд по ed25519-ключам.",
     en: "OpenSSH daemon inside Termux on port 8022. Provides remote shell access and automation using ed25519 public key authentication.",
+  },
+  maigret: {
+    ru: "Мощный OSINT-инструмент Maigret (v0.6.6) в Termux для поиска аккаунтов человека по никнейму более чем на 2500 сайтах с генерацией отчетов.",
+    en: "Maigret OSINT tool (v0.6.6) in Termux collecting username dossiers across 2500+ websites.",
+  },
+  holehe: {
+    ru: "Инструмент Holehe (v1.61) в Termux для проверки регистрации email-адреса на десятках популярных онлайн-сервисов без уведомления владельца.",
+    en: "Holehe email OSINT tool (v1.61) checking registered accounts across online platforms via password recovery endpoints.",
   },
   sherlock: {
     ru: "Утилита поиска аккаунтов по открытым источникам (OSINT). Проверяет заданный никнейм на сотнях сайтов и сервисов.",
@@ -399,9 +572,17 @@ const PROGRAM_INFO = {
     ru: "Инструмент сбора информации о доменах, поддоменах, сотрудниках и почтах из открытых источников и поисковых систем.",
     en: "Information gathering tool for mapping domain emails, names, subdomains, IPs, and URLs from open sources.",
   },
+  telethon: {
+    ru: "Клиентская библиотека и активная сессия Telegram MTProto (Telethon v1.45) для автоматизации OSINT-запросов в Telegram.",
+    en: "Telethon MTProto client session (v1.45) used for automated Telegram OSINT queries.",
+  },
+  "phone-osint": {
+    ru: "Модуль анализа телефонных номеров (phonenumbers / PhoneInfoga) для определения страны, оператора, часового пояса и привязок номера.",
+    en: "Phone number intelligence module (phonenumbers / PhoneInfoga) identifying carrier, region, and OSINT footprints.",
+  },
   "sing-box": {
-    ru: "Универсальный сетевой прокси-клиент sing-box в Termux. Обеспечивает маршрутизацию трафика и сетевые туннели.",
-    en: "Universal proxy client sing-box in Termux. Manages network routing and secure egress tunnels.",
+    ru: "Универсальный сетевой прокси-клиент sing-box в Termux (SOCKS5/HTTP на 127.0.0.1:1080). Обеспечивает маршрутизацию трафика и сетевые туннели. Двойной клик включает или выключает прокси.",
+    en: "Universal proxy client sing-box in Termux (127.0.0.1:1080). Double-click to start or stop the proxy tunnel.",
   },
 };
 
@@ -453,7 +634,7 @@ const DEFAULT_CHECKS_ORDER = [
   "oom_reboot",
 ];
 
-const DEFAULT_CATS_ORDER = ["vpn", "bots", "servers", "utils", "web", "agent", "security", "network", "tools"];
+const DEFAULT_CATS_ORDER = ["vpn", "bots", "servers", "db", "utils", "system", "web", "agent", "security", "network", "tools"];
 
 const DEFAULT_TABS_ORDER = ["overview", "ports", "docker", "net", "updates"];
 
@@ -502,8 +683,13 @@ const state = {
   scanPatchBusy: false,
   seenNotifIds: null,
   activeTabBySystem: {},
-  // Server page: three cards, each with its own tab and collapsed flag.
-  cardTabs: { security: "ports", services: "stack" },
+  // Server page cards state
+  cardTabs: { security: "ports", services: "containers" },
+  servicesPos: localStorage.getItem("bszl_services_pos") || "bottom",
+  containerSearch: "",
+  containerFilter: "all",
+  systemdSearch: "",
+  systemdFilter: "all",
   cardsCollapsed: (() => {
     try {
       return { security: false, services: false, network: false, ...JSON.parse(localStorage.getItem("bszl_cards_collapsed") || "{}") };
@@ -595,6 +781,8 @@ function exitRearrangeMode() {
   closeOpenRadixMenus();
   const panel = document.getElementById("bszl-server-security-panel");
   if (panel) panel.removeAttribute("data-render-key");
+  const svcPanel = document.getElementById("bszl-server-services-panel");
+  if (svcPanel) svcPanel.removeAttribute("data-render-key");
   const gridWrapper = document.querySelector("div.grid.gap-4.mb-14");
   if (gridWrapper) gridWrapper.removeAttribute("data-bszl-applied-layout");
   const menuBox = document.getElementById("bszl-rearrange-menu");
@@ -632,6 +820,8 @@ async function saveServerLayout(sysId, nextLayout, applyToAll = false) {
   persistLayoutsLocally();
   const panel = document.getElementById("bszl-server-security-panel");
   if (panel) panel.removeAttribute("data-render-key");
+  const svcPanel = document.getElementById("bszl-server-services-panel");
+  if (svcPanel) svcPanel.removeAttribute("data-render-key");
   const gridWrapper = document.querySelector("div.grid.gap-4.mb-14");
   if (gridWrapper) gridWrapper.removeAttribute("data-bszl-applied-layout");
   const menuBox = document.getElementById("bszl-rearrange-menu");
@@ -2506,31 +2696,61 @@ function detectNativeChartId(cardEl, fallbackIdx = 0) {
   return id;
 }
 
+function hideNativeDuplicateTables(gridWrapper) {
+  if (!gridWrapper) return;
+  gridWrapper.querySelectorAll("h3, [data-slot='card-title']").forEach((titleEl) => {
+    if (titleEl.closest("#bszl-server-security-panel, #bszl-server-services-panel")) return;
+    const txt = (titleEl.textContent || "").trim().toLowerCase();
+    if (
+      txt.includes("all containers") ||
+      txt.includes("все контейнеры") ||
+      txt.includes("systemd services") ||
+      txt.includes("службы systemd") ||
+      txt.includes("сервисы systemd")
+    ) {
+      const wrapper = titleEl.closest("div.contents") || titleEl.closest(".rounded-lg.border.bg-card");
+      if (wrapper) {
+        wrapper.style.display = "none";
+        wrapper.setAttribute("data-bszl-native-hidden", "1");
+      }
+    }
+  });
+}
+
 function applySystemChartsLayout(sysId) {
   const gridWrapper = document.querySelector("div.grid.gap-4.mb-14");
   if (!gridWrapper) return;
   gridWrapper.setAttribute("data-bszl-sysid", sysId);
   const layout = getServerLayout(sysId);
 
+  hideNativeDuplicateTables(gridWrapper);
+
   const children = Array.from(gridWrapper.children);
   const headerCard = children.find(
-    (el) => el.id !== "bszl-server-security-panel" && !el.classList.contains("xl:grid-cols-2") && !el.classList.contains("contents")
+    (el) =>
+      el.id !== "bszl-server-security-panel" &&
+      el.id !== "bszl-server-services-panel" &&
+      !el.classList.contains("xl:grid-cols-2") &&
+      !el.classList.contains("contents")
   );
   const panelEl = document.getElementById("bszl-server-security-panel");
+  const svcPanelEl = document.getElementById("bszl-server-services-panel");
   const chartsGrid =
     children.find((el) => el.classList.contains("xl:grid-cols-2")) ||
     gridWrapper.querySelector("div.grid.xl\\:grid-cols-2.gap-4");
 
   const chartCardCount = chartsGrid ? chartsGrid.children.length : 0;
-  const layoutKey = `${sysId}:${layout.panelPos}:${layout.chartsOrder.join(",")}:${(layout.hiddenCharts || []).join(",")}:${state.rearrangeMode ? 1 : 0}:${state.lang}:${chartCardCount}`;
+  const layoutKey = `${sysId}:${layout.panelPos}:${state.servicesPos}:${layout.chartsOrder.join(",")}:${(layout.hiddenCharts || []).join(",")}:${state.rearrangeMode ? 1 : 0}:${state.lang}:${chartCardCount}`;
   if (gridWrapper.getAttribute("data-bszl-applied-layout") === layoutKey) {
     normalizeRussianChartTitles();
+    hideNativeDuplicateTables(gridWrapper);
     return;
   }
   gridWrapper.setAttribute("data-bszl-applied-layout", layoutKey);
 
   if (headerCard) headerCard.style.order = "";
   if (panelEl) panelEl.style.order = "";
+  if (svcPanelEl) svcPanelEl.style.order = "";
   if (chartsGrid) chartsGrid.style.order = "";
 
   if (panelEl && headerCard && chartsGrid) {
@@ -2541,6 +2761,19 @@ function applySystemChartsLayout(sysId) {
     } else {
       if (headerCard.nextElementSibling !== panelEl) {
         headerCard.insertAdjacentElement("afterend", panelEl);
+      }
+    }
+  }
+
+  if (svcPanelEl && chartsGrid && panelEl) {
+    if (state.servicesPos === "top") {
+      if (panelEl.nextElementSibling !== svcPanelEl) {
+        panelEl.insertAdjacentElement("afterend", svcPanelEl);
+      }
+    } else {
+      const anchor = layout.panelPos === "bottom" ? panelEl : chartsGrid;
+      if (anchor.nextElementSibling !== svcPanelEl) {
+        anchor.insertAdjacentElement("afterend", svcPanelEl);
       }
     }
   }
@@ -2663,6 +2896,7 @@ function applySystemChartsLayout(sysId) {
     });
   }
   normalizeRussianChartTitles();
+  hideNativeDuplicateTables(gridWrapper);
 }
 
 function enhanceSettings2Menu() {
@@ -2743,7 +2977,9 @@ function enhanceSettings2Menu() {
     vpn: t("catVpn"),
     bots: t("catBots"),
     servers: t("catServers"),
+    db: t("catDb"),
     utils: t("catUtils"),
+    system: t("catSystem"),
     web: t("catWeb"),
     agent: t("catAgent"),
     security: t("catSecurity"),
@@ -2886,6 +3122,8 @@ function enhanceSettings2Menu() {
       closeOpenRadixMenus();
       const p = document.getElementById("bszl-server-security-panel");
       if (p) p.removeAttribute("data-render-key");
+      const sp = document.getElementById("bszl-server-services-panel");
+      if (sp) sp.removeAttribute("data-render-key");
       const gw = document.querySelector("div.grid.gap-4.mb-14");
       if (gw) gw.removeAttribute("data-bszl-applied-layout");
       box.removeAttribute("data-rkey");
@@ -3028,8 +3266,10 @@ function enhanceSettings2Menu() {
 function renderSystemDetailPage() {
   const m = window.location.pathname.match(/\/system\/([^/?#]+)/);
   const existingPanel = document.getElementById("bszl-server-security-panel");
+  const existingSvcPanel = document.getElementById("bszl-server-services-panel");
   if (!m) {
     if (existingPanel) existingPanel.remove();
+    if (existingSvcPanel) existingSvcPanel.remove();
     return;
   }
 
@@ -3044,7 +3284,7 @@ function renderSystemDetailPage() {
     panel = document.createElement("div");
     panel.id = "bszl-server-security-panel";
     const nativeCards = Array.from(gridWrapper.children).filter(
-      (el) => el.id !== "bszl-server-security-panel"
+      (el) => el.id !== "bszl-server-security-panel" && el.id !== "bszl-server-services-panel"
     );
     const firstCard = nativeCards[0];
     if (firstCard && firstCard.nextSibling) {
@@ -3054,7 +3294,15 @@ function renderSystemDetailPage() {
     }
   }
 
+  let svcPanel = document.getElementById("bszl-server-services-panel");
+  if (!svcPanel) {
+    svcPanel = document.createElement("div");
+    svcPanel.id = "bszl-server-services-panel";
+    gridWrapper.appendChild(svcPanel);
+  }
+
   panel.className = "bszl-cards-stack";
+  svcPanel.className = "bszl-cards-stack";
   applySystemChartsLayout(sysId);
 
   if (!rep) return;
@@ -3064,25 +3312,27 @@ function renderSystemDetailPage() {
   const pendingCount = up.pending_count || 0;
   const up24hCount = up.upgraded_24h_count || 0;
   const dockerStorage = rep.docker_storage || {};
-  const dockerContainers = Array.isArray(dockerStorage.containers_io)
+  const rawDockerContainers = Array.isArray(dockerStorage.containers_io)
     ? dockerStorage.containers_io
     : Array.isArray(up.docker?.containers)
     ? up.docker.containers
     : [];
+  const allContainers = Array.isArray(rep.all_containers) && rep.all_containers.length > 0
+    ? rep.all_containers
+    : rawDockerContainers;
+  const systemdServices = Array.isArray(rep.systemd_services) ? rep.systemd_services : [];
   const stack = rep.stack || { total: 0, running: 0, items: [] };
   const stackItems = stack.items || [];
   const hasDocker = Boolean(
-    dockerContainers.length > 0 ||
+    allContainers.length > 0 ||
     (dockerStorage.total_containers && dockerStorage.total_containers > 0) ||
     stackItems.some((i) => i.type === "docker")
   );
+  const hasSystemd = systemdServices.length > 0;
   const hasUpdates = Boolean(
     pendingCount > 0 || up24hCount > 0 || (up.packages && up.packages.length > 0)
   );
 
-  // --- Three cards: Security / Services / Network --------------------------
-  // The wrapper (#bszl-server-security-panel) keeps all event bindings below
-  // working; each card inside has its own header, tabs and collapse button.
   const isEn = state.lang === "en";
   const isChecking = state.loadingSystem === `${sysId}:check`;
   const fb = state.portFeedback[sysId];
@@ -3091,12 +3341,18 @@ function renderSystemDetailPage() {
     : null;
   const showUpdatesTab = hasUpdates || Boolean(up.pkg_manager && up.pkg_manager.includes("apt"));
   const secTab = state.cardTabs.security === "updates" && showUpdatesTab ? "updates" : "ports";
-  const svcTab = state.cardTabs.services === "docker" ? "docker" : "stack";
+
+  let svcBottomTab = state.cardTabs.services || "containers";
+  if (svcBottomTab === "containers" && !hasDocker && hasSystemd) svcBottomTab = "systemd";
+  else if (svcBottomTab === "containers" && !hasDocker && !hasSystemd) svcBottomTab = "disk";
+  else if (svcBottomTab === "systemd" && !hasSystemd) svcBottomTab = hasDocker ? "containers" : "disk";
+
   const collapsed = state.cardsCollapsed;
 
-  const renderKey = `${sysId}:${rep.checked_at_iso}:${secTab}:${svcTab}:${JSON.stringify(collapsed)}:${state.checksShowAll ? 1 : 0}:${state.loadingSystem}:${state.portBusyKey}:${state.serviceBusyKey || ""}:${state.configBusyKey || ""}:${state.lang}:${state.rearrangeMode ? 1 : 0}:${fb?.ts || 0}:${stackItems.length}:${selectedItem?.id || ""}:${hasDocker ? 1 : 0}:${JSON.stringify(layout)}`;
-  if (panel.getAttribute("data-render-key") === renderKey) return;
+  const renderKey = `${sysId}:${rep.checked_at_iso}:${secTab}:${svcBottomTab}:${state.servicesPos}:${state.containerFilter}:${state.systemdFilter}:${JSON.stringify(collapsed)}:${state.checksShowAll ? 1 : 0}:${state.loadingSystem}:${state.portBusyKey}:${state.serviceBusyKey || ""}:${state.configBusyKey || ""}:${state.lang}:${state.rearrangeMode ? 1 : 0}:${fb?.ts || 0}:${stackItems.length}:${allContainers.length}:${systemdServices.length}:${selectedItem?.id || ""}:${hasDocker ? 1 : 0}:${JSON.stringify(layout)}`;
+  if (panel.getAttribute("data-render-key") === renderKey && svcPanel.getAttribute("data-render-key") === renderKey) return;
   panel.setAttribute("data-render-key", renderKey);
+  svcPanel.setAttribute("data-render-key", renderKey);
 
   const allChecks = getExtendedChecksList(rep);
   const passedCount = allChecks.filter((c) => c.status === "ok").length;
@@ -3106,6 +3362,7 @@ function renderSystemDetailPage() {
   const fwRules = fwCheck?.metrics?.rules || [];
   const netInfo = rep.network_health || rep.network || {};
   const allOk = passedCount === allChecks.length;
+  const svcRunning = stackItems.filter((i) => i.status === "running" || i.status === "ondemand").length;
 
   const cardHeader = (cardId, iconSvg, title, metaHtml, actionsHtml = "") => `
     <div class="bszl-card-hdr">
@@ -3228,6 +3485,10 @@ function renderSystemDetailPage() {
   `;
 
   const secActionsHtml = `
+    <button type="button" id="bszl-btn-jump-services" class="bszl-icon-btn" title="${isEn ? "Jump to unified Services, Containers & Systemd panel" : "Перейти к объединенному блоку Сервисы, Контейнеры и Systemd"}">
+      ${ICONS.procMemory}
+      <span>${isEn ? "Services" : "Сервисы"} (${svcRunning}/${stackItems.length}) ${state.servicesPos === "bottom" ? "↓" : "↑"}</span>
+    </button>
     <button type="button" id="bszl-btn-srv-rearrange" class="bszl-icon-btn ${state.rearrangeMode ? "is-active" : ""}" title="${escapeHtml(t("rearrangeTitle"))}">
       ${ICONS.sliders}
       <span>${state.rearrangeMode ? escapeHtml(t("rearrangeDone")) : isEn ? "Rearrange" : "Сортировка"}</span>
@@ -3459,9 +3720,6 @@ function renderSystemDetailPage() {
     const vulnInfo = rep.vulnerabilities || up.vulnerabilities || {};
     const patchedCvesCount = (vulnInfo.patched_cves || []).length;
 
-    // CVE auto-patch and auto-rollback can't be switched off in the current
-    // agent (the config keys are stored but never read), so they are shown as
-    // plain facts instead of toggles.
     secBodyHtml = `
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
@@ -3522,12 +3780,14 @@ function renderSystemDetailPage() {
     </section>
   `;
 
-  // ===== Card 2: Services ====================================================
+  // ===== Card 2: Unified Services, All Containers & Systemd Services ==========
   const catDefsMap = {
     vpn: { id: "vpn", title: t("catVpn"), icon: ICONS.sshLock },
     bots: { id: "bots", title: t("catBots"), icon: ICONS.procMemory },
     servers: { id: "servers", title: t("catServers"), icon: ICONS.kernelDisk },
+    db: { id: "db", title: t("catDb"), icon: ICONS.kernelDisk },
     utils: { id: "utils", title: t("catUtils"), icon: ICONS.shield },
+    system: { id: "system", title: t("catSystem"), icon: ICONS.cronClock },
     web: { id: "web", title: t("catWeb"), icon: ICONS.gauge },
     agent: { id: "agent", title: t("catAgent"), icon: ICONS.radarPorts },
     security: { id: "security", title: t("catSecurity"), icon: ICONS.sshLock },
@@ -3617,40 +3877,213 @@ function renderSystemDetailPage() {
   const disk = rep.disk || {};
   const diskPct = disk.used_pct ?? 0;
   const agCfg = rep.agent_config || { auto_docker_update: true };
+  const df = dockerStorage.df || dockerStorage || {};
+  const inodesPct = disk.inodes_pct ?? 0;
+  const estDays = disk.est_days_left ?? 365;
+  const growthMb = disk.growth_mb_day ?? 0;
+  const imgInfo = df.images || { total: 0, active: 0, size: "0B", reclaimable: "0B" };
+  const cntInfo = df.containers || { total: 0, active: 0, size: "0B", reclaimable: "0B" };
+  const volInfo = df.volumes || { total: 0, active: 0, size: "0B", reclaimable: "0B" };
+  const bcInfo = df.build_cache || { total: 0, active: 0, size: "0B", reclaimable: "0B" };
+  const dockerInfo = up.docker || {};
 
-  let svcBodyHtml = "";
-  if (svcTab === "stack") {
-    svcBodyHtml = stackCatsHtml
-      ? `<div class="bszl-stack-grid">${stackCatsHtml}</div>`
-      : `<div class="bszl-card-empty">${isEn ? "No known services detected on this server" : "Известных сервисов на этом сервере не найдено"}</div>`;
-  } else {
-    const df = dockerStorage.df || dockerStorage || {};
-    const inodesPct = disk.inodes_pct ?? 0;
-    const estDays = disk.est_days_left ?? 365;
-    const growthMb = disk.growth_mb_day ?? 0;
-    const imgInfo = df.images || { total: 0, active: 0, size: "0B", reclaimable: "0B" };
-    const cntInfo = df.containers || { total: 0, active: 0, size: "0B", reclaimable: "0B" };
-    const volInfo = df.volumes || { total: 0, active: 0, size: "0B", reclaimable: "0B" };
-    const bcInfo = df.build_cache || { total: 0, active: 0, size: "0B", reclaimable: "0B" };
-    const dockerInfo = up.docker || {};
+  // Build Bottom Unified Tab Content (All Containers / Systemd Services / Disk & Storage)
+  let bottomTabBodyHtml = "";
+  if (svcBottomTab === "containers") {
+    const cntFilter = state.containerFilter || "all";
+    const cntQuery = (state.containerSearch || "").trim().toLowerCase();
+    const isCntRunning = (c) => {
+      const st = String(c.state || c.status || "running").toLowerCase();
+      return !st.includes("exit") && !st.includes("dead") && !st.includes("stop");
+    };
+    const cntRunTotal = allContainers.filter(isCntRunning).length;
+    const cntStopTotal = allContainers.length - cntRunTotal;
 
-    const containerRowsHtml = dockerContainers.length
-      ? dockerContainers
-          .map(
-            (c) => `
-          <tr>
-            <td style="font-weight:600;">${escapeHtml(c.name)}</td>
-            <td style="font-family:monospace;font-size:11.5px;opacity:0.8;">${escapeHtml(c.image || "-")}</td>
-            <td style="font-family:monospace;">${escapeHtml(c.cpu || c.cpu_pct || "0.0%")}</td>
-            <td style="font-family:monospace;">${escapeHtml(c.mem || c.mem_usage || "-")}</td>
-            <td style="font-family:monospace;font-size:11.5px;color:#10b981;">${escapeHtml(c.block_io || "0B / 0B")}</td>
-            <td style="font-family:monospace;font-size:11.5px;color:#3b82f6;">${escapeHtml(c.net_io || "0B / 0B")}</td>
-            <td><span class="bszl-pill ${c.state === "exited" ? "bszl-pill--warn" : "bszl-pill--ok"}" style="padding:1px 6px;font-size:10px;">${escapeHtml(c.status || "Up")}</span></td>
-          </tr>`
-          )
+    const filteredContainers = allContainers.filter((c) => {
+      const running = isCntRunning(c);
+      if (cntFilter === "running" && !running) return false;
+      if (cntFilter === "stopped" && running) return false;
+      return true;
+    });
+
+    const containerRowsHtml = filteredContainers.length
+      ? filteredContainers
+          .map((c) => {
+            const running = isCntRunning(c);
+            const searchTxt = `${c.name || ""} ${c.image || ""} ${c.ports || ""} ${c.status || ""}`.toLowerCase();
+            const hideRow = cntQuery && !searchTxt.includes(cntQuery);
+            const svcKey = `docker:${c.name}`;
+            const isBusy = state.serviceBusyKey === `${sysId}:${svcKey}`;
+            const hLabel = c.health_label || (typeof c.health === "string" ? c.health : "none");
+            const healthBadge =
+              hLabel && hLabel !== "none"
+                ? `<span class="bszl-chip" style="font-size:10px;padding:1px 5px;margin-left:4px;">${escapeHtml(hLabel)}</span>`
+                : "";
+            const cpuDisp = c.cpu_str || (typeof c.cpu === "number" ? `${c.cpu.toFixed(2)}%` : c.cpu || c.cpu_pct || "0.0%");
+            const memDisp = c.mem_str || c.mem || c.mem_usage || (c.memory_mb ? `${c.memory_mb} MB` : "-");
+            return `
+          <tr data-search-text="${escapeHtml(searchTxt)}" style="${hideRow ? "display:none;" : ""}">
+            <td style="font-weight:600;white-space:nowrap;">
+              <span style="display:inline-flex;align-items:center;gap:6px;">
+                <span class="bszl-dot ${running ? "bszl-dot--ok" : "bszl-dot--crit"}"></span>
+                <span>${escapeHtml(c.name)}</span>
+              </span>
+            </td>
+            <td style="font-family:monospace;font-size:11.5px;opacity:0.82;">${escapeHtml(c.image || "-")}</td>
+            <td style="font-family:monospace;font-size:11px;opacity:0.78;">${escapeHtml(c.ports || "—")}</td>
+            <td style="font-family:monospace;">${escapeHtml(cpuDisp)}</td>
+            <td style="font-family:monospace;">${escapeHtml(memDisp)}</td>
+            <td style="font-family:monospace;font-size:11.5px;color:#10b981;">${escapeHtml(c.block_io || "—")}</td>
+            <td style="font-family:monospace;font-size:11.5px;color:#3b82f6;">${escapeHtml(c.net_io || "—")}</td>
+            <td>
+              <span class="bszl-pill ${running ? "bszl-pill--ok" : "bszl-pill--warn"}" style="padding:1px 6px;font-size:10px;">${escapeHtml(c.status || (running ? "Up" : "Exited"))}</span>${healthBadge}
+            </td>
+            <td style="text-align:right;white-space:nowrap;">
+              <div class="bszl-row-actions" style="justify-content:flex-end;">
+                <button type="button" class="bszl-svc-log-btn js-svc-logs" data-log-id="${escapeHtml(svcKey)}" data-log-name="${escapeHtml(c.name)}" title="${isEn ? "Container logs" : "Логи контейнера"}">&gt;_</button>
+                <button type="button" class="bszl-act-btn ${running ? "bszl-act-btn--close" : "bszl-act-btn--open"} js-row-svc-toggle" style="height:22px;padding:0 7px;font-size:0.68rem;" data-svc-id="${escapeHtml(svcKey)}" data-svc-name="${escapeHtml(c.name)}" ${state.serviceBusyKey ? "disabled" : ""}>
+                  ${isBusy ? "..." : running ? (isEn ? "Stop" : "Стоп") : isEn ? "Start" : "Старт"}
+                </button>
+              </div>
+            </td>
+          </tr>`;
+          })
           .join("")
-      : `<tr><td colspan="7" style="text-align:center;opacity:0.65;padding:12px;">${isEn ? "No running containers" : "Нет запущенных контейнеров"}</td></tr>`;
+      : `<tr><td colspan="9" style="text-align:center;opacity:0.65;padding:14px;">${isEn ? "No matching containers" : "Контейнеры не найдены"}</td></tr>`;
 
+    bottomTabBodyHtml = `
+      <div class="bszl-svc-toolbar">
+        <div class="bszl-svc-filter-group">
+          <input type="text" id="bszl-inp-cnt-search" class="bszl-svc-search" placeholder="${isEn ? "Filter containers by name, image, port..." : "Поиск по контейнерам, образам, портам..."}" value="${escapeHtml(state.containerSearch || "")}" />
+          <button type="button" class="bszl-filter-pill ${cntFilter === "all" ? "is-active" : ""} js-cnt-filter" data-cfilter="all">${isEn ? "All" : "Все"} (${allContainers.length})</button>
+          <button type="button" class="bszl-filter-pill ${cntFilter === "running" ? "is-active" : ""} js-cnt-filter" data-cfilter="running">${isEn ? "Running" : "Работают"} (${cntRunTotal})</button>
+          ${cntStopTotal > 0 ? `<button type="button" class="bszl-filter-pill ${cntFilter === "stopped" ? "is-active" : ""} js-cnt-filter" data-cfilter="stopped">${isEn ? "Stopped" : "Остановлены"} (${cntStopTotal})</button>` : ""}
+        </div>
+        <div class="bszl-svc-filter-group">
+          <button type="button" class="bszl-pill ${agCfg.auto_docker_update ? "bszl-pill--ok" : "bszl-pill--warn"} js-agent-cfg-toggle" data-cfg-key="auto_docker_update" data-cfg-val="${agCfg.auto_docker_update ? "0" : "1"}" style="cursor:pointer;" title="${isEn ? "Pull new images for compose containers during the nightly run" : "Обновлять образы compose-контейнеров при ночном запуске"}">
+            <span class="bszl-dot ${agCfg.auto_docker_update ? "bszl-dot--ok" : "bszl-dot--warn"}"></span>
+            <span>${isEn ? "Auto-update" : "Автообновление"}: ${agCfg.auto_docker_update ? "ON" : "OFF"}</span>
+          </button>
+          <button type="button" id="bszl-btn-docker-update" class="bszl-icon-btn" ${state.loadingSystem ? "disabled" : ""}>
+            ${ICONS.sync(state.loadingSystem === `${sysId}:docker_update`)}
+            <span>${isEn ? "Update containers" : "Обновить контейнеры"}</span>
+          </button>
+          ${
+            dockerInfo.rollback_available
+              ? `<button type="button" id="bszl-btn-docker-rollback" class="bszl-icon-btn" ${state.loadingSystem ? "disabled" : ""}><span>${isEn ? "Roll back" : "Откатить"}</span></button>`
+              : ""
+          }
+          <button type="button" id="bszl-btn-docker-prune" class="bszl-icon-btn" ${state.loadingSystem ? "disabled" : ""}>
+            ${ICONS.sync(state.loadingSystem === `${sysId}:docker_prune`)}
+            <span>${escapeHtml(t("pruneDockerBtn"))}</span>
+          </button>
+        </div>
+      </div>
+      <div class="bszl-table-wrap bszl-table-wrap--tall" id="bszl-cnt-table-wrap">
+        <table class="bszl-mini-table">
+          <thead><tr>
+            <th>${isEn ? "Container" : "Контейнер"}</th>
+            <th>${isEn ? "Image" : "Образ"}</th>
+            <th>${isEn ? "Ports" : "Порты"}</th>
+            <th>CPU</th>
+            <th>RAM</th>
+            <th>Block I/O</th>
+            <th>Net I/O</th>
+            <th>${isEn ? "Status" : "Статус"}</th>
+            <th style="text-align:right;">${isEn ? "Actions" : "Действия"}</th>
+          </tr></thead>
+          <tbody>${containerRowsHtml}</tbody>
+        </table>
+      </div>
+    `;
+  } else if (svcBottomTab === "systemd") {
+    const sysdFilter = state.systemdFilter || "all";
+    const sysdQuery = (state.systemdSearch || "").trim().toLowerCase();
+    const getStLbl = (s) => String(s.state_label || s.state || "active").toLowerCase();
+    const getSubLbl = (s) => String(s.sub_label || s.sub || "running").toLowerCase();
+    const sysdRunTotal = systemdServices.filter((s) => getSubLbl(s) === "running").length;
+    const sysdExitedTotal = systemdServices.filter((s) => getSubLbl(s) === "exited" || getSubLbl(s).includes("on-demand")).length;
+    const sysdFailedTotal = systemdServices.filter((s) => getStLbl(s) === "failed" || getSubLbl(s) === "failed").length;
+
+    const filteredSystemd = systemdServices.filter((s) => {
+      const stL = getStLbl(s);
+      const subL = getSubLbl(s);
+      if (sysdFilter === "running" && subL !== "running") return false;
+      if (sysdFilter === "exited" && subL !== "exited" && !subL.includes("on-demand")) return false;
+      if (sysdFilter === "failed" && stL !== "failed" && subL !== "failed") return false;
+      return true;
+    });
+
+    const systemdRowsHtml = filteredSystemd.length
+      ? filteredSystemd
+          .map((s) => {
+            const stL = getStLbl(s);
+            const subL = getSubLbl(s);
+            const isRun = subL === "running";
+            const isFail = stL === "failed" || subL === "failed";
+            const isActive = stL === "active" || isRun || subL === "exited";
+            const dotCls = isFail ? "bszl-dot--crit" : isRun ? "bszl-dot--ok" : subL === "exited" || subL.includes("on-demand") ? "bszl-dot--ondemand" : "bszl-dot--warn";
+            const pillCls = isFail ? "bszl-pill--crit" : isRun ? "bszl-pill--ok" : "bszl-pill--warn";
+            const searchTxt = `${s.name || ""} ${stL} ${subL}`.toLowerCase();
+            const hideRow = sysdQuery && !searchTxt.includes(sysdQuery);
+            const svcKey = s.unit_id || `systemd:${s.name}`;
+            const isBusy = state.serviceBusyKey === `${sysId}:${svcKey}`;
+            const memMb = s.memory_mb ?? s.mem_mb ?? 0;
+            const memPeakMb = s.mem_peak_mb ?? 0;
+            return `
+          <tr data-search-text="${escapeHtml(searchTxt)}" style="${hideRow ? "display:none;" : ""}">
+            <td style="font-weight:600;font-family:monospace;">
+              <span style="display:inline-flex;align-items:center;gap:6px;">
+                <span class="bszl-dot ${dotCls}"></span>
+                <span>${escapeHtml(s.name)}</span>
+              </span>
+            </td>
+            <td><span class="bszl-pill ${pillCls}" style="padding:1px 6px;font-size:10px;">${escapeHtml(stL)}</span></td>
+            <td><span class="bszl-chip" style="font-family:monospace;font-size:10.5px;">${escapeHtml(subL)}</span></td>
+            <td style="font-family:monospace;">${Number(s.cpu || 0).toFixed(2)}%</td>
+            <td style="font-family:monospace;opacity:0.78;">${Number(s.cpu_peak || 0).toFixed(2)}%</td>
+            <td style="font-family:monospace;">${Number(memMb).toFixed(1)} MB</td>
+            <td style="font-family:monospace;opacity:0.78;">${Number(memPeakMb).toFixed(1)} MB</td>
+            <td style="text-align:right;white-space:nowrap;">
+              <div class="bszl-row-actions" style="justify-content:flex-end;">
+                <button type="button" class="bszl-svc-log-btn js-svc-logs" data-log-id="${escapeHtml(svcKey)}" data-log-name="${escapeHtml(s.name)}" title="${isEn ? "Service logs" : "Логи службы"}">&gt;_</button>
+                <button type="button" class="bszl-act-btn ${isActive ? "bszl-act-btn--close" : "bszl-act-btn--open"} js-row-svc-toggle" style="height:22px;padding:0 7px;font-size:0.68rem;" data-svc-id="${escapeHtml(svcKey)}" data-svc-name="${escapeHtml(s.name)}" ${state.serviceBusyKey ? "disabled" : ""}>
+                  ${isBusy ? "..." : isActive ? (isEn ? "Stop" : "Стоп") : isEn ? "Start" : "Старт"}
+                </button>
+              </div>
+            </td>
+          </tr>`;
+          })
+          .join("")
+      : `<tr><td colspan="8" style="text-align:center;opacity:0.65;padding:14px;">${isEn ? "No matching systemd services" : "Службы systemd не найдены"}</td></tr>`;
+
+    bottomTabBodyHtml = `
+      <div class="bszl-svc-toolbar">
+        <div class="bszl-svc-filter-group">
+          <input type="text" id="bszl-inp-sysd-search" class="bszl-svc-search" placeholder="${isEn ? "Filter systemd services by name or state..." : "Поиск службы systemd по имени или статусу..."}" value="${escapeHtml(state.systemdSearch || "")}" />
+          <button type="button" class="bszl-filter-pill ${sysdFilter === "all" ? "is-active" : ""} js-sysd-filter" data-sfilter="all">${isEn ? "All" : "Все"} (${systemdServices.length})</button>
+          <button type="button" class="bszl-filter-pill ${sysdFilter === "running" ? "is-active" : ""} js-sysd-filter" data-sfilter="running">Running (${sysdRunTotal})</button>
+          <button type="button" class="bszl-filter-pill ${sysdFilter === "exited" ? "is-active" : ""} js-sysd-filter" data-sfilter="exited">Exited (${sysdExitedTotal})</button>
+          ${sysdFailedTotal > 0 ? `<button type="button" class="bszl-filter-pill ${sysdFilter === "failed" ? "is-active" : ""} js-sysd-filter" data-sfilter="failed">Failed (${sysdFailedTotal})</button>` : ""}
+        </div>
+      </div>
+      <div class="bszl-table-wrap bszl-table-wrap--tall" id="bszl-sysd-table-wrap">
+        <table class="bszl-mini-table">
+          <thead><tr>
+            <th>${isEn ? "Service" : "Служба"}</th>
+            <th>${isEn ? "State" : "Состояние"}</th>
+            <th>SubState</th>
+            <th>CPU</th>
+            <th>${isEn ? "CPU Peak" : "Пик CPU"}</th>
+            <th>RAM</th>
+            <th>${isEn ? "RAM Peak" : "Пик RAM"}</th>
+            <th style="text-align:right;">${isEn ? "Actions" : "Действия"}</th>
+          </tr></thead>
+          <tbody>${systemdRowsHtml}</tbody>
+        </table>
+      </div>
+    `;
+  } else {
     const diskKpiHtml = `
       <div class="bszl-kpi-card">
         <div class="bszl-kpi-hdr">
@@ -3692,82 +4125,93 @@ function renderSystemDetailPage() {
       </div>`
       : "";
 
-    svcBodyHtml = `
+    bottomTabBodyHtml = `
       <div class="bszl-kpi-grid" style="margin-bottom:10px;">${diskKpiHtml}${dockerKpiHtml}</div>
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-          ${
-            hasDocker
-              ? `<button type="button" class="bszl-pill ${agCfg.auto_docker_update ? "bszl-pill--ok" : "bszl-pill--warn"} js-agent-cfg-toggle" data-cfg-key="auto_docker_update" data-cfg-val="${agCfg.auto_docker_update ? "0" : "1"}" style="cursor:pointer;" title="${isEn ? "Pull new images for compose containers during the nightly run" : "Обновлять образы compose-контейнеров при ночном запуске"}">
-              <span class="bszl-dot ${agCfg.auto_docker_update ? "bszl-dot--ok" : "bszl-dot--warn"}"></span>
-              <span>${isEn ? "Docker auto-update" : "Автообновление Docker"}: ${agCfg.auto_docker_update ? "ON" : "OFF"}</span>
-            </button>`
-              : ""
-          }
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-          ${
-            hasDocker
-              ? `<button type="button" id="bszl-btn-docker-update" class="bszl-icon-btn" ${state.loadingSystem ? "disabled" : ""}>
-              ${ICONS.sync(state.loadingSystem === `${sysId}:docker_update`)}
-              <span>${isEn ? "Update containers" : "Обновить контейнеры"}</span>
-            </button>
-            ${
-              dockerInfo.rollback_available
-                ? `<button type="button" id="bszl-btn-docker-rollback" class="bszl-icon-btn" ${state.loadingSystem ? "disabled" : ""}><span>${isEn ? "Roll back containers" : "Откатить контейнеры"}</span></button>`
-                : ""
-            }
-            <button type="button" id="bszl-btn-docker-prune" class="bszl-icon-btn" ${state.loadingSystem ? "disabled" : ""}>
-              ${ICONS.sync(state.loadingSystem === `${sysId}:docker_prune`)}
-              <span>${escapeHtml(t("pruneDockerBtn"))}</span>
-            </button>`
-              : ""
-          }
-          <button type="button" id="bszl-btn-disk-cleanup" class="bszl-icon-btn" ${state.loadingSystem ? "disabled" : ""}>
-            ${ICONS.sync(state.loadingSystem === `${sysId}:disk_cleanup`)}
-            <span>${isEn ? `Clean disk (${diskPct}%)` : `Очистить диск (${diskPct}%)`}</span>
-          </button>
-        </div>
+      <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap;">
+        ${
+          hasDocker
+            ? `<button type="button" id="bszl-btn-docker-prune" class="bszl-icon-btn" ${state.loadingSystem ? "disabled" : ""}>
+                ${ICONS.sync(state.loadingSystem === `${sysId}:docker_prune`)}
+                <span>${escapeHtml(t("pruneDockerBtn"))}</span>
+              </button>`
+            : ""
+        }
+        <button type="button" id="bszl-btn-disk-cleanup" class="bszl-icon-btn" ${state.loadingSystem ? "disabled" : ""}>
+          ${ICONS.sync(state.loadingSystem === `${sysId}:disk_cleanup`)}
+          <span>${isEn ? `Clean disk (${diskPct}%)` : `Очистить диск (${diskPct}%)`}</span>
+        </button>
       </div>
-      ${
-        hasDocker
-          ? `<div class="bszl-table-wrap">
-          <table class="bszl-mini-table">
-            <thead><tr>
-              <th>${isEn ? "Container" : "Контейнер"}</th><th>${isEn ? "Image" : "Образ"}</th><th>CPU</th><th>RAM</th>
-              <th>Block I/O (R / W)</th><th>Net I/O (RX / TX)</th><th>${isEn ? "Status" : "Статус"}</th>
-            </tr></thead>
-            <tbody>${containerRowsHtml}</tbody>
-          </table>
-        </div>`
-          : ""
-      }
     `;
   }
 
-  const svcRunning = stackItems.filter((i) => i.status === "running" || i.status === "ondemand").length;
-  const svcTabs = [{ id: "stack", label: `${isEn ? "Programs" : "Программы"} (${svcRunning}/${stackItems.length})` }];
-  svcTabs.push({
-    id: "docker",
-    label: hasDocker ? `${isEn ? "Docker & disk" : "Docker и диск"} (${dockerContainers.length})` : isEn ? "Disk" : "Диск",
+  const svcBottomTabs = [];
+  if (hasDocker) {
+    svcBottomTabs.push({
+      id: "containers",
+      label: `${isEn ? "All Containers" : "Все контейнеры"} (${allContainers.length})`,
+    });
+  }
+  if (hasSystemd) {
+    svcBottomTabs.push({
+      id: "systemd",
+      label: `${isEn ? "Systemd Services" : "Службы systemd"} (${systemdServices.length})`,
+    });
+  }
+  svcBottomTabs.push({
+    id: "disk",
+    label: `${isEn ? "Disk & Storage" : "Диск и хранилище"} (${diskPct}%)`,
   });
+
+  const svcMetaChipsHtml = `
+    ${
+      stackItems.length
+        ? `<span class="bszl-chip"><span class="bszl-dot ${svcRunning === stackItems.length ? "bszl-dot--ok" : "bszl-dot--warn"}"></span><span>${svcRunning}/${stackItems.length} ${isEn ? "programs" : "программ"}</span></span>`
+        : ""
+    }
+    ${
+      hasDocker
+        ? `<span class="bszl-chip">🐳 ${allContainers.length} ${isEn ? "containers" : "контейнеров"}</span>`
+        : ""
+    }
+    ${
+      hasSystemd
+        ? `<span class="bszl-chip">⚙️ ${systemdServices.length} systemd</span>`
+        : ""
+    }
+  `;
+
+  const svcActionsHtml = `
+    <button type="button" id="bszl-btn-svc-pos" class="bszl-icon-btn" title="${isEn ? "Move Services card above or below charts" : "Переместить блок Сервисов над графиками или под графики"}">
+      <span>${
+        state.servicesPos === "top"
+          ? isEn ? "↓ Below charts" : "↓ Под графики"
+          : isEn ? "↑ Above charts" : "↑ Над графиками"
+      }</span>
+    </button>
+  `;
 
   const servicesCardHtml = `
     <section class="bszl-card ${collapsed.services ? "is-collapsed" : ""}" data-card="services">
       ${cardHeader(
         "services",
         ICONS.procMemory,
-        isEn ? "Services" : "Сервисы",
-        stackItems.length
-          ? `<span class="bszl-chip"><span class="bszl-dot ${svcRunning === stackItems.length ? "bszl-dot--ok" : "bszl-dot--warn"}"></span><span>${svcRunning}/${stackItems.length} ${isEn ? "running" : "работают"}</span></span>`
-          : ""
+        isEn ? "Services, Containers & Systemd" : "Сервисы, контейнеры и службы systemd",
+        svcMetaChipsHtml,
+        svcActionsHtml
       )}
       ${
         collapsed.services
           ? ""
           : `<div class="bszl-card-body">
-              ${tabsBar("services", svcTabs, svcTab)}
-              <div class="bszl-card-tab-body">${svcBodyHtml}</div>
+              ${
+                stackCatsHtml
+                  ? `<div class="bszl-stack-grid">${stackCatsHtml}</div>`
+                  : `<div class="bszl-card-empty">${isEn ? "No known services detected on this server" : "Известных сервисов на этом сервере не найдено"}</div>`
+              }
+              <div class="bszl-svc-unified-bottom">
+                ${tabsBar("services", svcBottomTabs, svcBottomTab)}
+                <div class="bszl-card-tab-body">${bottomTabBodyHtml}</div>
+              </div>
             </div>`
       }
     </section>
@@ -3899,20 +4343,61 @@ function renderSystemDetailPage() {
     </section>
   `;
 
-  const showServicesCard = stackItems.length > 0 || hasDocker || Boolean(rep.disk);
-  // Termux/Lineage reports carry no network block: no card rather than a card of zeros.
+  const showServicesCard = stackItems.length > 0 || hasDocker || hasSystemd || Boolean(rep.disk);
   const showNetworkCard = hasDomains || Object.keys(netInfo).length > 0;
 
   panel.innerHTML = `
     ${rearrangeBannerHtml}
     ${securityCardHtml}
-    ${showServicesCard ? servicesCardHtml : ""}
     ${showNetworkCard ? networkCardHtml : ""}
   `;
 
+  svcPanel.innerHTML = showServicesCard ? servicesCardHtml : "";
+  svcPanel.style.display = showServicesCard ? "" : "none";
+
+  const roots = [panel, svcPanel];
+  const qOne = (sel) => panel.querySelector(sel) || svcPanel.querySelector(sel);
+  const qAll = (sel) => [...panel.querySelectorAll(sel), ...svcPanel.querySelectorAll(sel)];
+  const invalidateRenderKeys = () => {
+    panel.removeAttribute("data-render-key");
+    svcPanel.removeAttribute("data-render-key");
+  };
+
   bindHeaderButtons(panel, sysId);
 
-  panel.querySelectorAll(".js-card-collapse").forEach((btn) => {
+  const btnJumpServices = qOne("#bszl-btn-jump-services");
+  if (btnJumpServices) {
+    btnJumpServices.onclick = (e) => {
+      e.preventDefault();
+      if (state.cardsCollapsed.services) {
+        state.cardsCollapsed.services = false;
+        try {
+          localStorage.setItem("bszl_cards_collapsed", JSON.stringify(state.cardsCollapsed));
+        } catch (err) {}
+        invalidateRenderKeys();
+        renderSystemDetailPage();
+      }
+      svcPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+  }
+
+  const btnSvcPos = qOne("#bszl-btn-svc-pos");
+  if (btnSvcPos) {
+    btnSvcPos.onclick = (e) => {
+      e.preventDefault();
+      state.servicesPos = state.servicesPos === "top" ? "bottom" : "top";
+      try {
+        localStorage.setItem("bszl_services_pos", state.servicesPos);
+      } catch (err) {}
+      invalidateRenderKeys();
+      const gw = document.querySelector("div.grid.gap-4.mb-14");
+      if (gw) gw.removeAttribute("data-bszl-applied-layout");
+      renderSystemDetailPage();
+      svcPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    };
+  }
+
+  qAll(".js-card-collapse").forEach((btn) => {
     btn.onclick = (e) => {
       e.preventDefault();
       const cardId = btn.getAttribute("data-card");
@@ -3920,12 +4405,12 @@ function renderSystemDetailPage() {
       try {
         localStorage.setItem("bszl_cards_collapsed", JSON.stringify(state.cardsCollapsed));
       } catch (err) {}
-      panel.removeAttribute("data-render-key");
+      invalidateRenderKeys();
       renderSystemDetailPage();
     };
   });
 
-  const btnToggleChecks = panel.querySelector("#bszl-btn-toggle-checks");
+  const btnToggleChecks = qOne("#bszl-btn-toggle-checks");
   if (btnToggleChecks) {
     btnToggleChecks.onclick = (e) => {
       e.preventDefault();
@@ -3933,42 +4418,98 @@ function renderSystemDetailPage() {
       try {
         localStorage.setItem("bszl_checks_all", state.checksShowAll ? "1" : "0");
       } catch (err) {}
-      panel.removeAttribute("data-render-key");
+      invalidateRenderKeys();
       renderAll();
     };
   }
 
-  const btnOpenNotifs = panel.querySelector("#bszl-btn-open-notifs");
+  const btnOpenNotifs = qOne("#bszl-btn-open-notifs");
   if (btnOpenNotifs) {
     btnOpenNotifs.onclick = () => toggleNotificationsPage(true, sysId);
   }
 
-  const btnDockerPrune = panel.querySelector("#bszl-btn-docker-prune");
+  const btnDockerPrune = qOne("#bszl-btn-docker-prune");
   if (btnDockerPrune) {
     btnDockerPrune.onclick = () => triggerAudit(sysId, "docker_prune");
   }
 
-  const btnRunSpeedtest = panel.querySelector("#bszl-btn-run-speedtest");
+  const btnRunSpeedtest = qOne("#bszl-btn-run-speedtest");
   if (btnRunSpeedtest) {
     btnRunSpeedtest.onclick = () => triggerAudit(sysId, "speedtest");
   }
 
-  const btnDockerUpd = panel.querySelector("#bszl-btn-docker-update");
+  const btnDockerUpd = qOne("#bszl-btn-docker-update");
   if (btnDockerUpd) {
     btnDockerUpd.onclick = () => triggerAudit(sysId, "docker_update");
   }
 
-  const btnDockerRb = panel.querySelector("#bszl-btn-docker-rollback");
+  const btnDockerRb = qOne("#bszl-btn-docker-rollback");
   if (btnDockerRb) {
     btnDockerRb.onclick = () => triggerAudit(sysId, "docker_rollback");
   }
 
-  const btnDiskClean = panel.querySelector("#bszl-btn-disk-cleanup");
+  const btnDiskClean = qOne("#bszl-btn-disk-cleanup");
   if (btnDiskClean) {
     btnDiskClean.onclick = () => triggerAudit(sysId, "disk_cleanup");
   }
 
-  panel.querySelectorAll(".js-agent-cfg-toggle").forEach((btn) => {
+  qAll(".js-cnt-filter").forEach((btn) => {
+    btn.onclick = () => {
+      state.containerFilter = btn.getAttribute("data-cfilter") || "all";
+      invalidateRenderKeys();
+      renderSystemDetailPage();
+    };
+  });
+
+  qAll(".js-sysd-filter").forEach((btn) => {
+    btn.onclick = () => {
+      state.systemdFilter = btn.getAttribute("data-sfilter") || "all";
+      invalidateRenderKeys();
+      renderSystemDetailPage();
+    };
+  });
+
+  const inpCntSearch = qOne("#bszl-inp-cnt-search");
+  if (inpCntSearch) {
+    inpCntSearch.oninput = (e) => {
+      const q = (e.target.value || "").trim().toLowerCase();
+      state.containerSearch = e.target.value || "";
+      const wrap = qOne("#bszl-cnt-table-wrap");
+      if (wrap) {
+        wrap.querySelectorAll("tbody tr[data-search-text]").forEach((tr) => {
+          const txt = tr.getAttribute("data-search-text") || "";
+          tr.style.display = !q || txt.includes(q) ? "" : "none";
+        });
+      }
+    };
+  }
+
+  const inpSysdSearch = qOne("#bszl-inp-sysd-search");
+  if (inpSysdSearch) {
+    inpSysdSearch.oninput = (e) => {
+      const q = (e.target.value || "").trim().toLowerCase();
+      state.systemdSearch = e.target.value || "";
+      const wrap = qOne("#bszl-sysd-table-wrap");
+      if (wrap) {
+        wrap.querySelectorAll("tbody tr[data-search-text]").forEach((tr) => {
+          const txt = tr.getAttribute("data-search-text") || "";
+          tr.style.display = !q || txt.includes(q) ? "" : "none";
+        });
+      }
+    };
+  }
+
+  qAll(".js-row-svc-toggle").forEach((btn) => {
+    btn.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const sId = btn.getAttribute("data-svc-id");
+      const sName = btn.getAttribute("data-svc-name") || sId;
+      if (sId) triggerServiceToggle(sysId, sId, sName);
+    };
+  });
+
+  qAll(".js-agent-cfg-toggle").forEach((btn) => {
     btn.onclick = () => {
       const k = btn.getAttribute("data-cfg-key");
       const v = btn.getAttribute("data-cfg-val") === "1";
@@ -3976,7 +4517,7 @@ function renderSystemDetailPage() {
     };
   });
 
-  panel.querySelectorAll(".js-svc-logs").forEach((btn) => {
+  qAll(".js-svc-logs").forEach((btn) => {
     btn.onclick = (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -3986,7 +4527,7 @@ function renderSystemDetailPage() {
     };
   });
 
-  panel.querySelectorAll(".js-f2b-unban").forEach((btn) => {
+  qAll(".js-f2b-unban").forEach((btn) => {
     btn.onclick = (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -3995,8 +4536,8 @@ function renderSystemDetailPage() {
     };
   });
 
-  const btnF2bBan = panel.querySelector("#bszl-btn-f2b-ban");
-  const inpF2bIp = panel.querySelector("#bszl-inp-f2b-ip");
+  const btnF2bBan = qOne("#bszl-btn-f2b-ban");
+  const inpF2bIp = qOne("#bszl-inp-f2b-ip");
   if (btnF2bBan && inpF2bIp) {
     btnF2bBan.onclick = () => {
       const ip = inpF2bIp.value.trim();
@@ -4004,11 +4545,11 @@ function renderSystemDetailPage() {
     };
   }
 
-  panel.querySelectorAll(".bszl-tab-btn[data-card-tab]").forEach((btn) => {
+  qAll(".bszl-tab-btn[data-card-tab]").forEach((btn) => {
     btn.onclick = () => {
       const [cardId, tabId] = btn.getAttribute("data-card-tab").split(":");
       state.cardTabs[cardId] = tabId;
-      panel.removeAttribute("data-render-key");
+      invalidateRenderKeys();
       renderSystemDetailPage();
     };
   });
@@ -4022,17 +4563,17 @@ function renderSystemDetailPage() {
         localStorage.setItem("bszl_cards_collapsed", JSON.stringify(state.cardsCollapsed));
       } catch (err) {}
     }
-    panel.removeAttribute("data-render-key");
+    invalidateRenderKeys();
     renderSystemDetailPage();
-    panel.querySelector(`[data-card="${cardId}"]`)?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    qOne(`[data-card="${cardId}"]`)?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   };
 
-  panel.querySelectorAll(".bszl-mini-check[data-check-id]").forEach((c) => {
+  qAll(".bszl-mini-check[data-check-id]").forEach((c) => {
     const cid = c.getAttribute("data-check-id");
     const target = ["firewall", "open_ports", "fail2ban", "ssh_auth"].includes(cid)
       ? ["security", "ports"]
       : ["kernel_sysctl", "inodes", "disk_trend"].includes(cid)
-      ? ["services", "docker"]
+      ? ["services", "disk"]
       : cid === "cron_timers"
       ? ["security", "updates"]
       : null;
@@ -4069,7 +4610,7 @@ function renderSystemDetailPage() {
   });
 
   if (state.rearrangeMode) {
-    panel.querySelectorAll(".bszl-stack-cat[data-cat-id]").forEach((catEl) => {
+    qAll(".bszl-stack-cat[data-cat-id]").forEach((catEl) => {
       const catId = catEl.getAttribute("data-cat-id");
       catEl.addEventListener("dragstart", (e) => {
         state.dragSourceType = "cat";
@@ -4097,7 +4638,7 @@ function renderSystemDetailPage() {
     });
   }
 
-  panel.querySelectorAll(".bszl-svc-pill[data-prog-id]").forEach((pill) => {
+  qAll(".bszl-svc-pill[data-prog-id]").forEach((pill) => {
     const pid = pill.getAttribute("data-prog-id");
     if (state.rearrangeMode) {
       pill.addEventListener("dragstart", (e) => {
@@ -4177,7 +4718,7 @@ function renderSystemDetailPage() {
         }
 
         state.selectedProgramId = pid;
-        panel.removeAttribute("data-render-key");
+        invalidateRenderKeys();
         renderSystemDetailPage();
         const isOn = item.status === "running";
         const isOd = item.status === "ondemand";
@@ -4205,16 +4746,16 @@ function renderSystemDetailPage() {
     };
   });
 
-  const inpPort = panel.querySelector("#bszl-inp-port");
-  const selProto = panel.querySelector("#bszl-sel-proto");
-  const inpFrom = panel.querySelector("#bszl-inp-from");
-  const inpComment = panel.querySelector("#bszl-inp-comment");
+  const inpPort = qOne("#bszl-inp-port");
+  const selProto = qOne("#bszl-sel-proto");
+  const inpFrom = qOne("#bszl-inp-from");
+  const inpComment = qOne("#bszl-inp-comment");
   if (inpPort) inpPort.oninput = (e) => (state.portFormDraft.port = e.target.value);
   if (selProto) selProto.onchange = (e) => (state.portFormDraft.proto = e.target.value);
   if (inpFrom) inpFrom.oninput = (e) => (state.portFormDraft.from_ip = e.target.value);
   if (inpComment) inpComment.oninput = (e) => (state.portFormDraft.comment = e.target.value);
 
-  const btnPortOpen = panel.querySelector("#bszl-btn-port-open");
+  const btnPortOpen = qOne("#bszl-btn-port-open");
   if (btnPortOpen) {
     btnPortOpen.onclick = () => {
       const p = (state.portFormDraft.port || "").trim();
@@ -4233,7 +4774,7 @@ function renderSystemDetailPage() {
     };
   }
 
-  const btnPortClose = panel.querySelector("#bszl-btn-port-close");
+  const btnPortClose = qOne("#bszl-btn-port-close");
   if (btnPortClose) {
     btnPortClose.onclick = () => {
       const p = (state.portFormDraft.port || "").trim();
@@ -4251,7 +4792,7 @@ function renderSystemDetailPage() {
     };
   }
 
-  panel.querySelectorAll(".js-port-toggle").forEach((btn) => {
+  qAll(".js-port-toggle").forEach((btn) => {
     btn.onclick = () => {
       triggerPortAction(
         sysId,
@@ -4266,7 +4807,7 @@ function renderSystemDetailPage() {
     };
   });
 
-  panel.querySelectorAll(".js-rule-del").forEach((btn) => {
+  qAll(".js-rule-del").forEach((btn) => {
     btn.onclick = () => {
       triggerPortAction(
         sysId,
@@ -4335,7 +4876,7 @@ function bindHeaderButtons(panel, sysId) {
 
 function updateFooterLinks() {
   if (typeof globalThis !== "undefined" && globalThis.BESZEL) {
-    globalThis.BESZEL.HUB_VERSION = "0.0.2";
+    globalThis.BESZEL.HUB_VERSION = "0.0.3";
   }
   const links = document.querySelectorAll('a[href*="github.com/henrygd/beszel"]');
   links.forEach((a) => {
@@ -4343,7 +4884,11 @@ function updateFooterLinks() {
   });
   document.querySelectorAll('a[href*="/releases"]').forEach((a) => {
     if (a.textContent) {
-      a.textContent = a.textContent.replace("0.21.0", "0.0.2").replace("0.21.1", "0.0.2").replace("0.0.1", "0.0.2");
+      a.textContent = a.textContent
+        .replace("0.21.0", "0.0.3")
+        .replace("0.21.1", "0.0.3")
+        .replace("0.0.1", "0.0.3")
+        .replace("0.0.2", "0.0.3");
     }
   });
 }
@@ -4401,7 +4946,7 @@ function init() {
       if (target && target.nodeType === 1) {
         if (
           target.closest(
-            "#bszl-server-security-panel, .bszl-lang-wrap, .bszl-rearrange-banner, .bszl-notifications-modal, #bszl-notif-btn, .bszl-home-row-pill, #bszl-agent-modal, #bszl-svc-logs-modal, .bszl-toast-stack, #bszl-rearrange-menu, .bszl-chart-drag-bar"
+            "#bszl-server-security-panel, #bszl-server-services-panel, .bszl-lang-wrap, .bszl-rearrange-banner, .bszl-notifications-modal, #bszl-notif-btn, .bszl-home-row-pill, #bszl-agent-modal, #bszl-svc-logs-modal, .bszl-toast-stack, #bszl-rearrange-menu, .bszl-chart-drag-bar"
           )
         ) {
           continue;

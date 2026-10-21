@@ -2153,3 +2153,93 @@ html.dark .bszl-f2b-chip {
   outline: 2px solid #10b981 !important;
   background-color: rgba(16, 185, 129, 0.08) !important;
 }
+
+/* --- Unified Services Card Bottom Section (All Containers + Systemd Services + Disk) --- */
+.bszl-svc-unified-bottom {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in oklab, var(--border) 60%, transparent);
+}
+
+.bszl-svc-bottom-hdr {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.bszl-svc-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.bszl-svc-filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.bszl-svc-search {
+  height: 2rem;
+  min-width: 210px;
+  max-width: 290px;
+  padding: 0 10px;
+  border-radius: calc(var(--radius, 0.8rem) - 3px);
+  font-size: 0.78rem;
+  background-color: var(--background);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.bszl-svc-search:focus {
+  border-color: var(--ring);
+}
+
+.bszl-filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 1.85rem;
+  padding: 0 9px;
+  border-radius: 9999px;
+  font-size: 0.73rem;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+
+.bszl-filter-pill:hover {
+  color: var(--foreground);
+  background: var(--accent);
+}
+
+.bszl-filter-pill.is-active {
+  color: var(--foreground);
+  background: var(--muted);
+  border-color: color-mix(in oklab, var(--foreground) 35%, var(--border));
+  font-weight: 600;
+}
+
+.bszl-table-wrap--tall {
+  max-height: 420px;
+}
+
+.bszl-row-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
