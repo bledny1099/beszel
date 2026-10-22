@@ -1,4 +1,4 @@
-import * as TabsPrimitive from "@radix-ui/react-tabs"
+import * as TabsPrimitive from "@animate-ui/react/primitives/radix-ui/tabs"
 import * as React from "react"
 
 import { cn } from "@/lib/utils"

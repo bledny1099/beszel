@@ -3,43 +3,56 @@
  */
 
 const ICONS = {
-  shield: `<span class="bszl-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span>`,
-  globe: `<span class="bszl-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>`,
-  sync: (spinning = false) => `<span class="bszl-ico bszl-ico-sync ${spinning ? "is-spinning" : ""}"><svg width="13.5" height="13.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="ico-arrows"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></g></svg></span>`,
-  langGlobe: `<svg class="h-[1.2rem] w-[1.2rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>`,
+  shield: `<span class="bszl-ico bszl-icm bszl-icm-pulse"><svg width="15" height="15" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"><path d="M40,114.79V56a8,8,0,0,1,8-8H208a8,8,0,0,1,8,8v58.79c0,84.08-71.31,111.85-85.53,116.57a7.54,7.54,0,0,1-4.94,0C111.31,226.64,40,198.87,40,114.79Z"/><polyline points="88 136 112 160 168 104"/></svg></span>`,
+  globe: `<span class="bszl-ico bszl-icm bszl-icm-turn"><svg width="16" height="16" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><path d="M168,128c0,64,-40,96,-40,96s-40,-32,-40,-96,40,-96,40,-96S168,64,168,128Z"/><circle cx="128" cy="128" r="96"/><line x1="37.46" y1="96" x2="218.54" y2="96"/><line x1="37.46" y1="160" x2="218.54" y2="160"/></svg></span>`,
+  sync: (spinning = false) => `<span class="bszl-ico bszl-ico-sync bszl-icm bszl-icm-pulse ${spinning ? "is-spinning" : ""}"><svg width="15" height="15" viewBox="0 0 256 256" fill="currentColor"><g class="ico-arrows"><path d="M224,48V96a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h28.69L182.06,73.37a79.56,79.56,0,0,0-56.13-23.43h-.45A79.52,79.52,0,0,0,69.59,72.71,8,8,0,0,1,58.41,61.27a96,96,0,0,1,135,.79L208,76.69V48a8,8,0,0,1,16,0ZM186.41,183.29a80,80,0,0,1-112.47-.66L59.31,168H88a8,8,0,0,0,0-16H40a8,8,0,0,0-8,8v48a8,8,0,0,0,16,0V179.31l14.63,14.63A95.43,95.43,0,0,0,130,222.06h.53a95.36,95.36,0,0,0,67.07-27.33,8,8,0,0,0-11.18-11.44Z"/></g></svg></span>`,
+  rotateCcw: `<span class="bszl-ico bszl-icm bszl-icm-pulse-ccw"><svg width="15" height="15" viewBox="0 0 256 256" fill="currentColor"><path d="M88,104H40a8,8,0,0,1-8-8V48a8,8,0,0,1,16,0V76.69L62.63,62.06A95.43,95.43,0,0,1,130,33.94h.53a95.36,95.36,0,0,1,67.07,27.33,8,8,0,0,1-11.18,11.44,79.52,79.52,0,0,0-55.89-22.77h-.45A79.56,79.56,0,0,0,73.94,73.37L59.31,88H88a8,8,0,0,1,0,16Zm128,48H168a8,8,0,0,0,0,16h28.69l-14.63,14.63a79.56,79.56,0,0,1-56.13,23.43h-.45a79.52,79.52,0,0,1-55.89-22.77,8,8,0,1,0-11.18,11.44,95.36,95.36,0,0,0,67.07,27.33H126a95.43,95.43,0,0,0,67.36-28.12L208,179.31V208a8,8,0,0,0,16,0V160A8,8,0,0,0,216,152Z"/></svg></span>`,
+  langGlobe: `<svg class="h-[1.2rem] w-[1.2rem] bszl-icm bszl-icm-turn" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><path d="M168,128c0,64,-40,96,-40,96s-40,-32,-40,-96,40,-96,40,-96S168,64,168,128Z"/><circle cx="128" cy="128" r="96"/><line x1="37.46" y1="96" x2="218.54" y2="96"/><line x1="37.46" y1="160" x2="218.54" y2="160"/></svg>`,
   flagUS: `<svg viewBox="0 0 28 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="20" fill="#FFFFFF"/><path d="M0 0H28V1.54H0V0ZM0 3.08H28V4.62H0V3.08ZM0 6.15H28V7.69H0V6.15ZM0 9.23H28V10.77H0V9.23ZM0 12.31H28V13.85H0V12.31ZM0 15.38H28V16.92H0V15.38ZM0 18.46H28V20H0V18.46Z" fill="#B22234"/><rect width="12" height="10.77" fill="#3C3B6E"/><g fill="#FFFFFF"><circle cx="2.2" cy="2" r="0.75"/><circle cx="4.7" cy="2" r="0.75"/><circle cx="7.2" cy="2" r="0.75"/><circle cx="9.7" cy="2" r="0.75"/><circle cx="3.45" cy="3.7" r="0.75"/><circle cx="5.95" cy="3.7" r="0.75"/><circle cx="8.45" cy="3.7" r="0.75"/><circle cx="2.2" cy="5.4" r="0.75"/><circle cx="4.7" cy="5.4" r="0.75"/><circle cx="7.2" cy="5.4" r="0.75"/><circle cx="9.7" cy="5.4" r="0.75"/><circle cx="3.45" cy="7.1" r="0.75"/><circle cx="5.95" cy="7.1" r="0.75"/><circle cx="8.45" cy="7.1" r="0.75"/><circle cx="2.2" cy="8.8" r="0.75"/><circle cx="4.7" cy="8.8" r="0.75"/><circle cx="7.2" cy="8.8" r="0.75"/><circle cx="9.7" cy="8.8" r="0.75"/></g></svg>`,
   flagRU: `<svg viewBox="0 0 28 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="6.67" fill="#FFFFFF"/><rect y="6.67" width="28" height="6.67" fill="#0039A6"/><rect y="13.33" width="28" height="6.67" fill="#D52B1E"/></svg>`,
-  sshLock: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
-  firewall: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
-  fail2ban: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m5.7 5.7 12.6 12.6"/></svg>`,
-  radarPorts: `<span class="bszl-ico bszl-ico-radar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" stroke-opacity="0.5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><path class="ico-sweep" d="M12 12 18.2 5.8"/></svg></span>`,
-  usersPriv: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>`,
-  procMemory: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="14" x="3" y="5" rx="2"/><path d="m7 10 3 2-3 2"/><path d="M12 14h4"/></svg>`,
-  cronTimer: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.5"/><path d="M9 2h6"/></svg>`,
-  kernelDisk: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>`,
-  chevronUp: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>`,
-  chevronDown: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>`,
-  bell: `<svg class="h-[1.2rem] w-[1.2rem]" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>`,
-  terminal: `<svg class="h-[1.2rem] w-[1.2rem]" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>`,
-  copy: `<svg viewBox="0 0 24 24" width="13.5" height="13.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>`,
-  sliders: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>`,
-  grip: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></svg>`,
-  gauge: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>`,
-  dockerBox: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>`,
+  sshLock: `<svg class="bszl-icm bszl-icm-pulse" width="14" height="14" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"><rect x="40" y="88" width="176" height="128" rx="16"/><path d="M88,88V56a40,40,0,0,1,80,0V88"/></svg>`,
+  firewall: `<svg class="bszl-icm bszl-icm-pulse" width="14" height="14" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"><path d="M40,114.79V56a8,8,0,0,1,8-8H208a8,8,0,0,1,8,8v58.79c0,84.08-71.31,111.85-85.53,116.57a7.54,7.54,0,0,1-4.94,0C111.31,226.64,40,198.87,40,114.79Z"/></svg>`,
+  fail2ban: `<svg class="bszl-icm bszl-icm-shake" width="14" height="14" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"><circle cx="128" cy="128" r="96"/><line x1="60.12" y1="60.12" x2="195.88" y2="195.88"/></svg>`,
+  radarPorts: `<span class="bszl-ico bszl-icm bszl-icm-flip"><svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M229.11,70.82A16,16,0,0,0,216,64H40A16,16,0,0,0,25,85.47l26.19,72a16,16,0,0,0,15,10.53H96v64a8,8,0,0,0,16,0V168h32v64a8,8,0,0,0,16,0V168h29.82a16,16,0,0,0,15-10.53l26.19-72A16,16,0,0,0,229.11,70.82ZM110.68,152,97.58,80h60.84l-13.1,72ZM40,80H81.32l13.09,72H66.18Zm149.82,72H161.59l13.09-72H216Z"/><path d="M136,64V32h16a8,8,0,0,0,0-16H104a8,8,0,0,0,0,16h16V64Z"/></svg></span>`,
+  usersPriv: `<svg class="bszl-icm bszl-icm-wave" width="14" height="14" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><path d="M64,120A32,32,0,1,1,95,80"/><path d="M16,144a59.91,59.91,0,0,1,48-24"/><circle cx="128" cy="144" r="40"/><path d="M72,216a65,65,0,0,1,112,0"/><path d="M161,80a32,32,0,1,1,31,40"/><path d="M192,120a59.91,59.91,0,0,1,48,24"/></svg>`,
+  procMemory: `<svg class="bszl-icm bszl-icm-flip" width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M94,24C71.63,24,56,43.74,56,72s15.63,48,38,48,38-19.74,38-48S116.37,24,94,24ZM94,104c-17.37,0-22-20.11-22-32s4.63-32,22-32,22,20.11,22,32S111.37,104,94,104Z"/><path d="M145,49.22a8,8,0,0,1,3.11-10.88l24-13.33A8,8,0,0,1,184,32v80a8,8,0,0,1-16,0V45.6l-12.12,6.73A8,8,0,0,1,145,49.22Z"/><path d="M104,144v80a8,8,0,0,1-16,0V157.6l-12.12,6.73a8,8,0,0,1-7.76-14l24-13.33A8,8,0,0,1,104,144Z"/><path d="M166,136c-22.37,0-38,19.74-38,48s15.63,48,38,48,38-19.74,38-48S188.37,136,166,136ZM166,216c-17.37,0-22-20.11-22-32s4.63-32,22-32,22,20.11,22,32S183.37,216,166,216Z"/></svg>`,
+  cronTimer: `<svg class="bszl-icm bszl-icm-ring" width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM61.66,37.66l-32,32A8,8,0,0,1,18.34,58.34l32-32A8,8,0,0,1,61.66,37.66Zm176,32a8,8,0,0,1-11.32,0l-32-32a8,8,0,0,1,11.32-11.32l32,32A8,8,0,0,1,237.66,69.66ZM184,128a8,8,0,0,1,0,16H128a8,8,0,0,1-8-8V80a8,8,0,0,1,16,0v48Z"/></svg>`,
+  kernelDisk: `<svg class="bszl-icm bszl-icm-stash" width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M32,104H224V192a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16ZM48,104H208V192H48Z" fill-rule="evenodd"/><path d="M96,136a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,136Z"/><path d="M32,48H224a16,16,0,0,1,16,16V88a16,16,0,0,1-16,16H32a16,16,0,0,1-16-16V64A16,16,0,0,1,32,48ZM32,64H224V88H32Z" fill-rule="evenodd"/></svg>`,
+  chevronUp: `<svg class="bszl-icm bszl-icm-travel-up" width="13" height="13" viewBox="0 0 256 256" fill="currentColor"><path d="M213.66,165.66a8,8,0,0,1-11.32,0L128,91.31,53.66,165.66a8,8,0,0,1-11.32-11.32l80-80a8,8,0,0,1,11.32,0l80,80A8,8,0,0,1,213.66,165.66Z"/></svg>`,
+  chevronDown: `<svg class="bszl-icm bszl-icm-travel-down" width="13" height="13" viewBox="0 0 256 256" fill="currentColor"><path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"/></svg>`,
+  bell: `<svg class="h-[1.2rem] w-[1.2rem] bszl-icm bszl-icm-ring" width="19" height="19" viewBox="0 0 256 256" fill="currentColor"><path d="M35.71,72a8,8,0,0,0,7.1-4.32A94.13,94.13,0,0,1,76.27,30.77a8,8,0,1,0-8.54-13.54A111.46,111.46,0,0,0,28.61,60.32,8,8,0,0,0,35.71,72Z"/><path d="M224,71.1a8,8,0,0,1-10.78-3.42,94.13,94.13,0,0,0-33.46-36.91,8,8,0,1,1,8.54-13.54,111.46,111.46,0,0,1,39.12,43.09A8,8,0,0,1,224,71.1Z"/><path d="M221.81,175.94A16,16,0,0,1,208,200H48a16,16,0,0,1-13.79-24.06C43.22,160.39,48,138.28,48,112a80,80,0,0,1,160,0C208,138.27,212.78,160.38,221.81,175.94ZM208,184c-10.64-18.27-16-42.49-16-72a64,64,0,0,0-128,0c0,29.52-5.38,53.74-16,72Z"/><path d="M167.2,200a40,40,0,0,1-78.4,0L105.38,200a24,24,0,0,0,45.24,0Z"/></svg>`,
+  terminal: `<svg class="h-[1.2rem] w-[1.2rem] bszl-icm bszl-icm-blink" width="19" height="19" viewBox="0 0 256 256" fill="currentColor"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,160H40V56H216V200Z"/><path d="M117.66,122.34l-32-32a8,8,0,0,0-11.32,11.32L100.69,128,74.34,154.34a8,8,0,0,0,11.32,11.32l32-32A8,8,0,0,0,117.66,122.34Z"/><path d="M168,152H128a8,8,0,0,0,0,16h40a8,8,0,0,0,0-16Z"/></svg>`,
+  copy: `<svg class="bszl-icm bszl-icm-tuck" viewBox="0 0 256 256" width="14" height="14" fill="currentColor"><path d="M216,32H88a8,8,0,0,0-8,8V80H40a8,8,0,0,0-8,8V216a8,8,0,0,0,8,8H168a8,8,0,0,0,8-8V176h40a8,8,0,0,0,8-8V40A8,8,0,0,0,216,32ZM160,208H48V96H160Zm48-48H176V88a8,8,0,0,0-8-8H96V48H208Z"/></svg>`,
+  sliders: `<svg class="bszl-icm bszl-icm-spin-down" width="15" height="15" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><circle cx="128" cy="128" r="40"/><path d="M41.43,178.09A99.14,99.14,0,0,1,31.36,153.8l16.78-21a81.59,81.59,0,0,1,0-9.64l-16.77-21a99.43,99.43,0,0,1,10.05-24.3l26.71-3a81,81,0,0,1,6.81-6.81l3-26.7A99.14,99.14,0,0,1,102.2,31.36l21,16.78a81.59,81.59,0,0,1,9.64,0l21-16.77a99.43,99.43,0,0,1,24.3,10.05l3,26.71a81,81,0,0,1,6.81,6.81l26.7,3a99.14,99.14,0,0,1,10.07,24.29l-16.78,21a81.59,81.59,0,0,1,0,9.64l16.77,21a99.43,99.43,0,0,1-10,24.3l-26.71,3a81,81,0,0,1-6.81,6.81l-3,26.7a99.14,99.14,0,0,1-24.29,10.07l-21-16.78a81.59,81.59,0,0,1-9.64,0l-21,16.77a99.43,99.43,0,0,1-24.3-10l-3-26.71a81,81,0,0,1-6.81-6.81Z"/></svg>`,
+  grip: `<svg class="bszl-icm bszl-icm-pulse" width="13" height="13" viewBox="0 0 256 256" fill="currentColor"><path d="M90.34,61.66a8,8,0,0,1,0-11.32l32-32a8,8,0,0,1,11.32,0l32,32a8,8,0,0,1-11.32,11.32L136,43.31V96a8,8,0,0,1-16,0V43.31L101.66,61.66A8,8,0,0,1,90.34,61.66Z"/><path d="M237.66,122.34l-32-32a8,8,0,0,0-11.32,11.32L212.69,120H160a8,8,0,0,0,0,16h52.69l-18.35,18.34a8,8,0,0,0,11.32,11.32l32-32A8,8,0,0,0,237.66,122.34Z"/><path d="M154.34,194.34L136,212.69V160a8,8,0,0,0-16,0v52.69l-18.34-18.35a8,8,0,0,0-11.32,11.32l32,32a8,8,0,0,0,11.32,0l32-32a8,8,0,0,0-11.32-11.32Z"/><path d="M43.31,136H96a8,8,0,0,0,0-16H43.31l18.35-18.34A8,8,0,0,0,50.34,90.34l-32,32a8,8,0,0,0,0,11.32l32,32a8,8,0,0,0,11.32-11.32Z"/></svg>`,
+  gauge: `<svg class="bszl-icm bszl-icm-pulse" width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216Zm45.66-109.66-40,40a8,8,0,0,1-11.32-11.32l40-40a8,8,0,0,1,11.32,11.32Z"/></svg>`,
+  dockerBox: `<svg class="bszl-icm bszl-icm-stash" width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M32,104H224V192a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16ZM48,104H208V192H48Z" fill-rule="evenodd"/><path d="M96,136a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,136Z"/><path d="M32,48H224a16,16,0,0,1,16,16V88a16,16,0,0,1-16,16H32a16,16,0,0,1-16-16V64A16,16,0,0,1,32,48ZM32,64H224V88H32Z" fill-rule="evenodd"/></svg>`,
   ubuntu: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#E95420"/><circle cx="12" cy="12" r="4.3" stroke="#FFF" stroke-width="1.8"/><circle cx="6.2" cy="12" r="1.6" fill="#FFF"/><circle cx="14.9" cy="7" r="1.6" fill="#FFF"/><circle cx="14.9" cy="17" r="1.6" fill="#FFF"/></svg>`,
   debian: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#A80030"/><path d="M13 6.5c-3.2 0-5.5 2.4-5.5 5.5s2.4 5.5 5.3 5.5c1.8 0 3.2-.8 3.9-2M13 9.2c1.6 0 2.8 1.2 2.8 2.8 0 1.4-1 2.4-2.3 2.4-1.1 0-1.9-.8-1.9-1.9" stroke="#FFF" stroke-width="1.7" stroke-linecap="round"/></svg>`,
-  linux: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="9" x2="10" y2="12"/><line x1="10" y1="12" x2="7" y2="15"/><line x1="12" y1="15" x2="17" y2="15"/></svg>`,
-  container: `<svg class="size-4" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7.7c0-.6-.4-1.2-.8-1.5l-6.3-3.9a1.72 1.72 0 0 0-1.7 0l-10.3 6c-.5.2-.9.8-.9 1.4v6.6c0 .5.4 1.2.8 1.5l6.3 3.9a1.72 1.72 0 0 0 1.7 0l10.3-6c.5-.3.9-1 .9-1.5Z"/><path d="M10 21.9V14L2.1 9.1"/><path d="m10 14 11.9-6.9"/><path d="M14 19.8v-8.1"/><path d="M18 17.5V9.4"/></svg>`,
-  terminalSquare: `<svg class="size-4" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 11 2-2-2-2"/><path d="M11 13h4"/><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/></svg>`,
-  activity: `<svg class="size-4" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>`,
-  cpu: `<svg class="size-4" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>`,
-  memoryStick: `<svg class="size-4" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 19v-3"/><path d="M10 19v-3"/><path d="M14 19v-3"/><path d="M18 19v-3"/><path d="M8 11V9"/><path d="M16 11V9"/><path d="M12 11V9"/><path d="M2 15h20"/><path d="M2 7a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v1.1a2 2 0 0 0 0 3.837V17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-5.1a2 2 0 0 0 0-3.837Z"/></svg>`,
-  ethernet: `<svg class="size-4" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 20 3-3h2a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h2l3 3z"/><path d="M6 8v1"/><path d="M10 8v1"/><path d="M14 8v1"/><path d="M18 8v1"/></svg>`,
-  shieldCheck: `<svg class="size-4" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>`,
-  layers: `<svg class="size-4" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg>`,
-  squareArrowRightEnter: `<svg class="size-4" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>`,
-  clock: `<svg class="size-4" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
-  arrowUpDown: `<svg class="size-4" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>`,
+  linux: `<svg class="bszl-icm bszl-icm-blink" width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,160H40V56H216V200Z"/><path d="M80,84A12,12,0,1,1,68,72,12,12,0,0,1,80,84Z"/><path d="M120,84a12,12,0,1,1-12-12A12,12,0,0,1,120,84Z"/></svg>`,
+  container: `<svg class="size-4 bszl-icm bszl-icm-stash" width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M32,104H224V192a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16ZM48,104H208V192H48Z" fill-rule="evenodd"/><path d="M96,136a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,136Z"/><path d="M32,48H224a16,16,0,0,1,16,16V88a16,16,0,0,1-16,16H32a16,16,0,0,1-16-16V64A16,16,0,0,1,32,48ZM32,64H224V88H32Z" fill-rule="evenodd"/></svg>`,
+  terminalSquare: `<svg class="size-4 bszl-icm bszl-icm-blink" width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,160H40V56H216V200Z"/><path d="M80,84A12,12,0,1,1,68,72,12,12,0,0,1,80,84Z"/><path d="M120,84a12,12,0,1,1-12-12A12,12,0,0,1,120,84Z"/></svg>`,
+  activity: `<svg class="size-4 bszl-icm bszl-icm-spin-down" width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M196.12,128c24.65-34.61,37.22-70.38,19.74-87.86S162.61,35.23,128,59.88C93.39,35.23,57.62,22.66,40.14,40.14S35.23,93.39,59.88,128c-24.65,34.61-37.22,70.38-19.74,87.86h0c5.63,5.63,13.15,8.14,21.91,8.14,18.48,0,42.48-11.17,66-27.88C151.47,212.83,175.47,224,194,224c8.76,0,16.29-2.52,21.91-8.14h0C233.34,198.38,220.77,162.61,196.12,128Zm8.43-76.55c7.64,7.64,2.48,32.4-18.52,63.28a300.33,300.33,0,0,0-21.19-23.57A300.33,300.33,0,0,0,141.27,70C172.15,49,196.91,43.8,204.55,51.45ZM176.29,128a289.14,289.14,0,0,1-22.76,25.53A289.14,289.14,0,0,1,128,176.29a289.14,289.14,0,0,1-25.53-22.76A289.14,289.14,0,0,1,79.71,128,298.62,298.62,0,0,1,128,79.71a289.14,289.14,0,0,1,25.53,22.76A289.14,289.14,0,0,1,176.29,128ZM51.45,51.45c2.2-2.21,5.83-3.35,10.62-3.35C73.89,48.1,92.76,55,114.72,70A304,304,0,0,0,91.16,91.16,300.33,300.33,0,0,0,70,114.73C49,83.85,43.81,59.09,51.45,51.45Zm0,153.1C43.81,196.91,49,172.15,70,141.27a300.33,300.33,0,0,0,21.19,23.57A304.18,304.18,0,0,0,114.73,186C83.85,207,59.09,212.2,51.45,204.55Zm153.1,0c-7.64,7.65-32.4,2.48-63.28-18.52a304.18,304.18,0,0,0,23.57-21.19A300.33,300.33,0,0,0,186,141.27C207,172.15,212.19,196.91,204.55,204.55Z"/><path d="M140,128a12,12,0,1,1-12-12A12,12,0,0,1,140,128Z"/></svg>`,
+  cpu: `<svg class="size-4 bszl-icm bszl-icm-flip" width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M94,24C71.63,24,56,43.74,56,72s15.63,48,38,48,38-19.74,38-48S116.37,24,94,24ZM94,104c-17.37,0-22-20.11-22-32s4.63-32,22-32,22,20.11,22,32S111.37,104,94,104Z"/><path d="M145,49.22a8,8,0,0,1,3.11-10.88l24-13.33A8,8,0,0,1,184,32v80a8,8,0,0,1-16,0V45.6l-12.12,6.73A8,8,0,0,1,145,49.22Z"/><path d="M104,144v80a8,8,0,0,1-16,0V157.6l-12.12,6.73a8,8,0,0,1-7.76-14l24-13.33A8,8,0,0,1,104,144Z"/><path d="M166,136c-22.37,0-38,19.74-38,48s15.63,48,38,48,38-19.74,38-48S188.37,136,166,136ZM166,216c-17.37,0-22-20.11-22-32s4.63-32,22-32,22,20.11,22,32S183.37,216,166,216Z"/></svg>`,
+  memoryStick: `<svg class="size-4 bszl-icm bszl-icm-pulse" width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M200,56H32A24,24,0,0,0,8,80v96a24,24,0,0,0,24,24H200a24,24,0,0,0,24-24V80A24,24,0,0,0,200,56Zm8,120a8,8,0,0,1-8,8H32a8,8,0,0,1-8-8V80a8,8,0,0,1,8-8H200a8,8,0,0,1,8,8Z"/><path d="M256,96v64a8,8,0,0,1-16,0V96a8,8,0,0,1,16,0Z"/><path d="M64,96v64a8,8,0,0,1-16,0V96a8,8,0,0,1,16,0Z"/><path d="M104,96v64a8,8,0,0,1-16,0V96a8,8,0,0,1,16,0Z"/><path d="M144,96v64a8,8,0,0,1-16,0V96a8,8,0,0,1,16,0Z"/><path d="M184,96v64a8,8,0,0,1-16,0V96a8,8,0,0,1,16,0Z"/></svg>`,
+  ethernet: `<svg class="size-4 bszl-icm bszl-icm-flip" width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M229.11,70.82A16,16,0,0,0,216,64H40A16,16,0,0,0,25,85.47l26.19,72a16,16,0,0,0,15,10.53H96v64a8,8,0,0,0,16,0V168h32v64a8,8,0,0,0,16,0V168h29.82a16,16,0,0,0,15-10.53l26.19-72A16,16,0,0,0,229.11,70.82ZM110.68,152,97.58,80h60.84l-13.1,72ZM40,80H81.32l13.09,72H66.18Zm149.82,72H161.59l13.09-72H216Z"/><path d="M136,64V32h16a8,8,0,0,0,0-16H104a8,8,0,0,0,0,16h16V64Z"/></svg>`,
+  shieldCheck: `<svg class="size-4 bszl-icm bszl-icm-pulse" width="16" height="16" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"><path d="M40,114.79V56a8,8,0,0,1,8-8H208a8,8,0,0,1,8,8v58.79c0,84.08-71.31,111.85-85.53,116.57a7.54,7.54,0,0,1-4.94,0C111.31,226.64,40,198.87,40,114.79Z"/><polyline points="88 136 112 160 168 104"/></svg>`,
+  layers: `<svg class="size-4 bszl-icm bszl-icm-collapse" width="16" height="16" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"><line x1="40" y1="64" x2="216" y2="64"/><line x1="40" y1="128" x2="216" y2="128"/><line x1="40" y1="192" x2="216" y2="192"/></svg>`,
+  squareArrowRightEnter: `<svg class="size-4 bszl-icm bszl-icm-tuck" width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M184,128a8,8,0,0,0-8,8v72H48V80h72a8,8,0,0,0,0-16H48A16,16,0,0,0,32,80V208a16,16,0,0,0,16,16H176a16,16,0,0,0,16-16V136A8,8,0,0,0,184,128Z"/><path d="M224,104a8,8,0,0,1-16,0V59.32l-66.33,66.34a8,8,0,0,1-11.32-11.32L196.68,48H152a8,8,0,0,1,0-16h64a8,8,0,0,1,8,8Z"/></svg>`,
+  clock: `<svg class="size-4 bszl-icm bszl-icm-ring" width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM61.66,37.66l-32,32A8,8,0,0,1,18.34,58.34l32-32A8,8,0,0,1,61.66,37.66Zm176,32a8,8,0,0,1-11.32,0l-32-32a8,8,0,0,1,11.32-11.32l32,32A8,8,0,0,1,237.66,69.66ZM184,128a8,8,0,0,1,0,16H128a8,8,0,0,1-8-8V80a8,8,0,0,1,16,0v48Z"/></svg>`,
+  arrowUpDown: `<svg class="size-4 bszl-icm bszl-icm-bounce" width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M117.66,170.34a8,8,0,0,1,0,11.32l-32,32a8,8,0,0,1-11.32,0l-32-32a8,8,0,0,1,11.32-11.32L72,188.69V48a8,8,0,0,1,16,0V188.69l18.34-18.35A8,8,0,0,1,117.66,170.34Z"/><path d="M213.66,74.34l-32-32a8,8,0,0,0-11.32,0l-32,32a8,8,0,0,0,11.32,11.32L168,67.31V208a8,8,0,0,0,16,0V67.31l18.34,18.35a8,8,0,0,0,11.32-11.32Z"/></svg>`,
+  arrowUp: `<svg class="bszl-icm bszl-icm-travel-up" width="13" height="13" viewBox="0 0 256 256" fill="currentColor"><path d="M205.66,117.66a8,8,0,0,1-11.32,0L136,59.31V216a8,8,0,0,1-16,0V59.31L61.66,117.66a8,8,0,0,1-11.32-11.32l72-72a8,8,0,0,1,11.32,0l72,72A8,8,0,0,1,205.66,117.66Z"/></svg>`,
+  arrowDown: `<svg class="bszl-icm bszl-icm-travel-down" width="13" height="13" viewBox="0 0 256 256" fill="currentColor"><path d="M205.66,149.66l-72,72a8,8,0,0,1-11.32,0l-72-72a8,8,0,0,1,11.32-11.32L120,196.69V40a8,8,0,0,1,16,0V196.69l58.34-58.35a8,8,0,0,1,11.32,11.32Z"/></svg>`,
+  arrowLeft: `<svg class="bszl-icm bszl-icm-travel-left" width="13" height="13" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"/></svg>`,
+  arrowRight: `<svg class="bszl-icm bszl-icm-travel-right" width="12" height="12" viewBox="0 0 256 256" fill="currentColor"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></svg>`,
+  arrowUpRight: `<svg class="bszl-icm bszl-icm-travel-ur" width="13" height="13" viewBox="0 0 256 256" fill="currentColor"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg>`,
+  arrowSquareOut: `<svg class="bszl-icm bszl-icm-tuck" width="13.5" height="13.5" viewBox="0 0 256 256" fill="currentColor"><path d="M184,128a8,8,0,0,0-8,8v72H48V80h72a8,8,0,0,0,0-16H48A16,16,0,0,0,32,80V208a16,16,0,0,0,16,16H176a16,16,0,0,0,16-16V136A8,8,0,0,0,184,128Z"/><path d="M224,104a8,8,0,0,1-16,0V59.32l-66.33,66.34a8,8,0,0,1-11.32-11.32L196.68,48H152a8,8,0,0,1,0-16h64a8,8,0,0,1,8,8Z"/></svg>`,
+  trash: `<svg class="bszl-icm bszl-icm-shake" width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z"/></svg>`,
+  eye: `<svg class="bszl-icm bszl-icm-pulse" width="13.5" height="13.5" viewBox="0 0 256 256" fill="currentColor"><path d="M237.2,151.87v0a47.1,47.1,0,0,0-2.35-5.45L193.26,51.8a7.82,7.82,0,0,0-1.66-2.44,32,32,0,0,0-45.26,0A8,8,0,0,0,144,55V80H112V55a8,8,0,0,0-2.34-5.66,32,32,0,0,0-45.26,0,7.82,7.82,0,0,0-1.66,2.44L21.15,146.4a47.1,47.1,0,0,0-2.35,5.45v0A48,48,0,1,0,112,168V96h32v72a48,48,0,1,0,93.2-16.13ZM76.71,59.75a16,16,0,0,1,19.29-1v73.51a47.9,47.9,0,0,0-46.79-9.92ZM64,200a32,32,0,1,1,32-32A32,32,0,0,1,64,200ZM160,58.74a16,16,0,0,1,19.29,1l27.5,62.58A47.9,47.9,0,0,0,160,132.25ZM192,200a32,32,0,1,1,32-32A32,32,0,0,1,192,200Z"/></svg>`,
+  eyeOff: `<svg class="bszl-icm bszl-icm-shake" width="13.5" height="13.5" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"><circle cx="128" cy="128" r="96"/><line x1="60.12" y1="60.12" x2="195.88" y2="195.88"/></svg>`,
+  x: `<svg class="bszl-icm bszl-icm-spin-down" width="13" height="13" viewBox="0 0 256 256" fill="currentColor"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></svg>`,
+  check: `<svg class="bszl-icm bszl-icm-pulse" width="13" height="13" viewBox="0 0 256 256" fill="currentColor"><path d="M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z"/></svg>`,
+  plus: `<svg class="bszl-icm bszl-icm-spin-down" width="13" height="13" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/></svg>`,
 };
 
 const CHECK_ICON_MAP = {
@@ -73,8 +86,8 @@ const I18N = {
     portPlaceholder: "Порт (8080)",
     ipPlaceholder: "Anywhere / IP",
     commentPlaceholder: "Сервис",
-    openPortBtn: "+ Открыть",
-    closePortBtn: "✕ Закрыть",
+    openPortBtn: "Открыть",
+    closePortBtn: "Закрыть",
     openBtn: "Открыть",
     closeBtn: "Закрыть",
     ufwOpen: "Открыт",
@@ -107,14 +120,14 @@ const I18N = {
     catSecurity: "Доступ и безопасность",
     catNetwork: "Сеть и VPN",
     catTools: "Инструменты и OSINT",
-    rollbackNow: "↺ Откат",
+    rollbackNow: "Откат",
     autoRollbackOn: "Авто-откат: ВКЛ",
     snapshotCount: "Снимок",
     cveMonitorOn: "CVE 10m",
     notifBtnTitle: "Уведомления",
     notifPageTitle: "Уведомления",
     scanPatchBtn: "Проверить CVE",
-    backBtn: "← Назад",
+    backBtn: "Назад",
     kpiOpenVulns: "Уязвимости",
     kpiPatchedCves: "CVE закрыто",
     kpiAutoUpdates: "Апдейты",
@@ -133,7 +146,7 @@ const I18N = {
     agentModalTitle: "Установка единого агента Beszel",
     agentModalSubtitle: "Установите мониторинг, аудит безопасности, порты и авто-патчи CVE одной командой.",
     agentCopyBtn: "Копировать",
-    agentCopiedBtn: "✓ Скопировано",
+    agentCopiedBtn: "Скопировано",
     agentFeatureHw: "Аппаратный мониторинг: CPU, память, диски, сеть, Docker",
     agentFeatureSec: "Аудит безопасности: открытые порты, UFW, fail2ban, SSH, SSL",
     agentFeatureCve: "Авто-патчи CVE: ежечасный мониторинг уязвимостей и откат",
@@ -146,7 +159,7 @@ const I18N = {
     rearrangeSecTabs: "Вкладки",
     rearrangeApplyAll: "Ко всем серверам",
     rearrangeReset: "Сброс",
-    rearrangeDone: "✓ Готово",
+    rearrangeDone: "Готово",
     pruneDockerBtn: "Очистить Docker",
     runSpeedtestBtn: "Запустить Speedtest",
     updateAgentBtn: "Обновить агент",
@@ -180,8 +193,8 @@ const I18N = {
     portPlaceholder: "Port (8080)",
     ipPlaceholder: "Anywhere / IP",
     commentPlaceholder: "Service",
-    openPortBtn: "+ Open",
-    closePortBtn: "✕ Close",
+    openPortBtn: "Open",
+    closePortBtn: "Close",
     openBtn: "Open",
     closeBtn: "Close",
     ufwOpen: "Open",
@@ -214,14 +227,14 @@ const I18N = {
     catSecurity: "Access & Security",
     catNetwork: "Network & VPN",
     catTools: "Tools & OSINT",
-    rollbackNow: "↺ Rollback",
+    rollbackNow: "Rollback",
     autoRollbackOn: "Auto-Rollback: ON",
     snapshotCount: "Snapshot",
     cveMonitorOn: "CVE 10m",
     notifBtnTitle: "Notifications",
     notifPageTitle: "Notifications",
     scanPatchBtn: "Scan CVEs",
-    backBtn: "← Back",
+    backBtn: "Back",
     kpiOpenVulns: "Open",
     kpiPatchedCves: "CVEs Fixed",
     kpiAutoUpdates: "Updates",
@@ -240,7 +253,7 @@ const I18N = {
     agentModalTitle: "All-in-One Beszel Agent Setup",
     agentModalSubtitle: "Install hardware monitoring, security audit, ports and CVE auto-patching in a single command.",
     agentCopyBtn: "Copy",
-    agentCopiedBtn: "✓ Copied",
+    agentCopiedBtn: "Copied",
     agentFeatureHw: "Hardware metrics: CPU, memory, disks, network, Docker",
     agentFeatureSec: "Security audit: listening ports, UFW, fail2ban, SSH, SSL",
     agentFeatureCve: "CVE auto-patch: hourly vulnerability scanning with instant rollback",
@@ -253,7 +266,7 @@ const I18N = {
     rearrangeSecTabs: "Tabs",
     rearrangeApplyAll: "Apply to All",
     rearrangeReset: "Reset",
-    rearrangeDone: "✓ Done",
+    rearrangeDone: "Done",
     pruneDockerBtn: "Prune Docker",
     runSpeedtestBtn: "Run Speedtest",
     updateAgentBtn: "Update Agent",
@@ -331,53 +344,33 @@ const PROGRAM_INFO = {
     ru: "Автономная сессия Claude Code (claude-sessions.service / screen --remote-control) с автоматическим восстановлением контекста и удаленным управлением.",
     en: "Persistent Claude Code remote-control session managed by claude-sessions.service / screen with automatic session recovery.",
   },
-  "dosimple-bot": {
-    ru: "Основной Telegram-бот экосистемы doSimple. Работает как постоянный сервис и обрабатывает команды пользователей, уведомления и интеграции с БД.",
-    en: "Primary Telegram bot for the doSimple ecosystem handling user commands, notifications, and database integrations.",
+  "telegram-bot": {
+    ru: "Основной Telegram-бот платформы. Работает как постоянный сервис и обрабатывает команды пользователей, уведомления и интеграции с БД.",
+    en: "Primary Telegram bot service handling user commands, notifications, and database integrations.",
   },
   "scribe-bot": {
-    ru: "Telegram-бот сервиса Scribe для расшифровки аудио, голосовых сообщений и управления отчетами.",
-    en: "Scribe Telegram bot for audio transcription, voice message processing, and report management.",
+    ru: "Telegram-бот сервиса транскрибации для расшифровки аудио, голосовых сообщений и управления отчетами.",
+    en: "Telegram bot for audio transcription, voice message processing, and report management.",
   },
   screenertg: {
-    ru: "Торговый и аналитический Telegram-бот ScreenerTG для отслеживания рыночных сигналов и котировок в реальном времени.",
-    en: "ScreenerTG trading and market analytics Telegram bot monitoring real-time market signals.",
+    ru: "Торговый и аналитический Telegram-бот для отслеживания рыночных сигналов и котировок в реальном времени.",
+    en: "Trading and market analytics Telegram bot monitoring real-time market signals.",
   },
   "screenertg-demo": {
-    ru: "Демо-инстанс бота ScreenerTG для тестирования новых фильтров и сигнальных стратегий.",
-    en: "Demo instance of the ScreenerTG bot used for testing new filters and signal strategies.",
+    ru: "Демо-инстанс аналитического бота для тестирования новых фильтров и сигнальных стратегий.",
+    en: "Demo instance of the market analytics bot used for testing new filters and signal strategies.",
   },
   demotradebot: {
-    ru: "Торговый бот-симулятор DemoTrade Bot для проверки торговых гипотез без риска реальным депозитом.",
-    en: "DemoTrade Bot paper-trading simulator for testing automated execution strategies.",
+    ru: "Торговый бот-симулятор для проверки торговых гипотез в тестовом контуре.",
+    en: "Paper-trading simulator bot for testing automated execution strategies.",
   },
   "minecraft-bot": {
     ru: "Telegram-бот управления игровым сервером Minecraft (статус игроков, вайтлист, оповещения и команды консоли).",
     en: "Minecraft server management Telegram bot providing player status, whitelist control, and console alerts.",
   },
-  "nasad-tgbot": {
-    ru: "Telegram-бот игрового проекта NASAD SMP для связи чата с сервером, заявок игроков и модерации.",
-    en: "NASAD SMP Telegram bot linking server chat, player applications, and moderation actions.",
-  },
   buybot: {
-    ru: "Специализированный Telegram-бот BuyBot для автоматизации уведомлений о покупках и транзакциях.",
-    en: "BuyBot Telegram service automating purchase and transaction notifications.",
-  },
-  "nasad-smp": {
-    ru: "Основной игровой сервер Minecraft проекта NASAD SMP (nasad-smp.service). Работает в выделенном окружении с контролем памяти и TPS.",
-    en: "Main NASAD SMP Minecraft game server (nasad-smp.service) running with dedicated memory and TPS monitoring.",
-  },
-  "nasad-acjudge": {
-    ru: "Античит-анализатор ACJudge (nasad-acjudge.service) для автоматической проверки боевых логов и выявления читов на сервере NASAD SMP.",
-    en: "ACJudge anti-cheat analysis service (nasad-acjudge.service) inspecting combat telemetry on NASAD SMP.",
-  },
-  "nasad-web": {
-    ru: "Веб-приложение и API сайта проекта NASAD SMP (nasad.dosimple.app).",
-    en: "Web application and backend API for the NASAD SMP website (nasad.dosimple.app).",
-  },
-  "nasad-hostwatch": {
-    ru: "Сервис мониторинга хоста и игровых узлов NASAD HostWatch (/root/nasadsmp/tools/hostwatch.py).",
-    en: "NASAD HostWatch monitoring daemon (/root/nasadsmp/tools/hostwatch.py) tracking host and game node health.",
+    ru: "Специализированный Telegram-бот для автоматизации уведомлений о покупках и транзакциях.",
+    en: "Telegram service automating purchase and transaction notifications.",
   },
   "mc-dashboard": {
     ru: "Веб-панель управления и мониторинга игрового сервера Minecraft (minecraft-dashboard.service).",
@@ -387,25 +380,13 @@ const PROGRAM_INFO = {
     ru: "Системная служба автозапуска и контроля состояния сервера Minecraft (minecraft-autostart.service).",
     en: "Minecraft autostart and watchdog service (minecraft-autostart.service).",
   },
-  "dosimple-app": {
-    ru: "Веб-приложение и бэкенд платформы doSimple Lab (dosimple.app, порт 3110).",
-    en: "doSimple Lab web platform and backend service (dosimple.app, port 3110).",
-  },
-  "dosimple-site": {
-    ru: "Основной веб-сайт и API проекта doSimple Bot (dosimplebot.com, порт 3101).",
-    en: "Main website and web service for doSimple Bot (dosimplebot.com, port 3101).",
-  },
-  "dosimple-min": {
-    ru: "Легковесный веб-сервис doSimple Min (dosimple-min.service).",
-    en: "Lightweight doSimple Min web service (dosimple-min.service).",
-  },
   "evolve-site": {
-    ru: "Веб-сервер проекта Evolve (evolve-site.service).",
-    en: "Evolve project web server (evolve-site.service).",
+    ru: "Веб-сервер проекта (evolve-site.service).",
+    en: "Web application server (evolve-site.service).",
   },
   "scribe-api": {
-    ru: "Сервер отчетов и веб-API приложения Scribe (scribe.dosimple.app, scribe-report-api.service).",
-    en: "Scribe report API and web backend (scribe.dosimple.app, scribe-report-api.service).",
+    ru: "Сервер отчетов и веб-API приложения (scribe-report-api.service).",
+    en: "Report API and web backend service (scribe-report-api.service).",
   },
   omniroute: {
     ru: "Сервис маршрутизации и API-шлюз OmniRoute (omniroute.service, порт 20128).",
@@ -1349,10 +1330,10 @@ function showOverlayToast({ title, tagText = "ON", statusType = "running", desc 
       </div>
       <div class="bszl-prog-info-desc">
         ${escapeHtml(desc)}
-        ${linkUrl ? `<div style="margin-top:8px;"><a href="${escapeHtml(linkUrl)}" target="_blank" rel="noopener noreferrer" class="bszl-act-btn bszl-act-btn--open" style="display:inline-flex;align-items:center;gap:5px;text-decoration:none;padding:3px 9px;font-size:0.72rem;"><span>${escapeHtml(linkText || "Open Web App ↗")}</span></a></div>` : ""}
+        ${linkUrl ? `<div style="margin-top:8px;"><a href="${escapeHtml(linkUrl)}" target="_blank" rel="noopener noreferrer" class="bszl-act-btn bszl-act-btn--open" style="display:inline-flex;align-items:center;gap:5px;text-decoration:none;padding:3px 9px;font-size:0.72rem;"><span>${escapeHtml(linkText || "Open Web App")}</span>${ICONS.arrowUpRight}</a></div>` : ""}
       </div>
     </div>
-    <button type="button" class="bszl-prog-info-close" title="Close">✕</button>
+    <button type="button" class="bszl-prog-info-close" title="Close">${ICONS.x}</button>
     <div class="bszl-toast-progress">
       <div class="bszl-toast-progress-bar ${barCls}"></div>
     </div>
@@ -1638,7 +1619,7 @@ function openAgentInstallModal() {
             <div class="bszl-dialog-desc">${escapeHtml(t("agentModalSubtitle"))}</div>
           </div>
         </div>
-        <button type="button" class="bszl-dialog-close" title="Close">✕</button>
+        <button type="button" class="bszl-dialog-close" title="Close">${ICONS.x}</button>
       </div>
 
       <div class="bszl-dialog-cmd-box">
@@ -1649,7 +1630,7 @@ function openAgentInstallModal() {
         <div class="bszl-cmd-pre-wrap">
           <pre class="bszl-cmd-pre"><code>${escapeHtml(cmd)}</code></pre>
           <button type="button" class="bszl-cmd-copy-btn" id="bszl-agent-copy-btn">
-            ${ICONS.copy}
+            <span class="js-copy-ico">${ICONS.copy}</span>
             <span class="js-copy-text">${escapeHtml(t("agentCopyBtn"))}</span>
           </button>
         </div>
@@ -1699,10 +1680,13 @@ function openAgentInstallModal() {
         navigator.clipboard.writeText(cmd).catch(() => {});
       }
       const txt = copyBtn.querySelector(".js-copy-text");
+      const ico = copyBtn.querySelector(".js-copy-ico");
       if (txt) {
         txt.textContent = t("agentCopiedBtn");
+        if (ico) ico.innerHTML = ICONS.check;
         setTimeout(() => {
           txt.textContent = t("agentCopyBtn");
+          if (ico) ico.innerHTML = ICONS.copy;
         }, 2200);
       }
     };
@@ -1779,7 +1763,7 @@ async function openServiceLogsModal(systemId, serviceId, serviceName) {
           <button type="button" id="bszl-logs-copy" class="bszl-icon-btn" style="height:24px;padding:0 8px;font-size:0.72rem;">
             <span>${isEn ? "Copy" : "Копировать"}</span>
           </button>
-          <button type="button" id="bszl-logs-close" class="bszl-icon-btn" style="height:24px;padding:0 8px;font-size:0.72rem;">✕</button>
+          <button type="button" id="bszl-logs-close" class="bszl-icon-btn" style="height:24px;padding:0 8px;font-size:0.72rem;">${ICONS.x}</button>
         </div>
       </div>
       <pre id="bszl-logs-pre" class="bszl-logs-pre">${isEn ? "Loading logs..." : "Загрузка логов..."}</pre>
@@ -2013,14 +1997,14 @@ function renderTopNavbarLangSwitcher() {
               <span class="bszl-menu-flag">${ICONS.flagUS}</span>
               <span>English</span>
             </span>
-            ${state.lang === "en" ? "<span>✓</span>" : ""}
+            ${state.lang === "en" ? `<span style="display:inline-flex;">${ICONS.check}</span>` : ""}
           </button>
           <button type="button" class="bszl-lang-item ${state.lang === "ru" ? "is-active" : ""}" data-l="ru">
             <span style="display:inline-flex;align-items:center;gap:8px;">
               <span class="bszl-menu-flag">${ICONS.flagRU}</span>
               <span>Русский</span>
             </span>
-            ${state.lang === "ru" ? "<span>✓</span>" : ""}
+            ${state.lang === "ru" ? `<span style="display:inline-flex;">${ICONS.check}</span>` : ""}
           </button>
         </div>
       `;
@@ -2183,7 +2167,7 @@ function renderNotificationsPage() {
                     (cve) =>
                       `<a class="bszl-cve-tag js-cve-link" href="https://ubuntu.com/security/${encodeURIComponent(
                         cve
-                      )}" target="_blank" rel="noopener noreferrer">${escapeHtml(cve)} ↗</a>`
+                      )}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:4px;"><span>${escapeHtml(cve)}</span>${ICONS.arrowUpRight}</a>`
                   )
                   .join("")}</div>`
               : "";
@@ -2191,13 +2175,13 @@ function renderNotificationsPage() {
               ? `<div class="bszl-pkg-row">${n.packages
                   .slice(0, 10)
                   .map((p) => {
-                    const ver =
+                    const verHtml =
                       p.old_version && p.new_version
-                        ? `${p.old_version} → ${p.new_version}`
-                        : p.new_version || "";
-                    return `<span class="bszl-pkg-chip">${escapeHtml(p.name)}${
-                      ver ? `: ${escapeHtml(ver)}` : ""
-                    }</span>`;
+                        ? `: ${escapeHtml(p.old_version)} <span style="display:inline-flex;vertical-align:middle;">${ICONS.arrowRight}</span> ${escapeHtml(p.new_version)}`
+                        : p.new_version
+                        ? `: ${escapeHtml(p.new_version)}`
+                        : "";
+                    return `<span class="bszl-pkg-chip">${escapeHtml(p.name)}${verHtml}</span>`;
                   })
                   .join("")}${
                   n.packages.length > 10
@@ -2310,6 +2294,7 @@ function renderNotificationsPage() {
             <span>${escapeHtml(t("scanPatchBtn"))}</span>
           </button>
           <button type="button" id="bszl-btn-npage-back" class="bszl-icon-btn">
+            ${ICONS.arrowLeft}
             <span>${escapeHtml(t("backBtn"))}</span>
           </button>
         </div>
@@ -2833,9 +2818,9 @@ function applySystemChartsLayout(sysId) {
           handleBar.innerHTML = `
             <span class="bszl-drag-grip" title="Drag">${ICONS.grip}<span>${escapeHtml(lbl)}</span></span>
             <div style="display:inline-flex;align-items:center;gap:3px;">
-              <button type="button" class="bszl-mini-move-btn js-chart-up" title="Move Up">↑</button>
-              <button type="button" class="bszl-mini-move-btn js-chart-down" title="Move Down">↓</button>
-              <button type="button" class="bszl-mini-move-btn ${isHidden ? "is-muted" : "is-vis"} js-chart-vis" title="${state.lang === "en" ? "Show/Hide chart" : "Показать/скрыть график"}">${isHidden ? "🚫" : "👁"}</button>
+              <button type="button" class="bszl-mini-move-btn js-chart-up" title="Move Up">${ICONS.arrowUp}</button>
+              <button type="button" class="bszl-mini-move-btn js-chart-down" title="Move Down">${ICONS.arrowDown}</button>
+              <button type="button" class="bszl-mini-move-btn ${isHidden ? "is-muted" : "is-vis"} js-chart-vis" title="${state.lang === "en" ? "Show/Hide chart" : "Показать/скрыть график"}">${isHidden ? ICONS.eyeOff : ICONS.eye}</button>
             </div>
           `;
           handleBar.querySelector(".js-chart-up").onclick = (e) => {
@@ -3020,11 +3005,11 @@ function enhanceSettings2Menu() {
         const lbl = CHART_LABELS[cid]?.[state.lang] || cid;
         return `
           <div class="bszl-rm-item ${isHidden ? "is-hidden-item" : ""}" draggable="true" data-rm-type="chart" data-rm-id="${escapeHtml(cid)}">
-            <button type="button" class="bszl-rm-vis-btn js-rm-vis" data-type="chart" data-id="${escapeHtml(cid)}">${isHidden ? "" : "✓"}</button>
+            <button type="button" class="bszl-rm-vis-btn js-rm-vis" data-type="chart" data-id="${escapeHtml(cid)}">${isHidden ? "" : ICONS.check}</button>
             <span class="bszl-rm-item-lbl">${escapeHtml(lbl)}</span>
             <div class="bszl-rm-arrows">
-              <button type="button" class="bszl-rm-arr js-rm-move" data-type="chart" data-id="${escapeHtml(cid)}" data-dir="-1" ${idx === 0 ? "disabled" : ""}>↑</button>
-              <button type="button" class="bszl-rm-arr js-rm-move" data-type="chart" data-id="${escapeHtml(cid)}" data-dir="1" ${idx === layout.chartsOrder.length - 1 ? "disabled" : ""}>↓</button>
+              <button type="button" class="bszl-rm-arr js-rm-move" data-type="chart" data-id="${escapeHtml(cid)}" data-dir="-1" ${idx === 0 ? "disabled" : ""}>${ICONS.arrowUp}</button>
+              <button type="button" class="bszl-rm-arr js-rm-move" data-type="chart" data-id="${escapeHtml(cid)}" data-dir="1" ${idx === layout.chartsOrder.length - 1 ? "disabled" : ""}>${ICONS.arrowDown}</button>
             </div>
           </div>
         `;
@@ -3038,11 +3023,11 @@ function enhanceSettings2Menu() {
         const lbl = titles[chkId] || chkId;
         return `
           <div class="bszl-rm-item ${isHidden ? "is-hidden-item" : ""}" draggable="true" data-rm-type="check" data-rm-id="${escapeHtml(chkId)}">
-            <button type="button" class="bszl-rm-vis-btn js-rm-vis" data-type="check" data-id="${escapeHtml(chkId)}">${isHidden ? "" : "✓"}</button>
+            <button type="button" class="bszl-rm-vis-btn js-rm-vis" data-type="check" data-id="${escapeHtml(chkId)}">${isHidden ? "" : ICONS.check}</button>
             <span class="bszl-rm-item-lbl">${escapeHtml(lbl)}</span>
             <div class="bszl-rm-arrows">
-              <button type="button" class="bszl-rm-arr js-rm-move" data-type="check" data-id="${escapeHtml(chkId)}" data-dir="-1" ${idx === 0 ? "disabled" : ""}>↑</button>
-              <button type="button" class="bszl-rm-arr js-rm-move" data-type="check" data-id="${escapeHtml(chkId)}" data-dir="1" ${idx === layout.checksOrder.length - 1 ? "disabled" : ""}>↓</button>
+              <button type="button" class="bszl-rm-arr js-rm-move" data-type="check" data-id="${escapeHtml(chkId)}" data-dir="-1" ${idx === 0 ? "disabled" : ""}>${ICONS.arrowUp}</button>
+              <button type="button" class="bszl-rm-arr js-rm-move" data-type="check" data-id="${escapeHtml(chkId)}" data-dir="1" ${idx === layout.checksOrder.length - 1 ? "disabled" : ""}>${ICONS.arrowDown}</button>
             </div>
           </div>
         `;
@@ -3054,11 +3039,11 @@ function enhanceSettings2Menu() {
         const lbl = catLabels[catId] || catId;
         return `
           <div class="bszl-rm-item ${isHidden ? "is-hidden-item" : ""}" draggable="true" data-rm-type="cat" data-rm-id="${escapeHtml(catId)}">
-            <button type="button" class="bszl-rm-vis-btn js-rm-vis" data-type="cat" data-id="${escapeHtml(catId)}">${isHidden ? "" : "✓"}</button>
+            <button type="button" class="bszl-rm-vis-btn js-rm-vis" data-type="cat" data-id="${escapeHtml(catId)}">${isHidden ? "" : ICONS.check}</button>
             <span class="bszl-rm-item-lbl">${escapeHtml(lbl)}</span>
             <div class="bszl-rm-arrows">
-              <button type="button" class="bszl-rm-arr js-rm-move" data-type="cat" data-id="${escapeHtml(catId)}" data-dir="-1" ${idx === 0 ? "disabled" : ""}>↑</button>
-              <button type="button" class="bszl-rm-arr js-rm-move" data-type="cat" data-id="${escapeHtml(catId)}" data-dir="1" ${idx === layout.catsOrder.length - 1 ? "disabled" : ""}>↓</button>
+              <button type="button" class="bszl-rm-arr js-rm-move" data-type="cat" data-id="${escapeHtml(catId)}" data-dir="-1" ${idx === 0 ? "disabled" : ""}>${ICONS.arrowUp}</button>
+              <button type="button" class="bszl-rm-arr js-rm-move" data-type="cat" data-id="${escapeHtml(catId)}" data-dir="1" ${idx === layout.catsOrder.length - 1 ? "disabled" : ""}>${ICONS.arrowDown}</button>
             </div>
           </div>
         `;
@@ -3077,11 +3062,11 @@ function enhanceSettings2Menu() {
         const lbl = tabLabels[tId] || tId;
         return `
           <div class="bszl-rm-item ${isHidden ? "is-hidden-item" : ""}" draggable="true" data-rm-type="tab" data-rm-id="${escapeHtml(tId)}">
-            <button type="button" class="bszl-rm-vis-btn js-rm-vis" data-type="tab" data-id="${escapeHtml(tId)}">${isHidden ? "" : "✓"}</button>
+            <button type="button" class="bszl-rm-vis-btn js-rm-vis" data-type="tab" data-id="${escapeHtml(tId)}">${isHidden ? "" : ICONS.check}</button>
             <span class="bszl-rm-item-lbl">${escapeHtml(lbl)}</span>
             <div class="bszl-rm-arrows">
-              <button type="button" class="bszl-rm-arr js-rm-move" data-type="tab" data-id="${escapeHtml(tId)}" data-dir="-1" ${idx === 0 ? "disabled" : ""}>↑</button>
-              <button type="button" class="bszl-rm-arr js-rm-move" data-type="tab" data-id="${escapeHtml(tId)}" data-dir="1" ${idx === layout.tabsOrder.length - 1 ? "disabled" : ""}>↓</button>
+              <button type="button" class="bszl-rm-arr js-rm-move" data-type="tab" data-id="${escapeHtml(tId)}" data-dir="-1" ${idx === 0 ? "disabled" : ""}>${ICONS.arrowUp}</button>
+              <button type="button" class="bszl-rm-arr js-rm-move" data-type="tab" data-id="${escapeHtml(tId)}" data-dir="1" ${idx === layout.tabsOrder.length - 1 ? "disabled" : ""}>${ICONS.arrowDown}</button>
             </div>
           </div>
         `;
@@ -3447,14 +3432,17 @@ function renderSystemDetailPage() {
           <button type="button" id="bszl-btn-rearrange-pos" class="bszl-icon-btn">
             <span>${
               layout.panelPos === "bottom"
-                ? isEn ? "Cards: Bottom ↑" : "Карточки: снизу ↑"
-                : isEn ? "Cards: Top ↓" : "Карточки: сверху ↓"
+                ? isEn ? "Cards: Bottom" : "Карточки: снизу"
+                : isEn ? "Cards: Top" : "Карточки: сверху"
             }</span>
+            ${layout.panelPos === "bottom" ? ICONS.arrowUp : ICONS.arrowDown}
           </button>
           <button type="button" id="bszl-btn-rearrange-reset" class="bszl-icon-btn">
+            ${ICONS.rotateCcw}
             <span>${escapeHtml(t("rearrangeReset"))}</span>
           </button>
           <button type="button" id="bszl-btn-rearrange-done" class="bszl-act-btn bszl-act-btn--open">
+            ${ICONS.check}
             <span>${escapeHtml(t("rearrangeDone"))}</span>
           </button>
         </div>
@@ -3528,8 +3516,8 @@ function renderSystemDetailPage() {
     ? `${problemCount} of ${allChecks.length} need attention`
     : `${problemCount} из ${allChecks.length} требуют внимания`;
   const checksToggleText = showAllChecks
-    ? isEn ? "Hide checks ▲" : "Скрыть проверки ▲"
-    : isEn ? `All ${allChecks.length} checks ▼` : `Все ${allChecks.length} проверок ▼`;
+    ? isEn ? "Hide checks" : "Скрыть проверки"
+    : isEn ? `All ${allChecks.length} checks` : `Все ${allChecks.length} проверок`;
 
   const sshVal = checksMap.has("ssh_auth") ? getShortCheckValue(checksMap.get("ssh_auth")) : "";
   const ufwVal = checksMap.has("firewall") ? (checksMap.get("firewall").status === "ok" ? "OK" : "OFF") : "";
@@ -3539,10 +3527,12 @@ function renderSystemDetailPage() {
   const secActionsHtml = `
     <button type="button" class="bszl-icon-btn" id="bszl-btn-toggle-checks">
       <span>${escapeHtml(checksToggleText)}</span>
+      ${showAllChecks ? ICONS.chevronUp : ICONS.chevronDown}
     </button>
     <button type="button" id="bszl-btn-jump-services" class="bszl-icon-btn" title="${isEn ? "Jump to unified Services, Containers & Systemd panel" : "Перейти к объединенному блоку Сервисы, Контейнеры и Systemd"}">
       ${ICONS.container}
-      <span>${isEn ? "Services" : "Сервисы"} (${svcRunning}/${stackItems.length}) ${state.servicesPos === "bottom" ? "↓" : "↑"}</span>
+      <span>${isEn ? "Services" : "Сервисы"} (${svcRunning}/${stackItems.length})</span>
+      ${state.servicesPos === "bottom" ? ICONS.arrowDown : ICONS.arrowUp}
     </button>
     <button type="button" id="bszl-btn-srv-rearrange" class="bszl-icon-btn ${state.rearrangeMode ? "is-active" : ""}" title="${escapeHtml(t("rearrangeTitle"))}">
       ${ICONS.sliders}
@@ -3559,6 +3549,7 @@ function renderSystemDetailPage() {
       <span>${escapeHtml(t("updateNow"))}${pendingCount > 0 ? ` (${pendingCount})` : ""}</span>
     </button>
     <button type="button" id="bszl-btn-srv-rollback" class="bszl-icon-btn" title="${escapeHtml(t("rollbackNow"))}" ${state.loadingSystem || !up.rollback_available ? "disabled" : ""}>
+      ${ICONS.rotateCcw}
       <span>${state.loadingSystem === `${sysId}:rollback` ? "..." : escapeHtml(t("rollbackNow"))}</span>
     </button>`
         : ""
@@ -3647,7 +3638,7 @@ function renderSystemDetailPage() {
           .slice(0, 10)
           .map(
             (ip) =>
-              `<span class="bszl-f2b-chip"><span class="bszl-dot bszl-dot--crit"></span><span>${escapeHtml(ip)}</span><button type="button" class="bszl-f2b-unban js-f2b-unban" data-ip="${escapeHtml(ip)}" title="${isEn ? "Unban IP" : "Разбанить IP"}">✕</button></span>`
+              `<span class="bszl-f2b-chip"><span class="bszl-dot bszl-dot--crit"></span><span>${escapeHtml(ip)}</span><button type="button" class="bszl-f2b-unban js-f2b-unban" data-ip="${escapeHtml(ip)}" title="${isEn ? "Unban IP" : "Разбанить IP"}">${ICONS.x}</button></span>`
           )
           .join("")
       : `<span style="color:var(--muted-foreground);">${isEn ? "none" : "никого в бане"}</span>`;
@@ -3658,27 +3649,27 @@ function renderSystemDetailPage() {
     );
 
     const f2bBanFormHtml = hasF2b
-      ? `<div style="display:inline-flex;align-items:center;gap:0.5rem;">
-          <input type="text" id="bszl-inp-f2b-ip" class="bszl-input" style="width:150px;height:2.25rem;" placeholder="IP" />
+      ? `<div class="bszl-f2b-ban-form">
+          <input type="text" id="bszl-inp-f2b-ip" class="bszl-input bszl-input--f2b" placeholder="IP" />
           <button type="button" id="bszl-btn-f2b-ban" class="bszl-act-btn bszl-act-btn--close" ${state.portBusyKey ? "disabled" : ""}>${isEn ? "Ban IP" : "Забанить IP"}</button>
         </div>`
       : "";
 
     const portBarHtml = hasUfw
       ? `<div class="bszl-port-bar">
-          <input type="text" id="bszl-inp-port" class="bszl-input" style="width:150px;" placeholder="${escapeHtml(t("portPlaceholder"))}" value="${escapeHtml(draft.port)}" />
-          <select id="bszl-sel-proto" class="bszl-select" style="width:115px;">
+          <input type="text" id="bszl-inp-port" class="bszl-input bszl-input--port" placeholder="${escapeHtml(t("portPlaceholder"))}" value="${escapeHtml(draft.port)}" />
+          <select id="bszl-sel-proto" class="bszl-select bszl-select--proto">
             <option value="tcp" ${draft.proto === "tcp" ? "selected" : ""}>TCP</option>
             <option value="udp" ${draft.proto === "udp" ? "selected" : ""}>UDP</option>
             <option value="both" ${draft.proto === "both" ? "selected" : ""}>TCP+UDP</option>
           </select>
-          <input type="text" id="bszl-inp-from" class="bszl-input" style="flex:1 1 150px;min-width:140px;max-width:220px;" placeholder="${escapeHtml(t("ipPlaceholder"))}" value="${escapeHtml(draft.from_ip)}" />
-          <input type="text" id="bszl-inp-comment" class="bszl-input" style="flex:1 1 160px;min-width:145px;max-width:240px;" placeholder="${escapeHtml(t("commentPlaceholder"))}" value="${escapeHtml(draft.comment)}" />
+          <input type="text" id="bszl-inp-from" class="bszl-input bszl-input--from" placeholder="${escapeHtml(t("ipPlaceholder"))}" value="${escapeHtml(draft.from_ip)}" />
+          <input type="text" id="bszl-inp-comment" class="bszl-input bszl-input--comment" placeholder="${escapeHtml(t("commentPlaceholder"))}" value="${escapeHtml(draft.comment)}" />
           <button type="button" id="bszl-btn-port-open" class="bszl-act-btn bszl-act-btn--open" ${state.portBusyKey ? "disabled" : ""}>
-            ${state.portBusyKey === "form:open" ? "..." : escapeHtml(t("openPortBtn"))}
+            ${state.portBusyKey === "form:open" ? "..." : `${ICONS.plus}<span>${escapeHtml(t("openPortBtn"))}</span>`}
           </button>
           <button type="button" id="bszl-btn-port-close" class="bszl-act-btn bszl-act-btn--close" ${state.portBusyKey ? "disabled" : ""}>
-            ${state.portBusyKey === "form:close" ? "..." : escapeHtml(t("closePortBtn"))}
+            ${state.portBusyKey === "form:close" ? "..." : `${ICONS.x}<span>${escapeHtml(t("closePortBtn"))}</span>`}
           </button>
           ${
             fb && Date.now() - fb.ts < 8000
@@ -3723,7 +3714,7 @@ function renderSystemDetailPage() {
         ${f2bBanFormHtml}
       </div>
       ${portBarHtml}
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:1rem;">
+      <div class="bszl-two-col-grid">
         <div class="bszl-table-wrap">
           <table class="bszl-mini-table">
             <thead><tr>
@@ -3786,7 +3777,7 @@ function renderSystemDetailPage() {
           <span>${escapeHtml(t("openNotifsBtn"))}</span>
         </button>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:1rem;">
+      <div class="bszl-two-col-grid">
         <div class="bszl-table-wrap">
           <table class="bszl-mini-table">
             <thead><tr>
@@ -4067,7 +4058,7 @@ function renderSystemDetailPage() {
           <span style="display:inline-flex;align-items:center;gap:0.5rem;">
             ${state.rearrangeMode && r.rowKind === "stack" ? `<span class="bszl-inline-grip">${ICONS.grip}</span>` : ""}
             <span>${escapeHtml(r.name)}</span>
-            ${r.openUrl ? `<a href="${escapeHtml(r.openUrl)}" target="_blank" rel="noopener noreferrer" class="bszl-svc-log-btn js-svc-link" title="${isEn ? "Open Web App" : "Открыть веб-интерфейс"}" style="text-decoration:none;">↗</a>` : ""}
+            ${r.openUrl ? `<a href="${escapeHtml(r.openUrl)}" target="_blank" rel="noopener noreferrer" class="bszl-svc-log-btn js-svc-link" title="${isEn ? "Open Web App" : "Открыть веб-интерфейс"}" style="text-decoration:none;">${ICONS.arrowSquareOut}</a>` : ""}
           </span>
         </td>
         <td><span class="bszl-chip">${escapeHtml(r.catTitle)}</span></td>
@@ -4262,7 +4253,7 @@ function renderSystemDetailPage() {
           </button>
           ${
             dockerInfo.rollback_available
-              ? `<button type="button" id="bszl-btn-docker-rollback" class="bszl-icon-btn" ${state.loadingSystem ? "disabled" : ""}><span>${isEn ? "Roll back" : "Откатить"}</span></button>`
+              ? `<button type="button" id="bszl-btn-docker-rollback" class="bszl-icon-btn" ${state.loadingSystem ? "disabled" : ""}>${ICONS.rotateCcw}<span>${isEn ? "Roll back" : "Откатить"}</span></button>`
               : ""
           }
           <button type="button" id="bszl-btn-docker-prune" class="bszl-icon-btn" ${state.loadingSystem ? "disabled" : ""}>
@@ -4495,10 +4486,11 @@ function renderSystemDetailPage() {
 
   const svcActionsHtml = `
     <button type="button" id="bszl-btn-svc-pos" class="bszl-icon-btn" title="${isEn ? "Move Services card above or below charts" : "Переместить блок Сервисов над графиками или под графики"}">
+      ${state.servicesPos === "top" ? ICONS.arrowDown : ICONS.arrowUp}
       <span>${
         state.servicesPos === "top"
-          ? isEn ? "↓ Below charts" : "↓ Под графики"
-          : isEn ? "↑ Above charts" : "↑ Над графиками"
+          ? isEn ? "Below charts" : "Под графики"
+          : isEn ? "Above charts" : "Над графиками"
       }</span>
     </button>
   `;
@@ -4547,8 +4539,8 @@ function renderSystemDetailPage() {
           (h) => `
         <tr>
           <td style="font-weight:500;" class="tabular-nums">${escapeHtml(h.timestamp || "-")}</td>
-          <td class="tabular-nums">↓ ${h.download_mbps ?? 0} Mbps</td>
-          <td class="tabular-nums">↑ ${h.upload_mbps ?? 0} Mbps</td>
+          <td class="tabular-nums"><span class="bszl-inline-svg">${ICONS.arrowDown}</span> ${h.download_mbps ?? 0} Mbps</td>
+          <td class="tabular-nums"><span class="bszl-inline-svg">${ICONS.arrowUp}</span> ${h.upload_mbps ?? 0} Mbps</td>
           <td class="tabular-nums">${h.ping_ms ?? 0} ms</td>
           <td class="tabular-nums" style="color:var(--muted-foreground);">±${h.jitter_ms ?? 0} ms</td>
         </tr>`
@@ -4626,7 +4618,7 @@ function renderSystemDetailPage() {
   `;
 
   const netBodyHtml = `
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:1rem;">
+    <div class="bszl-two-col-grid">
       <div class="bszl-table-wrap">
         <table class="bszl-mini-table">
           <thead><tr>
@@ -4700,7 +4692,7 @@ function renderSystemDetailPage() {
         const na = parseFloat(ca.replace(/[^0-9.-]/g, ""));
         const nb = parseFloat(cb.replace(/[^0-9.-]/g, ""));
         let cmp = 0;
-        if (!Number.isNaN(na) && !Number.isNaN(nb) && /^[0-9#↓↑±:.\s%-]+([a-zA-Z]+)?$/.test(ca)) {
+        if (!Number.isNaN(na) && !Number.isNaN(nb) && /^[0-9#±:.\s%-]+([a-zA-Z]+)?$/.test(ca)) {
           cmp = na - nb;
         } else {
           cmp = ca.localeCompare(cb, undefined, { numeric: true, sensitivity: "base" });
@@ -5069,7 +5061,7 @@ function renderSystemDetailPage() {
             desc: descText,
             progId: item.id,
             linkUrl: openUrl,
-            linkText: isEn ? "Open Dashboard ↗" : "Открыть дашборд ↗",
+            linkText: isEn ? "Open Dashboard" : "Открыть дашборд",
           });
         } else {
           openServiceLogsModal(sysId, svcId, svcName);
@@ -5208,7 +5200,7 @@ function bindHeaderButtons(panel, sysId) {
 
 function updateFooterLinks() {
   if (typeof globalThis !== "undefined" && globalThis.BESZEL) {
-    globalThis.BESZEL.HUB_VERSION = "0.0.4";
+    globalThis.BESZEL.HUB_VERSION = "0.0.5";
   }
   const links = document.querySelectorAll('a[href*="github.com/henrygd/beszel"]');
   links.forEach((a) => {
@@ -5217,11 +5209,42 @@ function updateFooterLinks() {
   document.querySelectorAll('a[href*="/releases"]').forEach((a) => {
     if (a.textContent) {
       a.textContent = a.textContent
-        .replace("0.21.0", "0.0.4")
-        .replace("0.21.1", "0.0.4")
-        .replace("0.0.1", "0.0.4")
-        .replace("0.0.2", "0.0.4")
-        .replace("0.0.3", "0.0.4");
+        .replace("0.21.0", "0.0.5")
+        .replace("0.21.1", "0.0.5")
+        .replace("0.0.1", "0.0.5")
+        .replace("0.0.2", "0.0.5")
+        .replace("0.0.3", "0.0.5")
+        .replace("0.0.4", "0.0.5");
+    }
+  });
+}
+
+function bindAnimateUiTabGliders() {
+  document.querySelectorAll(".bszl-tabs-bar").forEach((bar) => {
+    bar.classList.add("has-aui-glider");
+    let glider = bar.querySelector(".bszl-aui-tab-glider");
+    if (!glider) {
+      glider = document.createElement("span");
+      glider.className = "bszl-aui-tab-glider";
+      bar.prepend(glider);
+    }
+    const moveGliderTo = (btn) => {
+      if (!btn) return;
+      glider.style.width = `${btn.offsetWidth}px`;
+      glider.style.height = `${btn.offsetHeight}px`;
+      glider.style.transform = `translate3d(${btn.offsetLeft}px, ${btn.offsetTop}px, 0)`;
+    };
+    const activeBtn = bar.querySelector(".bszl-tab-btn.is-active") || bar.querySelector(".bszl-tab-btn");
+    moveGliderTo(activeBtn);
+    if (!bar.hasAttribute("data-aui-bound")) {
+      bar.setAttribute("data-aui-bound", "1");
+      bar.querySelectorAll(".bszl-tab-btn").forEach((btn) => {
+        btn.addEventListener("mouseenter", () => moveGliderTo(btn));
+      });
+      bar.addEventListener("mouseleave", () => {
+        const cur = bar.querySelector(".bszl-tab-btn.is-active") || bar.querySelector(".bszl-tab-btn");
+        moveGliderTo(cur);
+      });
     }
   });
 }
@@ -5235,6 +5258,7 @@ function renderAll() {
     renderSystemDetailPage();
     enhanceSettings2Menu();
   }
+  bindAnimateUiTabGliders();
 }
 
 function init() {
@@ -5244,6 +5268,25 @@ function init() {
 
   document.addEventListener("click", () => {
     document.querySelectorAll(".bszl-lang-menu.is-open").forEach((m) => m.classList.remove("is-open"));
+  });
+
+  // Animate UI Ripple effect on buttons & filter pills
+  document.addEventListener("pointerdown", (e) => {
+    const btn =
+      e.target && e.target.nodeType === 1
+        ? e.target.closest(".bszl-filter-pill, .bszl-icon-btn, .bszl-act-btn, .bszl-cmd-copy-btn")
+        : null;
+    if (!btn || btn.disabled) return;
+    const rect = btn.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const ripple = document.createElement("span");
+    ripple.className = "bszl-aui-ripple";
+    ripple.style.width = `${size}px`;
+    ripple.style.height = `${size}px`;
+    ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
+    ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
+    btn.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 580);
   });
 
   // Global capture listener for Done button in Rearrange Mode so it always closes immediately

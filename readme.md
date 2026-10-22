@@ -1,38 +1,39 @@
-# Beszel
+# <img src="assets/icons/shield-check.svg" width="26" height="26" align="absmiddle" alt="" /> Beszel
 
-Beszel is a lightweight server monitoring platform that includes Docker statistics, historical data, alert functions, and integrated security telemetry.
+Beszel is a lightweight server monitoring platform that includes Docker statistics, historical data, alert functions, unified service & systemd management, and integrated security telemetry.
 
-It has a friendly web interface, simple configuration, and is ready to use out of the box. It supports automatic backup, multi-user, OAuth authentication, dashboard rearrangement, and native Go security auditing.
+It features a clean web interface, zero-config setup, Iconimate vector icons ([iconimate.app](https://iconimate.app/)), Animate UI motion primitives (`@animate-ui/react`), full multi-resolution responsive layout (`320px` mobile to `4K` desktop), dashboard drag-and-drop rearrangement, and native Go security auditing.
 
 [![agent Docker Image Size](https://img.shields.io/docker/image-size/henrygd/beszel-agent/latest?logo=docker&label=agent%20image%20size)](https://hub.docker.com/r/henrygd/beszel-agent)
 [![hub Docker Image Size](https://img.shields.io/docker/image-size/henrygd/beszel/latest?logo=docker&label=hub%20image%20size)](https://hub.docker.com/r/henrygd/beszel)
 [![MIT license](https://img.shields.io/github/license/henrygd/beszel?color=%239944ee)](LICENSE)
 [![Crowdin](https://badges.crowdin.net/beszel/localized.svg)](https://crowdin.com/project/beszel)
+
 ![Beszel System Overview with Security Radar](assets/images/beszel-system-overview.png)
 
-## Features
+## <img src="assets/icons/lightning.svg" width="22" height="22" align="absmiddle" alt="" /> Features
 
-- **Lightweight**: Smaller and less resource-intensive than leading solutions.
-- **Simple**: Easy setup with little manual configuration required.
-- **Dashboard customization**: Per-server drag & drop rearrangement of system charts, stack categories, and service pills with visibility controls.
-- **Security Radar**: Integrated CVE vulnerability tracker, active port manager, SSH login auditing, and Fail2ban monitor.
-- **Pure Go architecture**: 100% written in Go with zero Python or external runtime dependencies.
-- **Alerts**: Configurable alerts for most metrics. Supports many notification services.
-- **Docker stats**: Tracks CPU, memory, and network usage history for each container.
-- **Network monitoring**: Monitor response time and interruptions directly from agents.
-- **S.M.A.R.T.**: Disk health data and notifications on drive failure.
-- **Multi-user**: Users manage their own systems. Admins can share systems across users.
-- **OAuth / OIDC**: Supports many OAuth2 providers. Password auth can be disabled.
-- **Automatic backups**: Save to and restore from disk or S3-compatible storage.
+- <img src="assets/icons/gauge.svg" width="18" height="18" align="absmiddle" alt="" /> **Lightweight**: Smaller and less resource-intensive than leading solutions.
+- <img src="assets/icons/rocket.svg" width="18" height="18" align="absmiddle" alt="" /> **Simple**: Easy setup with little manual configuration required.
+- <img src="assets/icons/stack.svg" width="18" height="18" align="absmiddle" alt="" /> **Unified Services, Containers & Systemd**: Single native card combining curated services, Docker containers, systemd units, and disk storage with live search, quick filters (`All`, `Our stack`, `Docker`, `Systemd`, `Active`, `Stopped`), CPU/RAM metrics, live logs, and start/stop controls.
+- <img src="assets/icons/sliders.svg" width="18" height="18" align="absmiddle" alt="" /> **Dashboard customization**: Per-server drag & drop rearrangement of system charts, security checks, and service cards with visibility controls.
+- <img src="assets/icons/shield.svg" width="18" height="18" align="absmiddle" alt="" /> **Security Radar**: Integrated 12-check security & health monitor, CVE vulnerability tracker, active UFW port manager, SSH login auditing, and Fail2ban control.
+- <img src="assets/icons/eye.svg" width="18" height="18" align="absmiddle" alt="" /> **Iconimate & Animate UI**: Vector icons from [Iconimate](https://iconimate.app/) with spring hover animations and `@animate-ui/react` motion primitives (gliding tab highlights, tactile button ripples, spring dialogs).
+- <img src="assets/icons/code.svg" width="18" height="18" align="absmiddle" alt="" /> **Pure Go architecture**: 100% written in Go with zero Python or external runtime dependencies.
+- <img src="assets/icons/bell.svg" width="18" height="18" align="absmiddle" alt="" /> **Alerts**: Configurable alerts for most metrics. Supports many notification services.
+- <img src="assets/icons/cube.svg" width="18" height="18" align="absmiddle" alt="" /> **Docker stats**: Tracks CPU, memory, and network usage history for each container.
+- <img src="assets/icons/globe.svg" width="18" height="18" align="absmiddle" alt="" /> **Network monitoring**: Monitor response time, bandwidth speedtest, and SSL certificate expiration directly from agents.
+- <img src="assets/icons/hard-drive.svg" width="18" height="18" align="absmiddle" alt="" /> **S.M.A.R.T.**: Disk health data and notifications on drive failure.
+- <img src="assets/icons/users.svg" width="18" height="18" align="absmiddle" alt="" /> **Multi-user & OAuth / OIDC**: Users manage their own systems. Supports OAuth2 providers and automatic backups to disk or S3-compatible storage.
 
-## Architecture
+## <img src="assets/icons/cpu.svg" width="22" height="22" align="absmiddle" alt="" /> Architecture
 
 Beszel consists of two main components: the **hub** and the **agent**.
 
-- **Hub**: A web application built on [PocketBase](https://pocketbase.io/) that provides a dashboard for viewing and managing connected systems.
-- **Agent**: Runs on each system you want to monitor and communicates system metrics to the hub.
+- <img src="assets/icons/stack.svg" width="18" height="18" align="absmiddle" alt="" /> **Hub**: A web application built on [PocketBase](https://pocketbase.io/) that provides a responsive dashboard for viewing and managing connected systems.
+- <img src="assets/icons/terminal.svg" width="18" height="18" align="absmiddle" alt="" /> **Agent**: Runs on each system you want to monitor and communicates system, service, and security metrics to the hub.
 
-## Getting started
+## <img src="assets/icons/rocket.svg" width="22" height="22" align="absmiddle" alt="" /> Getting started
 
 The [quick start guide](https://beszel.dev/guide/getting-started) and other documentation is available on our website, [beszel.dev](https://beszel.dev). You'll be up and running in a few minutes.
 
@@ -66,15 +67,15 @@ curl -sL http://<HUB_IP>:8090/install-agent.sh | bash -s -- --key "<YOUR_HUB_KEY
 
 The agent runs as an isolated systemd service, auto-discovers running containers and services, and streams hardware and security telemetry immediately.
 
-## Security Agent
+## <img src="assets/icons/shield.svg" width="22" height="22" align="absmiddle" alt="" /> Security Agent & Unified Services
 
-Each monitored server runs a built-in Go security subsystem (`agent/security.go` and `agent/security_actions.go`) that reports to the Hub (`internal/hub/security.go`). On the server detail page (`/system/:id`), telemetry and controls are split into three independent, collapsible cards:
+Each monitored server runs a built-in Go security subsystem (`agent/security.go` and `agent/security_actions.go`) that reports to the Hub (`internal/hub/security.go`). On the server detail page (`/system/:id`), telemetry and controls are organized into three independent, collapsible native cards that adapt across mobile (`320px`), tablet/split-screen (`768px`), and desktop (`1480px+`) resolutions:
 
-1. **Security**: 8 core security checks + 4 system health indicators (hidden by default when all 12 pass, with a toggle to expand all checks), UFW port manager, Fail2ban jail monitor, SSH login log, and CVE patch status.
-2. **Services**: auto-discovered Docker containers and systemd units grouped by category (`Containers`, `VPN & Proxy`, `Databases`, `Web`, `Monitoring`, `System`), with start/stop/restart controls, live log viewer, Docker storage breakdown, and disk cleanup actions.
-3. **Network & domains**: ICMP/TCP latency probes (`1.1.1.1`, `8.8.8.8`, `9.9.9.9`), on-demand bandwidth speedtest, and SSL certificate expiration monitoring for configured domains. This card is automatically hidden on nodes without domains or external network probes.
+1. <img src="assets/icons/shield-check.svg" width="18" height="18" align="absmiddle" alt="" /> **Security**: 8 core security checks + 4 system health indicators (compact summary bar when all 12 pass, with a toggle to expand all 12 checks), UFW port manager, Fail2ban jail monitor, SSH login log, and CVE patch status.
+2. <img src="assets/icons/cube.svg" width="18" height="18" align="absmiddle" alt="" /> **Services, Containers & Systemd**: Unified service management card with 5 segmented tabs (`All Services`, `Our Services`, `All Containers`, `Systemd Services`, `Disk & Storage`), category badges, CPU/RAM usage, port/status metadata, live log viewer, and start/stop/restart actions.
+3. <img src="assets/icons/globe.svg" width="18" height="18" align="absmiddle" alt="" /> **Network & domains**: ICMP/TCP latency probes (`1.1.1.1`, `8.8.8.8`, `9.9.9.9`), on-demand bandwidth speedtest, and SSL certificate expiration monitoring for configured domains.
 
-### 8 Core Security Checks
+### <img src="assets/icons/lock.svg" width="20" height="20" align="absmiddle" alt="" /> 8 Core Security Checks
 
 | Check ID | Name | What It Inspects | Warning / Critical Condition |
 | :--- | :--- | :--- | :--- |
@@ -87,7 +88,7 @@ Each monitored server runs a built-in Go security subsystem (`agent/security.go`
 | `cron_timers` | Cron & Timers | `systemctl is-active beszel-security-audit.timer` and root cron jobs | Reports timer status |
 | `kernel_sysctl` | Kernel & Sysctl | `/proc/sys/kernel/randomize_va_space` (ASLR) and `/proc/sys/net/ipv4/tcp_syncookies` | `warn` if ASLR is not `2` |
 
-### 4 System Health Indicators
+### <img src="assets/icons/gauge.svg" width="20" height="20" align="absmiddle" alt="" /> 4 System Health Indicators
 
 | Indicator ID | What It Tracks | Thresholds |
 | :--- | :--- | :--- |
@@ -96,17 +97,17 @@ Each monitored server runs a built-in Go security subsystem (`agent/security.go`
 | `cpu_steal` | Hypervisor CPU steal time percentage calculated from `/proc/stat` | `warn` at 10%, `crit` at 20% |
 | `oom_reboot` | 7-day kernel Out-Of-Memory kills (`journalctl -k`) and `/proc/sys/kernel/random/boot_id` changes | `warn` if any OOM kill occurred in the last 7 days |
 
-### Schedules, Non-Restart Policy & Auto-Rollback Guard
+### <img src="assets/icons/arrows-clockwise.svg" width="20" height="20" align="absmiddle" alt="" /> Schedules, Non-Restart Policy & Auto-Rollback Guard
 
-- **10-Minute Vulnerability Watch (`beszel-vuln-watch.timer`)**: runs `beszel-agent security --vuln-watch` every 10 minutes. Checks `apt-get -s dist-upgrade` for pending security patches, installs security-only upgrades (`apt-get install -y --only-upgrade`), and sends a `vuln_patched` notification to the Hub.
-- **Nightly Audit & Upgrade (`beszel-security-audit.timer`)**: runs daily at `04:00` (`beszel-agent security --full`). Performs a full non-interactive upgrade (`apt-get dist-upgrade -y`) and syncs the complete audit report.
-- **Strict No-Restart Policy**: before running `apt-get`, the agent writes `/etc/apt/apt.conf.d/99-beszel-norestart` (`--force-confdef`, `--force-confold`) and `/etc/needrestart/conf.d/99-beszel-norestart.conf` (`$nrconf{restart} = 'l'`). Package upgrades never reboot the server or restart active SSH, VPN, or container sessions.
-- **Pre-Flight Snapshot & Automatic Rollback**:
+- <img src="assets/icons/clock.svg" width="16" height="16" align="absmiddle" alt="" /> **10-Minute Vulnerability Watch (`beszel-vuln-watch.timer`)**: runs `beszel-agent security --vuln-watch` every 10 minutes. Checks `apt-get -s dist-upgrade` for pending security patches, installs security-only upgrades (`apt-get install -y --only-upgrade`), and sends a `vuln_patched` notification to the Hub.
+- <img src="assets/icons/clock.svg" width="16" height="16" align="absmiddle" alt="" /> **Nightly Audit & Upgrade (`beszel-security-audit.timer`)**: runs daily at `04:00` (`beszel-agent security --full`). Performs a full non-interactive upgrade (`apt-get dist-upgrade -y`) and syncs the complete audit report.
+- <img src="assets/icons/lock.svg" width="16" height="16" align="absmiddle" alt="" /> **Strict No-Restart Policy**: before running `apt-get`, the agent writes `/etc/apt/apt.conf.d/99-beszel-norestart` (`--force-confdef`, `--force-confold`) and `/etc/needrestart/conf.d/99-beszel-norestart.conf` (`$nrconf{restart} = 'l'`). Package upgrades never reboot the server or restart active SSH, VPN, or container sessions.
+- <img src="assets/icons/arrows-clockwise.svg" width="16" height="16" align="absmiddle" alt="" /> **Pre-Flight Snapshot & Automatic Rollback**:
   1. Before installing packages, the agent saves `/var/lib/beszel-security/preflight-snapshot.json` (current package versions, expected listening ports, and failed systemd units) and copies cached `.deb` files from `/var/cache/apt/archives` to `/var/lib/beszel-security/rollback-debs`.
   2. After the upgrade finishes, the agent verifies `dpkg --audit`, `sshd -t`, `nginx -t`, expected listening ports, and checks for any newly failed systemd units.
   3. If verification fails and a broken service cannot be restarted, the agent automatically downgrades the affected packages (`apt-get install -y --allow-downgrades` or `dpkg -i` from `rollback-debs`), places them on `apt-mark hold`, and sends an `auto_rollback` alert to the Hub.
 
-### Active Management & API Authentication
+### <img src="assets/icons/terminal.svg" width="20" height="20" align="absmiddle" alt="" /> Active Management & API Authentication
 
 - **Firewall Ports**: open or close UFW ports directly from the Security card (`POST /api/security-port`). Protected ports (`22`, `2244`, `8090`, `45876`, or custom `protected_ports` in `/etc/beszel-security/config.json`) are locked against remote closure.
 - **Fail2ban & SSH**: ban or unban IP addresses in Fail2ban (`POST /api/security-f2b`) and inspect recent SSH logins.
@@ -114,24 +115,24 @@ Each monitored server runs a built-in Go security subsystem (`agent/security.go`
 - **Maintenance Actions**: trigger on-demand telemetry sync, CVE patching, package rollback, Docker prune (`docker system prune -af`), disk cleanup (`journalctl --vacuum-time=7d`, `apt-get clean`), or bandwidth speedtest (`POST /api/security-trigger` with an explicit mode whitelist).
 - **Authentication**: all browser-facing `/api/security-*` endpoints are protected by Nginx `auth_request` against PocketBase (`/api/collections/users/auth-refresh`), requiring a valid user bearer token. Agent-to-Hub report ingestion (`POST /api/security-report` and `POST /api/security-event`) authenticates via the `X-Beszel-Security-Token` header.
 
-## Screenshots
+## <img src="assets/icons/eye.svg" width="22" height="22" align="absmiddle" alt="" /> Screenshots
 
-### System Overview & Security Radar
-Integrated CVE checks, active ports, Fail2ban monitor, and system telemetry:
+### <img src="assets/icons/shield-check.svg" width="18" height="18" align="absmiddle" alt="" /> System Overview, Security Radar & Unified Services
+Integrated CVE checks, active ports, Fail2ban monitor, and unified services/containers/systemd table:
 
 ![System Overview](assets/images/beszel-system-overview.png)
 
-### Drag & Drop Dashboard Rearrange Mode
-Rearrange system charts, stack tabs, and visibility controls directly on the live page:
+### <img src="assets/icons/sliders.svg" width="18" height="18" align="absmiddle" alt="" /> Drag & Drop Dashboard Rearrange Mode
+Rearrange system charts, security checks, and visibility controls directly on the live page:
 
 ![Rearrange Mode](assets/images/beszel-rearrange-mode.png)
 
-### All-in-One Agent Installer
+### <img src="assets/icons/terminal.svg" width="18" height="18" align="absmiddle" alt="" /> All-in-One Agent Installer
 1-liner installer for hardware monitoring and automatic security auditing:
 
 ![All-in-One Installer](assets/images/beszel-agent-installer.png)
 
-## Tailscale Setup
+## <img src="assets/icons/globe.svg" width="22" height="22" align="absmiddle" alt="" /> Tailscale Setup
 
 Running Beszel over [Tailscale](https://tailscale.com) allows monitoring your fleet across clouds, home labs, and VPS instances with zero open firewall ports on the public internet. See the [Tailscale deployment guide](TAILSCALE.md) for complete details on ACL policies, sidecars, and troubleshooting.
 
@@ -203,25 +204,19 @@ tailscale serve --bg 8090
 
 Your Beszel dashboard is now securely available at `https://<hub-name>.<your-tailnet>.ts.net` with zero certificate configuration needed.
 
-## Supported metrics
+## <img src="assets/icons/gauge.svg" width="22" height="22" align="absmiddle" alt="" /> Supported metrics
 
-- **CPU usage** - Host system and Docker / Podman containers.
-- **Memory usage** - Host system and containers. Includes swap and ZFS ARC.
-- **Disk usage** - Host system partitions and mount points.
-- **Disk I/O** - Host system partitions and devices.
-- **Network usage** - Host system and containers.
-- **Load average** - Host system.
-- **Security Radar** - Open firewall ports, active connections, SSH login attempts, Fail2ban jails, CVE patch backlog.
-- **Services & Stack** - Automatic tracking of Docker containers, systemd services, and web endpoints.
-- **Temperature** - Host system sensors.
-- **Fan speed** - Host system sensors (Linux, via `/sys/class/hwmon`).
-- **GPU usage / power draw** - Nvidia, AMD, and Intel.
-- **Battery charge** - Host system and some peripherals.
-- **Containers** - Status and metrics of all running Docker / Podman containers.
-- **S.M.A.R.T.** - Host system disk health (includes eMMC wear/EOL and Linux mdraid array health via sysfs when available).
-- **ZFS** - Pool capacity, usage, health, I/O throughput, scrub status, and per-dataset usage.
+- <img src="assets/icons/cpu.svg" width="16" height="16" align="absmiddle" alt="" /> **CPU usage**: Host system and Docker / Podman containers.
+- <img src="assets/icons/memory.svg" width="16" height="16" align="absmiddle" alt="" /> **Memory usage**: Host system and containers. Includes swap and ZFS ARC.
+- <img src="assets/icons/hard-drive.svg" width="16" height="16" align="absmiddle" alt="" /> **Disk usage & I/O**: Host system partitions, devices, and mount points.
+- <img src="assets/icons/globe.svg" width="16" height="16" align="absmiddle" alt="" /> **Network usage**: Host system and containers.
+- <img src="assets/icons/gauge.svg" width="16" height="16" align="absmiddle" alt="" /> **Load average**: Host system.
+- <img src="assets/icons/shield.svg" width="16" height="16" align="absmiddle" alt="" /> **Security Radar**: Open firewall ports, active connections, SSH login attempts, Fail2ban jails, CVE patch backlog.
+- <img src="assets/icons/stack.svg" width="16" height="16" align="absmiddle" alt="" /> **Services, Containers & Systemd**: Unified tracking and management of curated stack services, Docker containers, systemd units, and web endpoints.
+- <img src="assets/icons/lightning.svg" width="16" height="16" align="absmiddle" alt="" /> **Temperature, Fan speed, GPU & Battery**: Host system hardware sensors (`hwmon`, Nvidia/AMD/Intel GPUs, battery charge).
+- <img src="assets/icons/hard-drive.svg" width="16" height="16" align="absmiddle" alt="" /> **S.M.A.R.T. & ZFS**: Host disk health, eMMC wear, Linux mdraid arrays, and ZFS pool capacity/health/scrub status.
 
-## Help and discussion
+## <img src="assets/icons/users.svg" width="22" height="22" align="absmiddle" alt="" /> Help and discussion
 
 Please search existing issues and discussions before opening a new one.
 
