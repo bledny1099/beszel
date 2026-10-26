@@ -2802,4 +2802,11 @@ div.grid.gap-4.mb-14 > *,
   }
 }
 
+/* Native Beszel system header info bar responsive wrapping on viewports < 1280px */
+div.grid.gap-4.mb-14 > div.rounded-lg.border.bg-card .flex.text-nowrap {
+  flex-wrap: wrap !important;
+  row-gap: 0.375rem;
+}
+
+
 

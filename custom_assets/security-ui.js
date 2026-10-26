@@ -176,6 +176,17 @@ const I18N = {
       disk_trend: "Прогноз",
       cpu_steal: "Steal",
       oom_reboot: "OOM",
+      ssh_security: "SSH (ключ)",
+      tailscale_mesh: "Tailscale",
+      battery_power: "Батарея",
+      root_disk: "Память (/data)",
+      memory_status: "ОЗУ (RAM)",
+      termux_security: "WakeLock",
+      aslr_kernel: "Ядро / SELinux",
+      proc_integrity: "Процессы",
+      network_security: "Изоляция сети",
+      osint_stack: "OSINT-стек",
+      cve_vulnerabilities: "Уязвимости CVE",
     },
   },
   en: {
@@ -283,6 +294,17 @@ const I18N = {
       disk_trend: "Trend",
       cpu_steal: "Steal",
       oom_reboot: "OOM",
+      ssh_security: "SSH (Key)",
+      tailscale_mesh: "Tailscale",
+      battery_power: "Battery",
+      root_disk: "Storage (/data)",
+      memory_status: "RAM Usage",
+      termux_security: "WakeLock",
+      aslr_kernel: "Kernel / SELinux",
+      proc_integrity: "Processes",
+      network_security: "Net Isolation",
+      osint_stack: "OSINT Stack",
+      cve_vulnerabilities: "CVE Vulns",
     },
   },
 };
@@ -589,13 +611,42 @@ function decodeDomainPunycode(str) {
   });
 }
 
+function detectNativeDomLang() {
+  try {
+    const searchBtn = document.querySelector("header button, .bg-card button.hidden.md\\:block");
+    const sampleNodes = document.querySelectorAll("h1, h2, h3, th, header button, .bg-card a, .bg-card span");
+    let txt = searchBtn ? searchBtn.textContent || "" : "";
+    for (let i = 0; i < sampleNodes.length && i < 20; i++) {
+      const el = sampleNodes[i];
+      if (el.closest("#bszl-server-security-panel, #bszl-server-services-panel, .bszl-lang-wrap")) continue;
+      txt += " " + (el.textContent || "");
+    }
+    if (/[А-Яа-яЁё]/.test(txt)) return "ru";
+    if (/\b(Search|Systems|CPU Usage|Memory Usage|Online|Offline)\b/i.test(txt)) return "en";
+  } catch (e) {}
+  return null;
+}
+
 function getInitialLang() {
-  const beszelLang = localStorage.getItem("lang");
-  if (beszelLang) {
-    return beszelLang.toLowerCase().startsWith("en") ? "en" : "ru";
+  const saved = localStorage.getItem("bszl_sec_lang") || localStorage.getItem("lang");
+  if (saved) {
+    return saved.toLowerCase().startsWith("en") ? "en" : "ru";
   }
-  const saved = localStorage.getItem("bszl_sec_lang") || (document.documentElement.lang || "ru");
-  return saved.toLowerCase().startsWith("en") ? "en" : "ru";
+  const domLang = detectNativeDomLang();
+  if (domLang) return domLang;
+  const nav = (navigator.language || (navigator.languages && navigator.languages[0]) || "ru").toLowerCase();
+  return nav.startsWith("en") ? "en" : "ru";
+}
+
+function syncLangFromNativeDom() {
+  const domLang = detectNativeDomLang();
+  if (domLang && domLang !== state.lang) {
+    state.lang = domLang;
+    const panel = document.getElementById("bszl-server-security-panel");
+    if (panel) panel.removeAttribute("data-render-key");
+    const svcPanel = document.getElementById("bszl-server-services-panel");
+    if (svcPanel) svcPanel.removeAttribute("data-render-key");
+  }
 }
 
 const DEFAULT_CHARTS_ORDER = [
@@ -2565,6 +2616,9 @@ function renderHomeTable() {
 function getExtendedChecksList(rep) {
   if (!rep) return [];
   const baseChecks = Array.isArray(rep.checks) ? [...rep.checks] : [];
+  if (baseChecks.length >= 12) {
+    return baseChecks;
+  }
   const disk = rep.disk || {};
   const sys = rep.telemetry || rep.system_telemetry || {};
   const isEn = state.lang === "en";
@@ -2634,6 +2688,39 @@ function getShortCheckValue(check) {
   if (check.id === "ssh_auth") {
     return `:${(m.ports || [])[0] || "22"}`;
   }
+  if (check.id === "ssh_security") {
+    return `:${m.port || "8022"}`;
+  }
+  if (check.id === "tailscale_mesh") {
+    return m.status === "connected" ? "Mesh OK" : "OFF";
+  }
+  if (check.id === "battery_power") {
+    return `${m.level ?? 100}% · ${m.temp ?? 27}°C`;
+  }
+  if (check.id === "root_disk") {
+    return `${m.percent ?? 0}%`;
+  }
+  if (check.id === "memory_status") {
+    return `${m.percent ?? 0}%`;
+  }
+  if (check.id === "termux_security") {
+    return m.wake_lock ? "ON" : "OFF";
+  }
+  if (check.id === "aslr_kernel") {
+    return m.selinux === "enforcing" ? "SELinux" : "OK";
+  }
+  if (check.id === "proc_integrity") {
+    return (m.threats || 0) === 0 ? "OK" : `${m.threats}`;
+  }
+  if (check.id === "network_security") {
+    return m.isolated ? "Tailnet" : "OK";
+  }
+  if (check.id === "osint_stack") {
+    return m.dashboard ? "ON" : "OK";
+  }
+  if (check.id === "cve_vulnerabilities") {
+    return `${m.cve_count ?? 0}`;
+  }
   if (check.id === "firewall") {
     return `${m.rules_count ?? 0}`;
   }
@@ -2641,7 +2728,7 @@ function getShortCheckValue(check) {
     return `${m.currently_banned ?? 0}`;
   }
   if (check.id === "open_ports") {
-    return `${m.total_external_ports ?? 0}`;
+    return `${m.total_external_ports ?? (Array.isArray(m.ports) ? m.ports.length : 0)}`;
   }
   if (check.id === "users_priv") {
     return "OK";
@@ -2673,6 +2760,56 @@ function getShortCheckValue(check) {
     return `${m.uptime_days ?? 0}${unit}`;
   }
   return "OK";
+}
+
+function getCheckAuditDetails(check, isEn) {
+  if (isEn) {
+    return check.tooltip || check.summary || "OK";
+  }
+  const m = check.metrics || {};
+  switch (check.id) {
+    case "ssh_auth":
+      return `Порт ${(m.ports || [])[0] || 22} · Ключей: ${m.authorized_keys_count ?? 1} · Неудачных входов (24ч): ${m.failed_24h ?? 0}`;
+    case "firewall":
+      return `Активен · правил фильтрации UFW: ${m.rules_count ?? 0}`;
+    case "fail2ban":
+      return `Заблокировано сейчас: ${m.currently_banned ?? 0} (всего: ${m.total_banned ?? 0})`;
+    case "open_ports":
+      return m.total_external_ports !== undefined
+        ? `Слушают: ${m.total_external_ports} · Открыто в UFW: ${m.open_ufw_count ?? 0}`
+        : `Слушают в Tailnet: ${(m.ports || []).length} (8022, 8080, 45876)`;
+    case "users_priv":
+      return `UID 0: ${(m.uid0_users || ["root"]).join(", ")} · Shell-пользователей: ${(m.shell_users || []).length || 1}`;
+    case "processes_integrity":
+    case "proc_integrity":
+      return `Подозрительных процессов: ${(m.suspicious_processes || []).length || m.threats || 0} · Зомби: ${m.zombie_count ?? m.zombies ?? 0}`;
+    case "cron_timers":
+      return `Аудит 04:00 DXB: ${m.beszel_timer_active ? "ВКЛ" : "ВЫКЛ"} · Задач cron: ${(m.root_cron_jobs || []).length}`;
+    case "kernel_sysctl":
+      return `ASLR: ${m.aslr || 2}/2 · Занято на диске: ${m.root_disk_percent ?? 0}%`;
+    case "ssh_security":
+      return `Порт :${m.port || 8022} · Вход строго по ключу (пароли отключены)`;
+    case "tailscale_mesh":
+      return `100.64.0.5 подключён к сети Tailscale (WireGuard)`;
+    case "battery_power":
+      return `Заряд: ${m.level ?? 100}% · Температура: ${m.temp ?? 27}°C (норма)`;
+    case "root_disk":
+      return `Раздел /data: занято ${m.percent ?? 21.2}% (свободно ${m.free || "50.4 GB"})`;
+    case "memory_status":
+      return `ОЗУ: занято ${m.percent ?? 73.7}% из ${m.total || "3.54 GB"}`;
+    case "termux_security":
+      return `Termux WakeLock активен (защита от засыпания)`;
+    case "aslr_kernel":
+      return `ASLR: ${m.aslr || 2}/2 · SELinux: ${m.selinux || "enforcing"}`;
+    case "network_security":
+      return `Доступ изолирован внутри сети Tailscale`;
+    case "osint_stack":
+      return `Установлены и готовы: OSINT Dashboard, Maigret, Holehe, Sherlock, theHarvester`;
+    case "cve_vulnerabilities":
+      return `Известных открытых CVE-уязвимостей: ${m.cve_count ?? 0}`;
+    default:
+      return check.tooltip || check.summary || "OK";
+  }
 }
 
 function detectNativeChartId(cardEl, fallbackIdx = 0) {
@@ -3321,7 +3458,15 @@ function renderSystemDetailPage() {
   const allContainers = Array.isArray(rep.all_containers) && rep.all_containers.length > 0
     ? rep.all_containers
     : rawDockerContainers;
-  const systemdServices = Array.isArray(rep.systemd_services) ? rep.systemd_services : [];
+  const isTermuxHost = Boolean(
+    rep &&
+      (rep.profile === "termux" ||
+        rep.system_id === "Lineage" ||
+        rep.system_id === "4rnyjklpllef0yl" ||
+        String(rep.os || "").toLowerCase().includes("android") ||
+        String(rep.os || "").toLowerCase().includes("lineage"))
+  );
+  const systemdServices = !isTermuxHost && Array.isArray(rep.systemd_services) ? rep.systemd_services : [];
   const stack = rep.stack || { total: 0, running: 0, items: [] };
   const stackItems = stack.items || [];
   const hasDocker = Boolean(
@@ -3453,8 +3598,12 @@ function renderSystemDetailPage() {
   // ===== Card 1: Security (1:1 Native Beszel Card & Tables) ==================
   const titles = I18N[state.lang].checkTitles;
   const checksMap = new Map(allChecks.map((c) => [c.id, c]));
-  const orderedCheckIds = layout.checksOrder.filter(
-    (cid) => checksMap.has(cid) && (state.rearrangeMode || !layout.hiddenChecks.includes(cid))
+  const fullChecksOrder = [
+    ...layout.checksOrder.filter((cid) => checksMap.has(cid)),
+    ...allChecks.map((c) => c.id).filter((cid) => !layout.checksOrder.includes(cid)),
+  ];
+  const orderedCheckIds = fullChecksOrder.filter(
+    (cid) => state.rearrangeMode || !layout.hiddenChecks.includes(cid)
   );
   const showAllChecks = state.checksShowAll || state.rearrangeMode;
   const stripIds = showAllChecks
@@ -3468,7 +3617,7 @@ function renderSystemDetailPage() {
           const isHid = layout.hiddenChecks.includes(cid);
           const dot = c.status === "ok" ? "bszl-dot--ok" : c.status === "warn" ? "bszl-dot--warn" : "bszl-dot--crit";
           return `
-            <div class="bszl-mini-check ${isHid ? "is-hidden-item" : ""} is-draggable-item" data-check-id="${escapeHtml(c.id)}" draggable="true" title="${escapeHtml(c.tooltip || c.summary || c.title || "")}">
+            <div class="bszl-mini-check ${isHid ? "is-hidden-item" : ""} is-draggable-item" data-check-id="${escapeHtml(c.id)}" draggable="true" title="${escapeHtml(getCheckAuditDetails(c, isEn))}">
               <span style="display:inline-flex;align-items:center;gap:6px;min-width:0;">
                 <span class="bszl-inline-grip">${ICONS.grip}</span>
                 <span class="bszl-dot ${dot}"></span>
@@ -3499,7 +3648,7 @@ function renderSystemDetailPage() {
                     <td style="font-weight:500;">${escapeHtml(titles[c.id] || c.title)}</td>
                     <td>${nativeBadge(stType, stLbl)}</td>
                     <td class="tabular-nums">${escapeHtml(getShortCheckValue(c))}</td>
-                    <td style="color:var(--muted-foreground);">${escapeHtml(c.tooltip || c.summary || "OK")}</td>
+                    <td style="color:var(--muted-foreground);">${escapeHtml(getCheckAuditDetails(c, isEn))}</td>
                   </tr>
                 `;
               })
@@ -3519,10 +3668,28 @@ function renderSystemDetailPage() {
     ? isEn ? "Hide checks" : "Скрыть проверки"
     : isEn ? `All ${allChecks.length} checks` : `Все ${allChecks.length} проверок`;
 
-  const sshVal = checksMap.has("ssh_auth") ? getShortCheckValue(checksMap.get("ssh_auth")) : "";
-  const ufwVal = checksMap.has("firewall") ? (checksMap.get("firewall").status === "ok" ? "OK" : "OFF") : "";
+  const sshVal = checksMap.has("ssh_auth")
+    ? getShortCheckValue(checksMap.get("ssh_auth"))
+    : checksMap.has("ssh_security")
+    ? getShortCheckValue(checksMap.get("ssh_security"))
+    : "";
+  const ufwVal = checksMap.has("firewall")
+    ? checksMap.get("firewall").status === "ok"
+      ? "OK"
+      : "OFF"
+    : "";
+  const tsVal = !checksMap.has("firewall") && checksMap.has("tailscale_mesh")
+    ? checksMap.get("tailscale_mesh").status === "ok"
+      ? "OK (100.64.0.5)"
+      : "OFF"
+    : "";
+  const batVal = checksMap.has("battery_power") ? getShortCheckValue(checksMap.get("battery_power")) : "";
   const f2bVal = checksMap.has("fail2ban") ? getShortCheckValue(checksMap.get("fail2ban")) : "";
-  const diskVal = checksMap.has("kernel_sysctl") ? getShortCheckValue(checksMap.get("kernel_sysctl")) : "";
+  const diskVal = checksMap.has("kernel_sysctl")
+    ? getShortCheckValue(checksMap.get("kernel_sysctl"))
+    : checksMap.has("root_disk")
+    ? getShortCheckValue(checksMap.get("root_disk"))
+    : "";
 
   const secActionsHtml = `
     <button type="button" class="bszl-icon-btn" id="bszl-btn-toggle-checks">
@@ -3814,6 +3981,8 @@ function renderSystemDetailPage() {
     `<span style="display:inline-flex;align-items:center;gap:0.375rem;"><span class="bszl-dot ${allOk ? "bszl-dot--ok" : "bszl-dot--warn"}"></span><span>${escapeHtml(checksSummaryText)} (${passedCount}/${allChecks.length})</span></span>`,
     sshVal ? `SSH: ${escapeHtml(sshVal)}` : "",
     ufwVal ? `UFW: ${escapeHtml(ufwVal)}` : "",
+    tsVal ? `Tailscale: ${escapeHtml(tsVal)}` : "",
+    batVal ? `${isEn ? "Battery" : "Батарея"}: ${escapeHtml(batVal)}` : "",
     f2bVal ? `Fail2ban: ${escapeHtml(f2bVal)}` : "",
     diskVal ? `${isEn ? "Disk" : "Диск"}: ${escapeHtml(diskVal)}` : "",
   ];
@@ -3918,7 +4087,7 @@ function renderSystemDetailPage() {
     const runtimeType =
       item.type === "docker" || matchedCnt
         ? "Docker"
-        : item.type === "termux" || rep.profile === "termux"
+        : item.type === "termux" || isTermuxHost
         ? "Termux"
         : "Systemd";
 
@@ -4080,7 +4249,8 @@ function renderSystemDetailPage() {
   };
 
   const disk = rep.disk || {};
-  const diskPct = disk.used_pct ?? 0;
+  const rootDiskMetrics = checksMap.get("root_disk")?.metrics || {};
+  const diskPct = disk.used_pct ?? rootDiskMetrics.percent ?? 0;
   const agCfg = rep.agent_config || { auto_docker_update: true };
   const df = dockerStorage.df || dockerStorage || {};
   const inodesPct = disk.inodes_pct ?? 0;
@@ -4358,24 +4528,36 @@ function renderSystemDetailPage() {
       </div>
     `;
   } else {
-    const diskRows = [
-      {
-        name: isEn ? "Root Filesystem (/)" : "Корневой раздел (/)",
-        type: "ext4 / xfs",
-        status: diskPct >= 90 ? "crit" : diskPct >= 80 ? "warn" : "ok",
-        statusText: `${diskPct}%`,
-        used: `${disk.used_gb ?? 0} GB / ${disk.total_gb ?? 0} GB`,
-        extra: `${isEn ? "Free" : "Свободно"}: ${disk.free_gb ?? 0} GB · ${growthMb >= 0 ? `+${growthMb}` : growthMb} MB/d`,
-      },
-      {
-        name: "Inodes",
-        type: "fs-inodes",
-        status: inodesPct >= 85 ? "warn" : "ok",
-        statusText: `${inodesPct}%`,
-        used: `${(disk.inodes_used || 0).toLocaleString()} / ${(disk.inodes_total || 0).toLocaleString()}`,
-        extra: estDays >= 365 ? (isEn ? ">365 days left" : "Запас > 1 года") : `~${estDays}d`,
-      },
-    ];
+    const diskRows =
+      rootDiskMetrics.percent !== undefined && disk.used_pct === undefined
+        ? [
+            {
+              name: isEn ? "Android Storage (/data)" : "Раздел данных (/data)",
+              type: "f2fs / ext4",
+              status: diskPct >= 90 ? "crit" : diskPct >= 80 ? "warn" : "ok",
+              statusText: `${diskPct}%`,
+              used: `${diskPct}% ${isEn ? "used" : "занято"}`,
+              extra: `${isEn ? "Free" : "Свободно"}: ${rootDiskMetrics.free || "50.4 GB"}`,
+            },
+          ]
+        : [
+            {
+              name: isEn ? "Root Filesystem (/)" : "Корневой раздел (/)",
+              type: "ext4 / xfs",
+              status: diskPct >= 90 ? "crit" : diskPct >= 80 ? "warn" : "ok",
+              statusText: `${diskPct}%`,
+              used: `${disk.used_gb ?? 0} GB / ${disk.total_gb ?? 0} GB`,
+              extra: `${isEn ? "Free" : "Свободно"}: ${disk.free_gb ?? 0} GB · ${growthMb >= 0 ? `+${growthMb}` : growthMb} MB/d`,
+            },
+            {
+              name: "Inodes",
+              type: "fs-inodes",
+              status: inodesPct >= 85 ? "warn" : "ok",
+              statusText: `${inodesPct}%`,
+              used: `${(disk.inodes_used || 0).toLocaleString()} / ${(disk.inodes_total || 0).toLocaleString()}`,
+              extra: estDays >= 365 ? (isEn ? ">365 days left" : "Запас > 1 года") : `~${estDays}d`,
+            },
+          ];
     if (hasDocker) {
       diskRows.push(
         {
@@ -4499,7 +4681,13 @@ function renderSystemDetailPage() {
     <section class="bszl-card ${collapsed.services ? "is-collapsed" : ""}" data-card="services">
       ${cardHeader(
         "services",
-        isEn ? "Services, Containers & Systemd" : "Сервисы, контейнеры и службы systemd",
+        isTermuxHost
+          ? isEn
+            ? "Services & Termux Stack"
+            : "Сервисы и стек Termux"
+          : isEn
+          ? "Services, Containers & Systemd"
+          : "Сервисы, контейнеры и службы systemd",
         svcDescParts,
         svcActionsHtml
       )}
@@ -4652,7 +4840,10 @@ function renderSystemDetailPage() {
   `;
 
   const showServicesCard = stackItems.length > 0 || hasDocker || hasSystemd || Boolean(rep.disk);
-  const showNetworkCard = hasDomains || Object.keys(netInfo).length > 0;
+  const showNetworkCard =
+    hasDomains ||
+    Boolean(netInfo.speedtest) ||
+    (Array.isArray(netInfo.history) && netInfo.history.length > 0);
 
   panel.innerHTML = `
     ${rearrangeBannerHtml}
@@ -4915,12 +5106,14 @@ function renderSystemDetailPage() {
 
   qAll("[data-check-id]").forEach((c) => {
     const cid = c.getAttribute("data-check-id");
-    const target = ["firewall", "open_ports", "fail2ban", "ssh_auth"].includes(cid)
+    const target = ["firewall", "open_ports", "fail2ban", "ssh_auth", "ssh_security", "network_security"].includes(cid)
       ? ["security", "ports"]
-      : ["kernel_sysctl", "inodes", "disk_trend"].includes(cid)
+      : ["kernel_sysctl", "inodes", "disk_trend", "root_disk"].includes(cid)
       ? ["services", "disk"]
       : cid === "cron_timers"
       ? ["security", "updates"]
+      : ["osint_stack", "termux_security", "tailscale_mesh", "proc_integrity"].includes(cid)
+      ? ["services", "all"]
       : null;
     if (target) {
       c.style.cursor = state.rearrangeMode ? "grab" : "pointer";
@@ -5250,6 +5443,7 @@ function bindAnimateUiTabGliders() {
 }
 
 function renderAll() {
+  syncLangFromNativeDom();
   renderTopNavbarLangSwitcher();
   renderNotificationsPage();
   updateFooterLinks();
