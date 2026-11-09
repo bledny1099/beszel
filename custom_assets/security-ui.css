@@ -569,6 +569,56 @@ html.dark .bszl-svc-tag {
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
 
+/* --- VPS Audit PASS / WARN / FAIL Badges --- */
+.bszl-audit-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: calc(var(--radius, 0.8rem) - 4px);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  line-height: 1.2;
+}
+
+.bszl-audit-pass {
+  background-color: hsl(142 76% 36% / 0.15);
+  color: hsl(142 72% 38%);
+  border: 1px solid hsl(142 72% 38% / 0.35);
+}
+
+.bszl-audit-warn {
+  background-color: hsl(38 92% 50% / 0.15);
+  color: hsl(38 92% 44%);
+  border: 1px solid hsl(38 92% 50% / 0.35);
+}
+
+.bszl-audit-fail {
+  background-color: hsl(0 84% 60% / 0.15);
+  color: hsl(0 84% 56%);
+  border: 1px solid hsl(0 84% 60% / 0.35);
+}
+
+.dark .bszl-audit-pass {
+  background-color: hsl(142 70% 45% / 0.2);
+  color: hsl(142 70% 55%);
+  border-color: hsl(142 70% 45% / 0.4);
+}
+
+.dark .bszl-audit-warn {
+  background-color: hsl(38 92% 50% / 0.2);
+  color: hsl(38 92% 60%);
+  border-color: hsl(38 92% 50% / 0.4);
+}
+
+.dark .bszl-audit-fail {
+  background-color: hsl(0 75% 55% / 0.2);
+  color: hsl(0 75% 65%);
+  border-color: hsl(0 75% 55% / 0.4);
+}
+
 /* --- Port Manager Bar, Inputs & Native 1:1 Tables --- */
 .bszl-port-bar {
   display: flex;
