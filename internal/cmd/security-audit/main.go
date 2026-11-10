@@ -547,6 +547,16 @@ func collectPackageUpdates() map[string]any {
 
 	if _, err := os.Stat("/var/run/reboot-required"); err == nil {
 		res["reboot_required"] = true
+		if pData, err := os.ReadFile("/var/run/reboot-required.pkgs"); err == nil {
+			var pkgs []string
+			for _, p := range strings.Split(strings.TrimSpace(string(pData)), "\n") {
+				p = strings.TrimSpace(p)
+				if p != "" {
+					pkgs = append(pkgs, p)
+				}
+			}
+			res["reboot_required_packages"] = pkgs
+		}
 	}
 
 	_, heldOut := runCmd("apt-mark showhold 2>/dev/null", 10)
@@ -834,8 +844,193 @@ func checkKernelResources(tel map[string]any) (string, string) {
 	return "ok", "Ядро и системные ресурсы в норме"
 }
 
+func pushSecurityEvent(evType, severity, titleRu, titleEn, summaryRu, summaryEn string, pkgs []string) bool {
+	hostname, prof := getProfile()
+	dubaiNow := getDubaiNow()
+
+	payload := map[string]any{
+		"system_id":   prof.SystemID,
+		"system_name": prof.SystemName,
+		"hostname":    hostname,
+		"type":        evType,
+		"severity":    severity,
+		"timestamp":   dubaiNow.Format("2006-01-02 15:04:05 DXB"),
+		"title_ru":    titleRu,
+		"title_en":    titleEn,
+		"summary_ru":  summaryRu,
+		"summary_en":  summaryEn,
+		"packages":    pkgs,
+	}
+
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return false
+	}
+
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
+
+	req, err := http.NewRequest("POST", hubEventURL, bytes.NewBuffer(data))
+	if err != nil {
+		return false
+	}
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	req.Header.Set("X-Beszel-Security-Token", sharedToken)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+	return resp.StatusCode == http.StatusOK
+}
+
+func ensureNoRestartPolicies() {
+	_ = os.WriteFile("/etc/apt/apt.conf.d/99-beszel-norestart", []byte(
+		"Unattended-Upgrade::Automatic-Reboot \"false\";\n"+
+			"APT::Get::Always-Include-Phased-Updates \"true\";\n"+
+			"Update-Manager::Always-Include-Phased-Updates \"true\";\n"+
+			"APT::Keep-Downloaded-Packages \"true\";\n"+
+			"Binary::apt::APT::Keep-Downloaded-Packages \"true\";\n"+
+			"DPkg::Options {\n"+
+			"   \"--force-confdef\";\n"+
+			"   \"--force-confold\";\n"+
+			"};\n",
+	), 0644)
+
+	if _, err := os.Stat("/etc/needrestart/conf.d"); err == nil {
+		_ = os.WriteFile("/etc/needrestart/conf.d/99-beszel-norestart.conf", []byte(
+			"# Managed by Beszel - never auto-restart services\n"+
+				"$nrconf{restart} = 'l';\n"+
+				"$nrconf{kernelhints} = 0;\n",
+		), 0644)
+	}
+}
+
+func performAutoUpdates(doUpgrade, onlySecurity bool) {
+	ensureNoRestartPolicies()
+
+	_, heldOut := runCmd("apt-mark showhold 2>/dev/null", 10)
+	heldSet := make(map[string]bool)
+	for _, p := range strings.Fields(heldOut) {
+		heldSet[p] = true
+	}
+
+	_, out := runCmd("apt list --upgradable 2>/dev/null", 30)
+	pkgRe := regexp.MustCompile(`^([^\s/]+)/(\S+)\s+(\S+)\s+\S+\s+\[upgradable from:\s*([^\]]+)\]`)
+
+	var pendingPkgs []string
+	var pendingSec []string
+	for _, l := range strings.Split(out, "\n") {
+		trimmed := strings.TrimSpace(l)
+		if m := pkgRe.FindStringSubmatch(trimmed); m != nil {
+			pname := m[1]
+			repo := m[2]
+			if heldSet[pname] {
+				continue
+			}
+			pendingPkgs = append(pendingPkgs, pname)
+			if strings.Contains(strings.ToLower(repo), "security") {
+				pendingSec = append(pendingSec, pname)
+			}
+		}
+	}
+
+	if onlySecurity && len(pendingSec) > 0 {
+		pushSecurityEvent(
+			"vuln_detected", "crit",
+			fmt.Sprintf("Найдены уязвимости (%d пак.)", len(pendingSec)),
+			fmt.Sprintf("Vulnerabilities Detected (%d pkgs)", len(pendingSec)),
+			fmt.Sprintf("Доступны обновления безопасности: %s. Запуск авто-патча...", strings.Join(pendingSec, ", ")),
+			fmt.Sprintf("Security updates available: %s. Auto-patch started...", strings.Join(pendingSec, ", ")),
+			pendingSec,
+		)
+
+		installCmd := fmt.Sprintf("DEBIAN_FRONTEND=noninteractive apt-get install --only-upgrade -y -o Dpkg::Options::=\"--force-confdef\" -o Dpkg::Options::=\"--force-confold\" %s", strings.Join(pendingSec, " "))
+		rc, outInstall := runCmd(installCmd, 300)
+		if rc == 0 {
+			pushSecurityEvent(
+				"vuln_patched", "sec",
+				fmt.Sprintf("Установлен патч безопасности (%d пак.)", len(pendingSec)),
+				fmt.Sprintf("Security patch installed (%d pkgs)", len(pendingSec)),
+				fmt.Sprintf("Обновлены: %s. Система защищена.", strings.Join(pendingSec, ", ")),
+				fmt.Sprintf("Updated: %s. System protected.", strings.Join(pendingSec, ", ")),
+				pendingSec,
+			)
+		} else {
+			pushSecurityEvent(
+				"vuln_detected", "crit",
+				fmt.Sprintf("Ошибка установки патча безопасности: %s", strings.Join(pendingSec, ", ")),
+				fmt.Sprintf("Security patch failed: %s", strings.Join(pendingSec, ", ")),
+				fmt.Sprintf("Вывод apt: %s", outInstall),
+				fmt.Sprintf("Apt output: %s", outInstall),
+				pendingSec,
+			)
+		}
+	} else if doUpgrade && len(pendingPkgs) > 0 {
+		upgradeCmd := "DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y -o Dpkg::Options::=\"--force-confdef\" -o Dpkg::Options::=\"--force-confold\""
+		rc, outUpgrade := runCmd(upgradeCmd, 600)
+		if rc == 0 {
+			pushSecurityEvent(
+				"auto_update", "info",
+				fmt.Sprintf("Авто-обновление: обновлено %d пакетов", len(pendingPkgs)),
+				fmt.Sprintf("Auto-update: updated %d packages", len(pendingPkgs)),
+				fmt.Sprintf("Обновлены пакеты: %s", strings.Join(pendingPkgs, ", ")),
+				fmt.Sprintf("Updated packages: %s", strings.Join(pendingPkgs, ", ")),
+				pendingPkgs,
+			)
+		} else {
+			pushSecurityEvent(
+				"auto_update", "warn",
+				"Внимание при авто-обновлении пакетов",
+				"Warning during auto-update",
+				fmt.Sprintf("Вывод: %s", outUpgrade),
+				fmt.Sprintf("Output: %s", outUpgrade),
+				pendingPkgs,
+			)
+		}
+	}
+
+	// Check reboot required
+	if _, err := os.Stat("/var/run/reboot-required"); err == nil {
+		rebootStampFile := filepath.Join(stateDir, "reboot-notified.txt")
+		shouldNotify := true
+		if data, err := os.ReadFile(rebootStampFile); err == nil {
+			if t, err := time.Parse(time.RFC3339, strings.TrimSpace(string(data))); err == nil {
+				if time.Since(t) < 24*time.Hour {
+					shouldNotify = false
+				}
+			}
+		}
+		if shouldNotify {
+			pkgsOut := ""
+			if pData, err := os.ReadFile("/var/run/reboot-required.pkgs"); err == nil {
+				pkgsOut = strings.TrimSpace(string(pData))
+			}
+			msg := "Требуется перезагрузка для применения обновлений ядра/библиотек."
+			if pkgsOut != "" {
+				msg = fmt.Sprintf("Обновлены: %s. Рекомендуется перезагрузить сервер.", strings.ReplaceAll(pkgsOut, "\n", ", "))
+			}
+			pushSecurityEvent(
+				"reboot_required", "warn",
+				"Требуется перезагрузка сервера",
+				"Server Reboot Required",
+				msg,
+				msg,
+				nil,
+			)
+			_ = os.WriteFile(rebootStampFile, []byte(time.Now().Format(time.RFC3339)), 0644)
+		}
+	}
+}
+
 func buildReport(doUpgrade, onlySecurity bool) map[string]any {
 	_ = os.MkdirAll(stateDir, 0755)
+	performAutoUpdates(doUpgrade, onlySecurity)
 	hostname, profile := getProfile()
 
 	_, osPretty := runCmd(". /etc/os-release && echo $PRETTY_NAME", 5)
@@ -927,10 +1122,12 @@ func buildReport(doUpgrade, onlySecurity bool) map[string]any {
 		"warn_checks":      warns,
 		"crit_checks":      crits,
 		"total_checks":     len(checks),
-		"checks":           checks,
-		"vps_audit":        vpsAudit,
-		"updates":          updates,
-		"vulnerabilities":  updates["vulnerabilities"],
+		"checks":                 checks,
+		"vps_audit":              vpsAudit,
+		"updates":                updates,
+		"reboot_required":        updates["reboot_required"],
+		"pending_security_count": updates["pending_security_count"],
+		"vulnerabilities":        updates["vulnerabilities"],
 		"stack":            stack,
 		"ssh_fail2ban":     sshF2b,
 		"telemetry":        telemetry,

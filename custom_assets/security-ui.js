@@ -733,6 +733,11 @@ const state = {
   expandedNotifIds: {},
   scanPatchBusy: false,
   seenNotifIds: null,
+  alertConfig: null,
+  alertModalOpen: false,
+  alertSaving: false,
+  alertTesting: false,
+  alertTestMsg: "",
   activeTabBySystem: {},
   // Server page cards state
   cardTabs: { security: "ports", services: "all" },
@@ -1153,6 +1158,15 @@ function applyReportsPayload(data) {
               ? "running"
               : "ondemand";
           showOverlayToast({ title, tagText: tag, statusType: stType, desc });
+          if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+            try {
+              new Notification(title, {
+                body: desc,
+                icon: "/favicon.ico",
+                tag: n.id || "bszl-alert",
+              });
+            } catch (_) {}
+          }
         }
       }
     }
@@ -2090,6 +2104,236 @@ function renderTopNavbarLangSwitcher() {
   });
 }
 
+async function fetchAlertConfig() {
+  try {
+    const res = await secFetch("/api/security-alerts-config");
+    if (res.ok) {
+      state.alertConfig = await res.json();
+    }
+  } catch (err) {
+    console.error("fetchAlertConfig err:", err);
+  }
+}
+
+async function saveAlertConfig(cfg) {
+  if (state.alertSaving) return;
+  state.alertSaving = true;
+  renderAlertsModal();
+  try {
+    const res = await secFetch("/api/security-alerts-config", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(cfg),
+    });
+    if (res.ok) {
+      state.alertConfig = cfg;
+      showOverlayToast({
+        title: state.lang === "en" ? "Alerts Config" : "Оповещения",
+        tagText: "SAVED",
+        statusType: "running",
+        desc: state.lang === "en" ? "Telegram alerts configuration updated" : "Настройки оповещений Telegram сохранены",
+      });
+      state.alertModalOpen = false;
+    }
+  } catch (err) {
+    console.error("saveAlertConfig err:", err);
+  } finally {
+    state.alertSaving = false;
+    renderAlertsModal();
+  }
+}
+
+async function testAlertTelegram() {
+  if (state.alertTesting) return;
+  state.alertTesting = true;
+  state.alertTestMsg = "";
+  renderAlertsModal();
+  try {
+    const res = await secFetch("/api/security-alerts-test", { method: "POST" });
+    const data = await res.json();
+    if (data.ok) {
+      state.alertTestMsg = state.lang === "en" ? "Test alert delivered to Telegram!" : "Тестовое оповещение доставлено в Telegram!";
+      showOverlayToast({
+        title: "Telegram Alert",
+        tagText: "SENT",
+        statusType: "running",
+        desc: state.lang === "en" ? "Notification delivered to chat" : "Оповещение доставлено в чат",
+      });
+    } else {
+      state.alertTestMsg = `Ошибка: ${data.response || "Delivery failed"}`;
+    }
+  } catch (err) {
+    state.alertTestMsg = `Ошибка: ${err.message}`;
+  } finally {
+    state.alertTesting = false;
+    renderAlertsModal();
+  }
+}
+
+function renderAlertsModal() {
+  let modalWrap = document.getElementById("bszl-alerts-modal-wrap");
+  if (!state.alertModalOpen) {
+    if (modalWrap) modalWrap.remove();
+    return;
+  }
+  if (!modalWrap) {
+    modalWrap = document.createElement("div");
+    modalWrap.id = "bszl-alerts-modal-wrap";
+    document.body.appendChild(modalWrap);
+  }
+
+  const isEn = state.lang === "en";
+  const cfg = state.alertConfig || {
+    telegram_enabled: true,
+    telegram_bot_token: "8849862406:AAEUssczLA1-rBQzHoqHKE4__35cNkRwNKk",
+    telegram_chat_id: "6157618020",
+    notify_vuln_patched: true,
+    notify_vuln_detected: true,
+    notify_auto_update: true,
+    notify_reboot_required: true,
+    notify_crit_checks: true,
+  };
+
+  const hasNotifApi = typeof Notification !== "undefined";
+  const notifPerm = hasNotifApi ? Notification.permission : "unsupported";
+
+  modalWrap.innerHTML = `
+    <div class="bszl-alerts-modal-overlay js-alerts-overlay">
+      <div class="bszl-alerts-modal" onclick="event.stopPropagation()">
+        <div class="bszl-alerts-modal-hdr">
+          <div class="bszl-alerts-modal-title">
+            <span style="font-size:1.2rem;">📱</span>
+            <span>${isEn ? "Telegram & Push Alerts" : "Оповещения в Telegram и Push"}</span>
+          </div>
+          <button type="button" class="bszl-icon-btn js-alerts-close" style="width:2rem;height:2rem;padding:0;">${ICONS.x}</button>
+        </div>
+        <div class="bszl-alerts-modal-body">
+          <label class="bszl-alerts-toggle-row">
+            <div>
+              <div style="font-weight:600;">${isEn ? "Telegram Alerts" : "Оповещения в Telegram"}</div>
+              <div class="bszl-alerts-field-lbl">${isEn ? "Instant push to chat" : "Мгновенные оповещения в чат"} (${cfg.telegram_chat_id || "6157618020"})</div>
+            </div>
+            <input type="checkbox" id="bszl-cfg-tg-enabled" ${cfg.telegram_enabled ? "checked" : ""}>
+          </label>
+
+          <label class="bszl-alerts-toggle-row">
+            <div>
+              <div style="font-weight:600;">${isEn ? "Security Patches (CVE)" : "Установка патчей CVE"}</div>
+              <div class="bszl-alerts-field-lbl">${isEn ? "When vulnerabilities are auto-patched" : "Когда патч безопасности успешно установлен"}</div>
+            </div>
+            <input type="checkbox" id="bszl-cfg-tg-patched" ${cfg.notify_vuln_patched ? "checked" : ""}>
+          </label>
+
+          <label class="bszl-alerts-toggle-row">
+            <div>
+              <div style="font-weight:600;">${isEn ? "Vulnerabilities Detected" : "Обнаружение уязвимостей"}</div>
+              <div class="bszl-alerts-field-lbl">${isEn ? "Immediate alert when new CVEs are found" : "Оповещать при нахождении новых уязвимостей"}</div>
+            </div>
+            <input type="checkbox" id="bszl-cfg-tg-detected" ${cfg.notify_vuln_detected ? "checked" : ""}>
+          </label>
+
+          <label class="bszl-alerts-toggle-row">
+            <div>
+              <div style="font-weight:600;">${isEn ? "Daily Auto-Updates" : "Ежедневные авто-обновления"}</div>
+              <div class="bszl-alerts-field-lbl">${isEn ? "Report on daily packages upgrade at 04:00" : "Отчет об обновлении пакетов в 04:00"}</div>
+            </div>
+            <input type="checkbox" id="bszl-cfg-tg-autoupd" ${cfg.notify_auto_update ? "checked" : ""}>
+          </label>
+
+          <label class="bszl-alerts-toggle-row">
+            <div>
+              <div style="font-weight:600;">${isEn ? "Reboot Required" : "Предупреждение о перезагрузке"}</div>
+              <div class="bszl-alerts-field-lbl">${isEn ? "When kernel update requires system reboot" : "Когда требуется перезагрузка для ядра"}</div>
+            </div>
+            <input type="checkbox" id="bszl-cfg-tg-reboot" ${cfg.notify_reboot_required ? "checked" : ""}>
+          </label>
+
+          <label class="bszl-alerts-toggle-row">
+            <div>
+              <div style="font-weight:600;">${isEn ? "Critical Security Fails" : "Критические сбои проверок"}</div>
+              <div class="bszl-alerts-field-lbl">${isEn ? "Alert when core check enters CRIT state" : "Оповещать при статусе FAIL у служб/портов"}</div>
+            </div>
+            <input type="checkbox" id="bszl-cfg-tg-crit" ${cfg.notify_crit_checks ? "checked" : ""}>
+          </label>
+
+          ${
+            hasNotifApi
+              ? `
+          <div class="bszl-alerts-toggle-row" style="background:transparent;border:1px dashed var(--border);padding:0.75rem;">
+            <div>
+              <div style="font-weight:600;">${isEn ? "Browser Desktop Push" : "Уведомления в браузере"}</div>
+              <div class="bszl-alerts-field-lbl">${isEn ? `Status: ${notifPerm}` : `Статус: ${notifPerm === "granted" ? "включено" : notifPerm === "denied" ? "заблокировано" : "не запрошено"}`}</div>
+            </div>
+            ${
+              notifPerm !== "granted"
+                ? `<button type="button" class="bszl-icon-btn js-btn-request-push" style="height:2rem;font-size:0.75rem;">${isEn ? "Enable" : "Включить"}</button>`
+                : `<span class="bszl-pill bszl-pill--ok" style="font-size:0.75rem;"><span class="bszl-dot bszl-dot--ok"></span><span>OK</span></span>`
+            }
+          </div>`
+              : ""
+          }
+
+          ${state.alertTestMsg ? `<div style="font-size:0.8125rem;color:${state.alertTestMsg.startsWith("Ошибка") ? "var(--destructive)" : "#16a34a"};font-weight:500;">${escapeHtml(state.alertTestMsg)}</div>` : ""}
+        </div>
+
+        <div class="bszl-alerts-modal-ftr">
+          <button type="button" class="bszl-icon-btn js-btn-test-tg" ${state.alertTesting ? "disabled" : ""}>
+            ${ICONS.sync(state.alertTesting)}
+            <span>${isEn ? "Test Alert" : "Отправить тест"}</span>
+          </button>
+          <div style="display:flex;gap:0.5rem;">
+            <button type="button" class="bszl-icon-btn js-alerts-close">${isEn ? "Cancel" : "Отмена"}</button>
+            <button type="button" class="bszl-act-btn js-alerts-save" style="background-color:var(--foreground);color:var(--background);" ${state.alertSaving ? "disabled" : ""}>
+              <span>${isEn ? "Save Settings" : "Сохранить"}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const overlay = modalWrap.querySelector(".js-alerts-overlay");
+  if (overlay) overlay.onclick = () => { state.alertModalOpen = false; renderAlertsModal(); };
+  modalWrap.querySelectorAll(".js-alerts-close").forEach((btn) => {
+    btn.onclick = () => { state.alertModalOpen = false; renderAlertsModal(); };
+  });
+
+  const btnPush = modalWrap.querySelector(".js-btn-request-push");
+  if (btnPush) {
+    btnPush.onclick = async () => {
+      if (typeof Notification !== "undefined") {
+        await Notification.requestPermission();
+        renderAlertsModal();
+      }
+    };
+  }
+
+  const btnTest = modalWrap.querySelector(".js-btn-test-tg");
+  if (btnTest) {
+    btnTest.onclick = testAlertTelegram;
+  }
+
+  const btnSave = modalWrap.querySelector(".js-alerts-save");
+  if (btnSave) {
+    btnSave.onclick = () => {
+      const getVal = (id) => {
+        const el = modalWrap.querySelector(`#${id}`);
+        return el ? el.checked : false;
+      };
+      const updated = {
+        ...cfg,
+        telegram_enabled: getVal("bszl-cfg-tg-enabled"),
+        notify_vuln_patched: getVal("bszl-cfg-tg-patched"),
+        notify_vuln_detected: getVal("bszl-cfg-tg-detected"),
+        notify_auto_update: getVal("bszl-cfg-tg-autoupd"),
+        notify_reboot_required: getVal("bszl-cfg-tg-reboot"),
+        notify_crit_checks: getVal("bszl-cfg-tg-crit"),
+      };
+      saveAlertConfig(updated);
+    };
+  }
+}
+
 function renderNotificationsPage() {
   const mainEl = document.querySelector("div.container.relative") || document.querySelector("main");
   if (!mainEl) return;
@@ -2346,6 +2590,10 @@ function renderNotificationsPage() {
           <span class="bszl-chip">${escapeHtml(t("kpiAutoUpdates"))}: ${totalUpgradedPkgs}</span>
         </div>
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <button type="button" id="bszl-btn-alerts-cfg" class="bszl-icon-btn">
+            ${ICONS.bell}
+            <span>${isEn ? "Telegram Alerts" : "Оповещения в Telegram"}</span>
+          </button>
           <button type="button" id="bszl-btn-scan-patch" class="bszl-icon-btn" ${
             state.scanPatchBusy ? "disabled" : ""
           }>
@@ -2391,6 +2639,15 @@ function renderNotificationsPage() {
 
   const btnBack = npage.querySelector("#bszl-btn-npage-back");
   if (btnBack) btnBack.onclick = () => toggleNotificationsPage(false);
+
+  const btnAlerts = npage.querySelector("#bszl-btn-alerts-cfg");
+  if (btnAlerts) {
+    btnAlerts.onclick = async () => {
+      await fetchAlertConfig();
+      state.alertModalOpen = true;
+      renderAlertsModal();
+    };
+  }
 
   const btnScanPatch = npage.querySelector("#bszl-btn-scan-patch");
   if (btnScanPatch) {
@@ -2468,7 +2725,14 @@ function buildBriefTableCellHtml(rep) {
   const dotClass =
     st === "ok" ? "bszl-dot--ok" : st === "warn" ? "bszl-dot--warn" : "bszl-dot--crit";
   const stCount = rep.stack?.running ? ` · ${rep.stack.running} ON` : "";
-  return `<span class="bszl-brief-status"><span class="bszl-dot ${dotClass}"></span><span>${passed}/${total}${stCount}</span></span>`;
+  const isRebootReq = !!rep.reboot_required || !!rep.updates?.reboot_required;
+  const pendingSec = rep.pending_security_count || rep.updates?.pending_security_count || 0;
+  const extraBadges = [
+    isRebootReq ? `<span class="bszl-audit-badge bszl-audit-warn" style="font-size:0.68rem;padding:0 4px;margin-left:4px;" title="Reboot required">REBOOT</span>` : "",
+    pendingSec > 0 ? `<span class="bszl-audit-badge bszl-audit-fail" style="font-size:0.68rem;padding:0 4px;margin-left:4px;" title="Security patches available">+${pendingSec} SEC</span>` : "",
+  ].filter(Boolean).join("");
+
+  return `<span class="bszl-brief-status"><span class="bszl-dot ${dotClass}"></span><span>${passed}/${total}${stCount}</span>${extraBadges}</span>`;
 }
 
 function buildOsTableCellHtml(rep) {
@@ -4201,6 +4465,36 @@ function renderSystemDetailPage() {
     `;
   }
 
+  const isRebootReq = !!rep.reboot_required || !!rep.updates?.reboot_required;
+  const pendingSec = rep.pending_security_count || rep.updates?.pending_security_count || 0;
+  let bannersHtml = "";
+  if (isRebootReq) {
+    bannersHtml += `
+      <div class="bszl-alert-banner bszl-alert-banner--warn">
+        <span class="bszl-alert-banner-ico">⚠️</span>
+        <div class="bszl-alert-banner-body">
+          <div class="bszl-alert-banner-title">${isEn ? "System Reboot Required" : "Требуется перезагрузка системы"}</div>
+          <div class="bszl-alert-banner-sub">${isEn ? "A kernel or core system update was applied. Reboot the server to finalize." : "Обновлены ядро или базовые библиотеки. Рекомендуется перезагрузить сервер."}</div>
+        </div>
+      </div>
+    `;
+  }
+  if (pendingSec > 0) {
+    bannersHtml += `
+      <div class="bszl-alert-banner bszl-alert-banner--crit">
+        <span class="bszl-alert-banner-ico">🚨</span>
+        <div class="bszl-alert-banner-body">
+          <div class="bszl-alert-banner-title">${isEn ? `Vulnerabilities Detected (${pendingSec} packages)` : `Обнаружены уязвимости (${pendingSec} пак.)`}</div>
+          <div class="bszl-alert-banner-sub">${isEn ? "Security patches are available. Install immediately to keep the server secure." : "Доступны обновления безопасности. Установите патч для защиты сервера."}</div>
+        </div>
+        <button type="button" class="bszl-act-btn bszl-act-btn--crit js-btn-install-sec" ${state.loadingSystem ? "disabled" : ""}>
+          ${ICONS.sync(state.loadingSystem === `${sysId}:update`)}
+          <span>${isEn ? "Install Patches" : "Установить патчи"}</span>
+        </button>
+      </div>
+    `;
+  }
+
   // Header & Card container
   const headerHtml = `
     <div class="bszl-card-hdr">
@@ -4224,6 +4518,7 @@ function renderSystemDetailPage() {
         collapsed.security
           ? ""
           : `<div class="bszl-card-body">
+              ${bannersHtml}
               ${tabsBarHtml}
               <div class="bszl-card-tab-body">${tabBodyHtml}</div>
             </div>`
@@ -4251,6 +4546,9 @@ function renderSystemDetailPage() {
   // Check / Audit button
   const btnCheck = qOne("#bszl-btn-srv-check");
   if (btnCheck) btnCheck.onclick = () => triggerAudit(sysId, "check");
+
+  const btnInstallSec = qOne(".js-btn-install-sec");
+  if (btnInstallSec) btnInstallSec.onclick = () => triggerAudit(sysId, "update");
 
   // Update buttons
   const btnUpdate = qOne("#bszl-btn-srv-update");

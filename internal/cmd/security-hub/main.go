@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha1"
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"os"
@@ -77,6 +79,151 @@ func reportsFilePath() string       { return filepath.Join(dataDir, "reports.jso
 func historyFilePath() string       { return filepath.Join(dataDir, "history.json") }
 func notificationsFilePath() string { return filepath.Join(dataDir, "notifications.json") }
 func layoutsFilePath() string       { return filepath.Join(dataDir, "layouts.json") }
+func alertsFilePath() string        { return filepath.Join(dataDir, "alert-config.json") }
+
+type AlertConfig struct {
+	TelegramEnabled      bool   `json:"telegram_enabled"`
+	TelegramBotToken     string `json:"telegram_bot_token"`
+	TelegramChatID       string `json:"telegram_chat_id"`
+	NotifyVulnPatched    bool   `json:"notify_vuln_patched"`
+	NotifyVulnDetected   bool   `json:"notify_vuln_detected"`
+	NotifyAutoUpdate     bool   `json:"notify_auto_update"`
+	NotifyRebootRequired bool   `json:"notify_reboot_required"`
+	NotifyCritChecks     bool   `json:"notify_crit_checks"`
+}
+
+func loadAlertConfig() AlertConfig {
+	cfg := AlertConfig{
+		TelegramEnabled:      true,
+		TelegramBotToken:     getEnv("BESZEL_TELEGRAM_BOT_TOKEN", "8849862406:AAEUssczLA1-rBQzHoqHKE4__35cNkRwNKk"),
+		TelegramChatID:       getEnv("BESZEL_TELEGRAM_CHAT_ID", "6157618020"),
+		NotifyVulnPatched:    true,
+		NotifyVulnDetected:   true,
+		NotifyAutoUpdate:     true,
+		NotifyRebootRequired: true,
+		NotifyCritChecks:     true,
+	}
+	if data, err := os.ReadFile(alertsFilePath()); err == nil {
+		_ = json.Unmarshal(data, &cfg)
+	}
+	return cfg
+}
+
+func saveAlertConfig(cfg AlertConfig) error {
+	fileLock.Lock()
+	defer fileLock.Unlock()
+	_ = os.MkdirAll(dataDir, 0755)
+	out, err := json.MarshalIndent(cfg, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(alertsFilePath(), out, 0644)
+}
+
+func escapeTelegramHTML(s string) string {
+	s = strings.ReplaceAll(s, "&", "&amp;")
+	s = strings.ReplaceAll(s, "<", "&lt;")
+	s = strings.ReplaceAll(s, ">", "&gt;")
+	return s
+}
+
+func sendTelegramMessage(token, chatID, htmlText string) (bool, string) {
+	if token == "" || chatID == "" {
+		return false, "Missing bot token or chat_id"
+	}
+	apiURL := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", token)
+	payload := map[string]any{
+		"chat_id":                  chatID,
+		"text":                     htmlText,
+		"parse_mode":               "HTML",
+		"disable_web_page_preview": true,
+	}
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return false, err.Error()
+	}
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Post(apiURL, "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		return false, err.Error()
+	}
+	defer resp.Body.Close()
+	respBytes, _ := io.ReadAll(resp.Body)
+	return resp.StatusCode == http.StatusOK, string(respBytes)
+}
+
+func dispatchTelegramNotification(rec map[string]any) {
+	cfg := loadAlertConfig()
+	if !cfg.TelegramEnabled || cfg.TelegramBotToken == "" || cfg.TelegramChatID == "" {
+		return
+	}
+
+	evType := fmt.Sprint(rec["type"])
+	switch evType {
+	case "vuln_patched":
+		if !cfg.NotifyVulnPatched {
+			return
+		}
+	case "vuln_detected":
+		if !cfg.NotifyVulnDetected {
+			return
+		}
+	case "auto_update":
+		if !cfg.NotifyAutoUpdate {
+			return
+		}
+	case "reboot_required":
+		if !cfg.NotifyRebootRequired {
+			return
+		}
+	default:
+		sev := fmt.Sprint(rec["severity"])
+		if sev != "crit" || !cfg.NotifyCritChecks {
+			return
+		}
+	}
+
+	sysName := fmt.Sprint(rec["system_name"])
+	if sysName == "" || sysName == "<nil>" {
+		sysName = fmt.Sprint(rec["system_id"])
+	}
+	title := fmt.Sprint(rec["title_ru"])
+	if title == "" {
+		title = fmt.Sprint(rec["title_en"])
+	}
+	summary := fmt.Sprint(rec["summary_ru"])
+	if summary == "" {
+		summary = fmt.Sprint(rec["summary_en"])
+	}
+	ts := fmt.Sprint(rec["timestamp"])
+
+	var icon string
+	switch evType {
+	case "vuln_patched":
+		icon = "✅"
+	case "vuln_detected":
+		icon = "🚨"
+	case "auto_update":
+		icon = "🔄"
+	case "reboot_required":
+		icon = "⚠️"
+	case "auto_rollback":
+		icon = "⏪"
+	default:
+		icon = "🛡️"
+	}
+
+	msg := fmt.Sprintf("%s <b>Beszel: %s</b>\n<b>%s</b>", icon, escapeTelegramHTML(sysName), escapeTelegramHTML(title))
+	if summary != "" && summary != "<nil>" {
+		msg += fmt.Sprintf("\n%s", escapeTelegramHTML(summary))
+	}
+	if ts != "" && ts != "<nil>" {
+		msg += fmt.Sprintf("\n🕒 <i>%s</i>", escapeTelegramHTML(ts))
+	}
+
+	go sendTelegramMessage(cfg.TelegramBotToken, cfg.TelegramChatID, msg)
+}
 
 func getAllSystems() map[string]SystemTarget {
 	systems := make(map[string]SystemTarget)
@@ -337,6 +484,11 @@ func recordNotification(payload map[string]any, markUnread bool) string {
 
 	items = append([]map[string]any{record}, items...)
 	saveNotificationsList(items)
+
+	if markUnread {
+		go dispatchTelegramNotification(record)
+	}
+
 	return evID
 }
 
@@ -894,6 +1046,38 @@ func main() {
 			return
 		}
 		sendJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "Method not allowed"})
+	})
+
+	mux.HandleFunc("/api/security-alerts-config", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			sendJSON(w, http.StatusOK, loadAlertConfig())
+			return
+		}
+		if r.Method == http.MethodPost {
+			var cfg AlertConfig
+			if err := json.NewDecoder(r.Body).Decode(&cfg); err != nil {
+				sendJSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid JSON"})
+				return
+			}
+			if err := saveAlertConfig(cfg); err != nil {
+				sendJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+				return
+			}
+			sendJSON(w, http.StatusOK, map[string]any{"ok": true, "config": cfg})
+			return
+		}
+		sendJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "Method not allowed"})
+	})
+
+	mux.HandleFunc("/api/security-alerts-test", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			sendJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "Method not allowed"})
+			return
+		}
+		cfg := loadAlertConfig()
+		testMsg := fmt.Sprintf("🛡️ <b>Beszel Security</b>\n✅ Тестовое оповещение успешно доставлено!\n🕒 <i>%s</i>", getDubaiStr())
+		ok, resp := sendTelegramMessage(cfg.TelegramBotToken, cfg.TelegramChatID, testMsg)
+		sendJSON(w, http.StatusOK, map[string]any{"ok": ok, "response": resp})
 	})
 
 	mux.HandleFunc("/api/security-report", func(w http.ResponseWriter, r *http.Request) {
