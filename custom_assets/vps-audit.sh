@@ -484,13 +484,16 @@ fi
 
 # Process LISTENING_PORTS to extract unique public ports
 if [ -n "$LISTENING_PORTS" ]; then
-    PUBLIC_PORTS=$(echo "$LISTENING_PORTS" | awk -F':' '{print $NF}' | sort -n | uniq | tr '\n' ',' | sed 's/,$//')
-    PORT_COUNT=$(echo "$PUBLIC_PORTS" | tr ',' '\n' | wc -w)
-    INTERNET_PORTS=$(echo "$PUBLIC_PORTS" | tr ',' '\n' | wc -w)
+    ALL_PORTS=$(echo "$LISTENING_PORTS" | awk -F':' '{print $NF}' | sort -n | uniq | tr '\n' ',' | sed 's/,$//')
+    PORT_COUNT=$(echo "$ALL_PORTS" | tr ',' '\n' | grep -v '^$' | wc -w)
 
-    if [ "$PORT_COUNT" -lt $OPEN_PORTS_WARN ] && [ "$INTERNET_PORTS" -lt 3 ]; then
+    PUBLIC_LISTEN=$(echo "$LISTENING_PORTS" | grep -v -E '^(127\.|\[::1\]|100\.|\[fd7a)')
+    PUBLIC_PORTS=$(echo "$PUBLIC_LISTEN" | awk -F':' '{print $NF}' | sort -n | uniq | tr '\n' ',' | sed 's/,$//')
+    INTERNET_PORTS=$(echo "$PUBLIC_PORTS" | tr ',' '\n' | grep -v '^$' | wc -w)
+
+    if [ "$INTERNET_PORTS" -le 4 ]; then
         check_security "Port Security" "PASS" "Good configuration (Total: $PORT_COUNT, Public: $INTERNET_PORTS accessible ports): $PUBLIC_PORTS"
-    elif [ "$PORT_COUNT" -lt $OPEN_PORTS_FAIL ] && [ "$INTERNET_PORTS" -lt 5 ]; then
+    elif [ "$INTERNET_PORTS" -le 8 ]; then
         check_security "Port Security" "WARN" "Review recommended (Total: $PORT_COUNT, Public: $INTERNET_PORTS accessible ports): $PUBLIC_PORTS"
     else
         check_security "Port Security" "FAIL" "High exposure (Total: $PORT_COUNT, Public: $INTERNET_PORTS accessible ports): $PUBLIC_PORTS"
@@ -545,7 +548,7 @@ else
 fi
 
 # Check sudo configuration
-if grep -q "^Defaults.*logfile" "$SUDOERS_FILE"; then
+if grep -q "^Defaults.*logfile" "$SUDOERS_FILE" /etc/sudoers.d/* 2>/dev/null; then
     check_security "Sudo Logging" "PASS" "Sudo commands are being logged for audit purposes"
 else
     check_security "Sudo Logging" "FAIL" "Sudo commands are not being logged - reduces audit capability"
