@@ -8,6 +8,7 @@
 }
 
 @keyframes bszl-spin {
+  from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 
@@ -75,19 +76,32 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  line-height: 1;
 }
 
 .bszl-ico svg {
-  overflow: visible;
+  display: block;
+}
+
+.bszl-ico-sync.is-spinning {
+  animation: none !important;
+  pointer-events: none;
+}
+
+.bszl-ico-sync.is-spinning svg {
+  display: block;
+  transform-origin: 50% 50% !important;
+  animation: bszl-spin 0.85s linear infinite !important;
 }
 
 .bszl-ico-sync.is-spinning .ico-arrows {
-  transform-origin: 12px 12px;
-  animation: bszl-spin 1s linear infinite;
+  transform-origin: center center;
+  animation: none !important;
 }
 
 .bszl-ico-radar .ico-sweep {
-  transform-origin: 12px 12px;
+  transform-box: fill-box;
+  transform-origin: center center;
   animation: bszl-radar-sweep 4.5s linear infinite;
 }
 
