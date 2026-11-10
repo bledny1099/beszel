@@ -2185,7 +2185,7 @@ function renderAlertsModal() {
   const isEn = state.lang === "en";
   const cfg = state.alertConfig || {
     telegram_enabled: true,
-    telegram_bot_token: "8849862406:AAEUssczLA1-rBQzHoqHKE4__35cNkRwNKk",
+    telegram_bot_token: "9217036122:AAH9pAIbNTLsJiF4VUeE_i-naPqrtk-UhgU",
     telegram_chat_id: "6157618020",
     notify_vuln_patched: true,
     notify_vuln_detected: true,
@@ -2211,7 +2211,7 @@ function renderAlertsModal() {
           <label class="bszl-alerts-toggle-row">
             <div>
               <div style="font-weight:600;">${isEn ? "Telegram Alerts" : "Оповещения в Telegram"}</div>
-              <div class="bszl-alerts-field-lbl">${isEn ? "Instant push to chat" : "Мгновенные оповещения в чат"} (${cfg.telegram_chat_id || "6157618020"})</div>
+              <div class="bszl-alerts-field-lbl">${isEn ? "Bot: @statusbzl_bot · Chat:" : "Бот: @statusbzl_bot · Чат:"} ${cfg.telegram_chat_id || "6157618020"}</div>
             </div>
             <input type="checkbox" id="bszl-cfg-tg-enabled" ${cfg.telegram_enabled ? "checked" : ""}>
           </label>

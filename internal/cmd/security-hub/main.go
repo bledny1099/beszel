@@ -95,7 +95,7 @@ type AlertConfig struct {
 func loadAlertConfig() AlertConfig {
 	cfg := AlertConfig{
 		TelegramEnabled:      true,
-		TelegramBotToken:     getEnv("BESZEL_TELEGRAM_BOT_TOKEN", "8849862406:AAEUssczLA1-rBQzHoqHKE4__35cNkRwNKk"),
+		TelegramBotToken:     getEnv("BESZEL_TELEGRAM_BOT_TOKEN", "9217036122:AAH9pAIbNTLsJiF4VUeE_i-naPqrtk-UhgU"),
 		TelegramChatID:       getEnv("BESZEL_TELEGRAM_CHAT_ID", "6157618020"),
 		NotifyVulnPatched:    true,
 		NotifyVulnDetected:   true,
