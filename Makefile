@@ -96,6 +96,12 @@ build-hub-dev: tidy
 	mkdir -p ./internal/site/dist && touch ./internal/site/dist/index.html
 	GOOS=$(OS) GOARCH=$(ARCH) go build -tags development -o ./build/beszel-dev_$(OS)_$(ARCH)$(EXE_EXT) -ldflags "-w -s" ./internal/cmd/hub
 
+build-security-hub: tidy
+	GOOS=$(OS) GOARCH=$(ARCH) go build -o ./build/beszel-security-hub_$(OS)_$(ARCH)$(EXE_EXT) -ldflags "-w -s" ./internal/cmd/security-hub
+
+build-security-audit: tidy
+	GOOS=$(OS) GOARCH=$(ARCH) go build -o ./build/beszel-daily-audit_$(OS)_$(ARCH)$(EXE_EXT) -ldflags "-w -s" ./internal/cmd/security-audit
+
 build: build-agent build-hub
 
 generate-locales:
