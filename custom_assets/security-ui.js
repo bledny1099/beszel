@@ -767,7 +767,6 @@ const state = {
   clickDebounceTimer: null,
   portFeedback: {},
   portFormDraft: { port: "", proto: "tcp", from_ip: "Anywhere", comment: "" },
-  beszelCoreMod: null,
   flagAnimTimer: null,
   lastFaviconState: null,
 };
@@ -971,26 +970,6 @@ function secFetch(url, opts = {}) {
   return fetch(url, { ...opts, headers });
 }
 
-async function syncBeszelNativeLang(lang) {
-  try {
-    if (!state.beszelCoreMod) {
-      const mainScript = document.querySelector('script[type="module"][src*="/assets/index-"]');
-      if (mainScript) {
-        state.beszelCoreMod = await import(mainScript.getAttribute("src"));
-      }
-    }
-    if (state.beszelCoreMod) {
-      if (typeof state.beszelCoreMod.c5 === "function") {
-        await state.beszelCoreMod.c5(lang);
-      }
-      if (typeof state.beszelCoreMod.ay === "function") {
-        state.beszelCoreMod.ay({ lang });
-      }
-    }
-  } catch (e) {
-    // Ignore
-  }
-}
 
 function playFlagAnimation(lang) {
   const flagSvg = lang === "en" ? ICONS.flagUS : ICONS.flagRU;
@@ -1073,10 +1052,6 @@ async function setLanguage(lang) {
   } catch (e) {
     console.warn("Could not sync user_settings to PocketBase:", e);
   }
-
-  try {
-    await syncBeszelNativeLang(next);
-  } catch (e) {}
 
   window.location.reload();
 }
@@ -4911,7 +4886,6 @@ function renderAll() {
 }
 
 function init() {
-  syncBeszelNativeLang(state.lang);
   fetchReports();
   setInterval(fetchReports, 45000);
 
