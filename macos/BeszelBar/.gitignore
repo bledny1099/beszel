@@ -1,0 +1,8 @@
+repos/
+build/
+dist/
+.claude/
+CLAUDE*.md
+
+*.xcworkspace/xcuserdata/
+xcuserdata/
