@@ -83,22 +83,32 @@
   display: block;
 }
 
-.bszl-ico-sync.is-spinning {
-  display: inline-flex !important;
+.bszl-ico-sync {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 15px;
-  height: 15px;
-  transform-origin: 50% 50% !important;
-  animation: bszl-spin 0.8s linear infinite !important;
+  width: 1rem;
+  height: 1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.bszl-ico-sync svg {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+}
+
+.bszl-ico-sync.is-spinning {
   pointer-events: none;
-  will-change: transform;
 }
 
 .bszl-ico-sync.is-spinning svg {
   display: block;
-  transform: none !important;
-  animation: none !important;
+  transform-box: fill-box;
+  transform-origin: center center;
+  animation: bszl-spin 0.85s linear infinite !important;
+  will-change: transform;
 }
 
 .bszl-ico-sync.is-spinning .ico-arrows {
