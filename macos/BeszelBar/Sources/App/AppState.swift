@@ -36,8 +36,8 @@ final class AppState {
         if instances.isEmpty {
             let defaultHub = Instance(
                 id: Self.defaultHubID,
-                name: "Beszel Hub",
-                url: "http://91.208.184.83:8090",
+                name: "Beszel Hub (Tailscale)",
+                url: "http://100.64.0.6:8090",
                 email: "laperouse101@proton.me",
                 credential: Self.defaultHubToken
             )
@@ -254,7 +254,19 @@ final class AppState {
     }
 
     private func loadInstances() {
-        instances = storage.loadInstances()
+        var loaded = storage.loadInstances()
+        var migrated = false
+        for i in loaded.indices {
+            if loaded[i].url.contains("91.208.184.83:8090") {
+                loaded[i].url = "http://100.64.0.6:8090"
+                loaded[i].name = "Beszel Hub (Tailscale)"
+                migrated = true
+            }
+        }
+        instances = loaded
+        if migrated {
+            saveInstances()
+        }
 
         if let savedID = storage.loadSelectedInstanceID(),
            let instance = instances.first(where: { $0.id == savedID }) {
