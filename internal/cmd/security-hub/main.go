@@ -523,11 +523,19 @@ func syncNotificationsFromReport(report map[string]any) {
 	// Open vulnerabilities
 	if len(openVulns) > 0 {
 		var pkgNames []string
+		var descLinesRu []string
+		var descLinesEn []string
 		var allOpenCVEs []string
 		for _, ov := range openVulns {
 			if m, ok := ov.(map[string]any); ok {
 				if n, ok := m["name"].(string); ok {
 					pkgNames = append(pkgNames, n)
+				}
+				if sRu, ok := m["summary_ru"].(string); ok && sRu != "" {
+					descLinesRu = append(descLinesRu, "• "+sRu)
+				}
+				if sEn, ok := m["summary_en"].(string); ok && sEn != "" {
+					descLinesEn = append(descLinesEn, "• "+sEn)
 				}
 				if cList, ok := m["cves"].([]any); ok {
 					for _, c := range cList {
@@ -547,6 +555,14 @@ func syncNotificationsFromReport(report map[string]any) {
 		}
 		evID := makeEventID(sysID, "vuln_detected", tsPref, strings.Join(pkgNames, ","))
 		if !existingIDs[evID] {
+			sumRu := fmt.Sprintf("Обнаружены доступные патчи безопасности для %s.", strings.Join(truncateSlice(pkgNames, 6), ", "))
+			if len(descLinesRu) > 0 {
+				sumRu += "\n" + strings.Join(truncateSlice(descLinesRu, 6), "\n")
+			}
+			sumEn := fmt.Sprintf("Security patches available for %s.", strings.Join(truncateSlice(pkgNames, 6), ", "))
+			if len(descLinesEn) > 0 {
+				sumEn += "\n" + strings.Join(truncateSlice(descLinesEn, 6), "\n")
+			}
 			record := map[string]any{
 				"id":          evID,
 				"system_id":   sysID,
@@ -556,8 +572,8 @@ func syncNotificationsFromReport(report map[string]any) {
 				"timestamp":   report["checked_at_dubai"],
 				"title_ru":    fmt.Sprintf("Найдены уязвимости (%d пак.) - запуск патча", len(openVulns)),
 				"title_en":    fmt.Sprintf("Vulnerabilities Detected (%d pkgs) - Patching", len(openVulns)),
-				"summary_ru":  fmt.Sprintf("Обнаружены доступные патчи безопасности для %s.", strings.Join(truncateSlice(pkgNames, 6), ", ")),
-				"summary_en":  fmt.Sprintf("Security patches available for %s.", strings.Join(truncateSlice(pkgNames, 6), ", ")),
+				"summary_ru":  sumRu,
+				"summary_en":  sumEn,
 				"cves":        allOpenCVEs,
 				"packages":    openVulns,
 				"read":        false,

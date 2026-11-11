@@ -569,32 +569,42 @@ func collectPackageUpdates() map[string]any {
 	pkgRe := regexp.MustCompile(`^([^\s/]+)/(\S+)\s+(\S+)\s+\S+\s+\[upgradable from:\s*([^\]]+)\]`)
 
 	var pendingPkgs []map[string]any
+	var openVulns []any
 	secCount := 0
 	for _, l := range strings.Split(out, "\n") {
 		trimmed := strings.TrimSpace(l)
 		if m := pkgRe.FindStringSubmatch(trimmed); m != nil {
 			pname := m[1]
 			repo := m[2]
-			newV := m[3]
-			oldV := m[4]
+			newV := strings.TrimSpace(m[3])
+			oldV := strings.TrimSpace(m[4])
 			if heldSet[pname] {
 				continue
 			}
 			isSec := strings.Contains(strings.ToLower(repo), "security")
+			pkgItem := map[string]any{
+				"name":        pname,
+				"old_version": oldV,
+				"new_version": newV,
+				"security":    isSec,
+			}
 			if isSec {
 				secCount++
+				dRu, dEn, cves := describeSecurityPackage(pname, oldV, newV)
+				pkgItem["summary_ru"] = dRu
+				pkgItem["summary_en"] = dEn
+				pkgItem["cves"] = cves
+				openVulns = append(openVulns, pkgItem)
 			}
-			pendingPkgs = append(pendingPkgs, map[string]any{
-				"name":        pname,
-				"old_version": strings.TrimSpace(oldV),
-				"new_version": strings.TrimSpace(newV),
-				"security":    isSec,
-			})
+			pendingPkgs = append(pendingPkgs, pkgItem)
 		}
 	}
 	res["pending_packages"] = pendingPkgs
 	res["pending_count"] = len(pendingPkgs)
 	res["pending_security_count"] = secCount
+	if vulnsMap, ok := res["vulnerabilities"].(map[string]any); ok {
+		vulnsMap["open_vulns"] = openVulns
+	}
 
 	// Parse upgraded in 24h from dpkg.log
 	_, dpkgOut := runCmd("grep -E ' upgrade ' /var/log/dpkg.log /var/log/dpkg.log.1 2>/dev/null | tail -n 80", 10)
@@ -844,7 +854,146 @@ func checkKernelResources(tel map[string]any) (string, string) {
 	return "ok", "Ядро и системные ресурсы в норме"
 }
 
-func pushSecurityEvent(evType, severity, titleRu, titleEn, summaryRu, summaryEn string, pkgs []string) bool {
+func describeSecurityPackage(pkgName, oldVer, newVer string) (descRu string, descEn string, cves []string) {
+	_, cacheOut := runCmd(fmt.Sprintf("apt-cache show %s 2>/dev/null | grep -m1 -E '^Description(-en)?:'", pkgName), 5)
+	pkgDesc := ""
+	if idx := strings.Index(cacheOut, ":"); idx != -1 {
+		pkgDesc = strings.TrimSpace(cacheOut[idx+1:])
+	}
+
+	_, chgOut := runCmd(fmt.Sprintf("apt-get changelog %s 2>/dev/null | head -n 55", pkgName), 8)
+	cveRe := regexp.MustCompile(`CVE-\d{4}-\d+`)
+	refRe := regexp.MustCompile(`(?:USN-\d+-\d+|LP:\s*#\d+|Debian\s*#\d+)`)
+
+	seenCVE := make(map[string]bool)
+	for _, m := range cveRe.FindAllString(chgOut, -1) {
+		if !seenCVE[m] {
+			seenCVE[m] = true
+			cves = append(cves, m)
+		}
+	}
+
+	var refs []string
+	seenRef := make(map[string]bool)
+	for _, m := range refRe.FindAllString(chgOut, -1) {
+		m = strings.Join(strings.Fields(m), " ")
+		if !seenRef[m] {
+			seenRef[m] = true
+			refs = append(refs, m)
+		}
+	}
+
+	var topBullets []string
+	inFirstEntry := false
+	var curBullet strings.Builder
+	for _, line := range strings.Split(chgOut, "\n") {
+		if strings.HasPrefix(line, pkgName+" (") {
+			if inFirstEntry {
+				break
+			}
+			inFirstEntry = true
+			continue
+		}
+		if !inFirstEntry {
+			continue
+		}
+		if strings.HasPrefix(line, " -- ") {
+			break
+		}
+		trimmed := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmed, "* ") || strings.HasPrefix(trimmed, "- ") {
+			if curBullet.Len() > 0 {
+				topBullets = append(topBullets, curBullet.String())
+				curBullet.Reset()
+			}
+			curBullet.WriteString(strings.TrimSpace(trimmed[2:]))
+		} else if curBullet.Len() > 0 && trimmed != "" && !strings.HasPrefix(trimmed, "[") {
+			curBullet.WriteString(" ")
+			curBullet.WriteString(trimmed)
+		}
+	}
+	if curBullet.Len() > 0 {
+		topBullets = append(topBullets, curBullet.String())
+	}
+
+	rawChange := ""
+	if len(topBullets) > 0 {
+		rawChange = topBullets[0]
+		prefixRe := regexp.MustCompile(`^(?:debian/[^\s:]+\s*:\s*|d/[^\s:]+\s*:\s*|SECURITY UPDATE:\s*)`)
+		rawChange = prefixRe.ReplaceAllString(rawChange, "")
+		if len(rawChange) > 160 {
+			rawChange = rawChange[:157] + "..."
+		}
+	}
+
+	lowChange := strings.ToLower(rawChange + " " + pkgDesc)
+	var ruReason string
+	switch {
+	case strings.Contains(lowChange, "arbitrary code") || strings.Contains(lowChange, "remote code") || strings.Contains(lowChange, "code execution"):
+		ruReason = "устранение уязвимости удалённого выполнения кода (RCE)"
+	case strings.Contains(lowChange, "privilege") || strings.Contains(lowChange, "escalation"):
+		ruReason = "устранение повышения привилегий"
+	case strings.Contains(lowChange, "denial of service") || strings.Contains(lowChange, "crash") || strings.Contains(lowChange, "infinite loop"):
+		ruReason = "защита от отказа в обслуживании (DoS)"
+	case strings.Contains(lowChange, "buffer overflow") || strings.Contains(lowChange, "out-of-bounds") || strings.Contains(lowChange, "heap") || strings.Contains(lowChange, "use-after-free") || strings.Contains(lowChange, "memory"):
+		ruReason = "исправление ошибки работы с памятью / переполнения буфера"
+	case strings.Contains(lowChange, "certificate") || strings.Contains(lowChange, "keystore") || strings.Contains(lowChange, "keytool") || strings.Contains(lowChange, "ca-certificates") || strings.Contains(lowChange, "tls") || strings.Contains(lowChange, "ssl"):
+		ruReason = "обновление хранилища корневых сертификатов и проверки TLS/SSL"
+	case strings.Contains(lowChange, "bypass") || strings.Contains(lowChange, "authentication"):
+		ruReason = "устранение обхода аутентификации / проверки прав"
+	case strings.Contains(lowChange, "injection") || strings.Contains(lowChange, "xss"):
+		ruReason = "защита от инъекции команд/данных"
+	default:
+		ruReason = "исправление безопасности пакета"
+	}
+
+	var tagParts []string
+	if len(cves) > 0 {
+		limit := len(cves)
+		if limit > 4 {
+			limit = 4
+		}
+		tagParts = append(tagParts, strings.Join(cves[:limit], ", "))
+	} else if len(refs) > 0 {
+		limit := len(refs)
+		if limit > 2 {
+			limit = 2
+		}
+		tagParts = append(tagParts, strings.Join(refs[:limit], ", "))
+	}
+	tagStr := ""
+	if len(tagParts) > 0 {
+		tagStr = " [" + strings.Join(tagParts, "; ") + "]"
+	}
+
+	verStr := ""
+	if oldVer != "" && newVer != "" {
+		verStr = fmt.Sprintf(" (%s → %s)", oldVer, newVer)
+	}
+
+	detailRu := ruReason
+	if pkgDesc != "" && rawChange != "" {
+		detailRu = fmt.Sprintf("%s (%s — %s)", ruReason, pkgDesc, rawChange)
+	} else if rawChange != "" {
+		detailRu = fmt.Sprintf("%s (%s)", ruReason, rawChange)
+	} else if pkgDesc != "" {
+		detailRu = fmt.Sprintf("%s (%s)", ruReason, pkgDesc)
+	}
+
+	detailEn := rawChange
+	if detailEn == "" {
+		detailEn = pkgDesc
+	}
+	if detailEn == "" {
+		detailEn = "security update"
+	}
+
+	descRu = fmt.Sprintf("%s%s: %s%s", pkgName, verStr, detailRu, tagStr)
+	descEn = fmt.Sprintf("%s%s: %s%s", pkgName, verStr, detailEn, tagStr)
+	return descRu, descEn, cves
+}
+
+func pushSecurityEvent(evType, severity, titleRu, titleEn, summaryRu, summaryEn string, pkgs any, cves []string) bool {
 	hostname, prof := getProfile()
 	dubaiNow := getDubaiNow()
 
@@ -860,6 +1009,7 @@ func pushSecurityEvent(evType, severity, titleRu, titleEn, summaryRu, summaryEn 
 		"summary_ru":  summaryRu,
 		"summary_en":  summaryEn,
 		"packages":    pkgs,
+		"cves":        cves,
 	}
 
 	data, err := json.Marshal(payload)
@@ -924,30 +1074,66 @@ func performAutoUpdates(doUpgrade, onlySecurity bool) {
 	pkgRe := regexp.MustCompile(`^([^\s/]+)/(\S+)\s+(\S+)\s+\S+\s+\[upgradable from:\s*([^\]]+)\]`)
 
 	var pendingPkgs []string
+	var pendingPkgObjs []map[string]any
 	var pendingSec []string
+	var pendingSecObjs []map[string]any
+	var descLinesRu []string
+	var descLinesEn []string
+	var allCVEs []string
+	seenCVE := make(map[string]bool)
+
 	for _, l := range strings.Split(out, "\n") {
 		trimmed := strings.TrimSpace(l)
 		if m := pkgRe.FindStringSubmatch(trimmed); m != nil {
 			pname := m[1]
 			repo := m[2]
+			newV := strings.TrimSpace(m[3])
+			oldV := strings.TrimSpace(m[4])
 			if heldSet[pname] {
 				continue
 			}
 			pendingPkgs = append(pendingPkgs, pname)
+			pkgObj := map[string]any{
+				"name":        pname,
+				"old_version": oldV,
+				"new_version": newV,
+			}
+			pendingPkgObjs = append(pendingPkgObjs, pkgObj)
 			if strings.Contains(strings.ToLower(repo), "security") {
 				pendingSec = append(pendingSec, pname)
+				dRu, dEn, cves := describeSecurityPackage(pname, oldV, newV)
+				descLinesRu = append(descLinesRu, "• "+dRu)
+				descLinesEn = append(descLinesEn, "• "+dEn)
+				for _, c := range cves {
+					if !seenCVE[c] {
+						seenCVE[c] = true
+						allCVEs = append(allCVEs, c)
+					}
+				}
+				secObj := map[string]any{
+					"name":        pname,
+					"old_version": oldV,
+					"new_version": newV,
+					"summary_ru":  dRu,
+					"summary_en":  dEn,
+					"cves":        cves,
+				}
+				pendingSecObjs = append(pendingSecObjs, secObj)
 			}
 		}
 	}
 
 	if onlySecurity && len(pendingSec) > 0 {
+		detailsRu := strings.Join(descLinesRu, "\n")
+		detailsEn := strings.Join(descLinesEn, "\n")
 		pushSecurityEvent(
 			"vuln_detected", "crit",
 			fmt.Sprintf("Найдены уязвимости (%d пак.)", len(pendingSec)),
 			fmt.Sprintf("Vulnerabilities Detected (%d pkgs)", len(pendingSec)),
-			fmt.Sprintf("Доступны обновления безопасности: %s. Запуск авто-патча...", strings.Join(pendingSec, ", ")),
-			fmt.Sprintf("Security updates available: %s. Auto-patch started...", strings.Join(pendingSec, ", ")),
-			pendingSec,
+			fmt.Sprintf("Доступны обновления безопасности: %s.\n%s\nЗапуск авто-патча...", strings.Join(pendingSec, ", "), detailsRu),
+			fmt.Sprintf("Security updates available: %s.\n%s\nAuto-patch started...", strings.Join(pendingSec, ", "), detailsEn),
+			pendingSecObjs,
+			allCVEs,
 		)
 
 		installCmd := fmt.Sprintf("DEBIAN_FRONTEND=noninteractive apt-get install --only-upgrade -y -o Dpkg::Options::=\"--force-confdef\" -o Dpkg::Options::=\"--force-confold\" %s", strings.Join(pendingSec, " "))
@@ -957,9 +1143,10 @@ func performAutoUpdates(doUpgrade, onlySecurity bool) {
 				"vuln_patched", "sec",
 				fmt.Sprintf("Установлен патч безопасности (%d пак.)", len(pendingSec)),
 				fmt.Sprintf("Security patch installed (%d pkgs)", len(pendingSec)),
-				fmt.Sprintf("Обновлены: %s. Система защищена.", strings.Join(pendingSec, ", ")),
-				fmt.Sprintf("Updated: %s. System protected.", strings.Join(pendingSec, ", ")),
-				pendingSec,
+				fmt.Sprintf("Обновлены: %s.\n%s\nСистема защищена.", strings.Join(pendingSec, ", "), detailsRu),
+				fmt.Sprintf("Updated: %s.\n%s\nSystem protected.", strings.Join(pendingSec, ", "), detailsEn),
+				pendingSecObjs,
+				allCVEs,
 			)
 		} else {
 			pushSecurityEvent(
@@ -968,7 +1155,8 @@ func performAutoUpdates(doUpgrade, onlySecurity bool) {
 				fmt.Sprintf("Security patch failed: %s", strings.Join(pendingSec, ", ")),
 				fmt.Sprintf("Вывод apt: %s", outInstall),
 				fmt.Sprintf("Apt output: %s", outInstall),
-				pendingSec,
+				pendingSecObjs,
+				allCVEs,
 			)
 		}
 	} else if doUpgrade && len(pendingPkgs) > 0 {
@@ -981,7 +1169,8 @@ func performAutoUpdates(doUpgrade, onlySecurity bool) {
 				fmt.Sprintf("Auto-update: updated %d packages", len(pendingPkgs)),
 				fmt.Sprintf("Обновлены пакеты: %s", strings.Join(pendingPkgs, ", ")),
 				fmt.Sprintf("Updated packages: %s", strings.Join(pendingPkgs, ", ")),
-				pendingPkgs,
+				pendingPkgObjs,
+				nil,
 			)
 		} else {
 			pushSecurityEvent(
@@ -990,7 +1179,8 @@ func performAutoUpdates(doUpgrade, onlySecurity bool) {
 				"Warning during auto-update",
 				fmt.Sprintf("Вывод: %s", outUpgrade),
 				fmt.Sprintf("Output: %s", outUpgrade),
-				pendingPkgs,
+				pendingPkgObjs,
+				nil,
 			)
 		}
 	}
@@ -1021,6 +1211,7 @@ func performAutoUpdates(doUpgrade, onlySecurity bool) {
 				"Server Reboot Required",
 				msg,
 				msg,
+				nil,
 				nil,
 			)
 			_ = os.WriteFile(rebootStampFile, []byte(time.Now().Format(time.RFC3339)), 0644)
