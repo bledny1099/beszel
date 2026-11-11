@@ -127,14 +127,46 @@ func escapeTelegramHTML(s string) string {
 	return s
 }
 
-func sendTelegramMessage(token, chatID, htmlText string) (bool, string) {
+func richToClassicHTML(rich string) string {
+	h := regexp.MustCompile(`<h\d>(.*?)</h\d>`).ReplaceAllString(rich, "<b>$1</b>\n")
+	h = regexp.MustCompile(`<details[^>]*>\s*<summary>(.*?)</summary>`).ReplaceAllString(h, "\n<b>$1</b>\n")
+	h = regexp.MustCompile(`</t[dh]>\s*<t[dh][^>]*>`).ReplaceAllString(h, " · ")
+	h = regexp.MustCompile(`<li[^>]*>`).ReplaceAllString(h, "• ")
+	h = regexp.MustCompile(`<br\s*/?>|</tr>|</li>|</p>|<hr\s*/?>|</footer>|</caption>`).ReplaceAllString(h, "\n")
+	h = regexp.MustCompile(`</?(?:p|table|tr|td|th|ul|ol|footer|details|caption|aside)(?:\s[^>]*)?>`).ReplaceAllString(h, "")
+	h = regexp.MustCompile(`\n{3,}`).ReplaceAllString(h, "\n\n")
+	return strings.TrimSpace(h)
+}
+
+func sendTelegramMessage(token, chatID, richHTML string) (bool, string) {
 	if token == "" || chatID == "" {
 		return false, "Missing bot token or chat_id"
 	}
+	client := &http.Client{Timeout: 10 * time.Second}
+
+	// 1. Send via Telegram Bot API 10.1+ sendRichMessage
+	richURL := fmt.Sprintf("https://api.telegram.org/bot%s/sendRichMessage", token)
+	richPayload := map[string]any{
+		"chat_id": chatID,
+		"rich_message": map[string]any{
+			"html": richHTML,
+		},
+	}
+	if body, err := json.Marshal(richPayload); err == nil {
+		if resp, err := client.Post(richURL, "application/json", bytes.NewBuffer(body)); err == nil {
+			respBytes, _ := io.ReadAll(resp.Body)
+			resp.Body.Close()
+			if resp.StatusCode == http.StatusOK {
+				return true, string(respBytes)
+			}
+		}
+	}
+
+	// 2. Fallback to classic sendMessage if sendRichMessage is rejected
 	apiURL := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", token)
 	payload := map[string]any{
 		"chat_id":                  chatID,
-		"text":                     htmlText,
+		"text":                     richToClassicHTML(richHTML),
 		"parse_mode":               "HTML",
 		"disable_web_page_preview": true,
 	}
@@ -143,7 +175,6 @@ func sendTelegramMessage(token, chatID, htmlText string) (bool, string) {
 		return false, err.Error()
 	}
 
-	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Post(apiURL, "application/json", bytes.NewBuffer(body))
 	if err != nil {
 		return false, err.Error()
@@ -191,6 +222,23 @@ func formatRichSummaryLine(line string) string {
 	return "• " + formatRichRefsHTML(trimmed)
 }
 
+func richRow(label, value string) string {
+	return fmt.Sprintf(`<tr><td>%s</td><td align="right">%s</td></tr>`, label, value)
+}
+
+func richTable(rows [][2]string, cls string) string {
+	if cls == "" {
+		cls = "bordered compact"
+	}
+	var b strings.Builder
+	b.WriteString(fmt.Sprintf("<table %s>", cls))
+	for _, r := range rows {
+		b.WriteString(richRow(r[0], r[1]))
+	}
+	b.WriteString("</table>")
+	return b.String()
+}
+
 func buildRichTelegramMessage(rec map[string]any) string {
 	evType := fmt.Sprint(rec["type"])
 	sysName := fmt.Sprint(rec["system_name"])
@@ -207,89 +255,143 @@ func buildRichTelegramMessage(rec map[string]any) string {
 	}
 	ts := fmt.Sprint(rec["timestamp"])
 
-	var icon, badge string
+	var icon, statusText, dotEmoji, actionWord string
 	switch evType {
 	case "vuln_patched":
 		icon = "✅"
-		badge = "ПАТЧ УСТАНОВЛЕН"
+		statusText = "Патч установлен · Защищено"
+		dotEmoji = "🟢"
+		actionWord = "Исправлено"
 	case "vuln_detected":
 		icon = "🚨"
-		badge = "УЯЗВИМОСТЬ"
+		statusText = "Уязвимость · Авто-патч"
+		dotEmoji = "🔴"
+		actionWord = "Требует патча"
 	case "auto_update":
 		icon = "🔄"
-		badge = "АВТО-ОБНОВЛЕНИЕ"
+		statusText = "Плановое обновление"
+		dotEmoji = "🟢"
+		actionWord = "Обновлено"
 	case "reboot_required":
 		icon = "⚠️"
-		badge = "ТРЕБУЕТСЯ РЕБУТ"
+		statusText = "Требуется перезагрузка"
+		dotEmoji = "🟡"
+		actionWord = "Ожидает ребута"
 	case "auto_rollback":
 		icon = "⏪"
-		badge = "АВТО-ОТКАТ"
+		statusText = "Авто-откат выполнен"
+		dotEmoji = "🟡"
+		actionWord = "Откачено"
 	default:
 		icon = "🛡️"
-		badge = "БЕЗОПАСНОСТЬ"
+		statusText = "Мониторинг безопасности"
+		dotEmoji = "🟢"
+		actionWord = "Проверено"
 	}
 
-	var b strings.Builder
-	b.WriteString(fmt.Sprintf("%s <b>Beszel · %s</b>  <code>[%s]</code>\n", icon, escapeTelegramHTML(sysName), badge))
-	b.WriteString(fmt.Sprintf("<b>%s</b>\n", escapeTelegramHTML(title)))
+	// Extract CVE / LP references and package lines from summary & record
+	pkgLineRe := regexp.MustCompile(`^•\s*([a-zA-Z0-9._+-]+)(?:\s+\(([^)]+)\))?:\s+(.+)$`)
+	refRe := regexp.MustCompile(`(?:CVE-\d{4}-\d+|LP:\s*#\d+|Debian\s*#\d+)`)
+
+	var pkgRows [][2]string
+	var descParagraphs []string
+	var allRefs []string
+	seenRef := make(map[string]bool)
+
+	for _, m := range refRe.FindAllString(summary, -1) {
+		m = strings.Join(strings.Fields(m), " ")
+		if !seenRef[m] {
+			seenRef[m] = true
+			allRefs = append(allRefs, formatRichRefsHTML(m))
+		}
+	}
 
 	if summary != "" && summary != "<nil>" {
-		lines := strings.Split(summary, "\n")
-		var introLines []string
-		var bulletLines []string
-		var statusLines []string
-
-		for _, l := range lines {
+		for _, l := range strings.Split(summary, "\n") {
 			tl := strings.TrimSpace(l)
 			if tl == "" {
 				continue
 			}
-			if strings.HasPrefix(tl, "•") {
-				bulletLines = append(bulletLines, formatRichSummaryLine(tl))
-			} else if strings.Contains(tl, "Запуск авто-патча") || strings.Contains(tl, "Система защищена") || strings.Contains(tl, "Auto-patch") || strings.Contains(tl, "System protected") || strings.Contains(tl, "Рекомендуется перезагрузить") {
-				statusLines = append(statusLines, tl)
-			} else {
-				// Highlight package names after colon if single-line
-				if idx := strings.Index(tl, ":"); idx != -1 && len(bulletLines) == 0 {
-					head := escapeTelegramHTML(tl[:idx+1])
-					tail := strings.TrimSpace(tl[idx+1:])
-					tail = strings.TrimSuffix(tail, ".")
-					var pkgTags []string
-					for _, p := range strings.Split(tail, ",") {
-						p = strings.TrimSpace(p)
-						if p != "" {
-							pkgTags = append(pkgTags, "<code>"+escapeTelegramHTML(p)+"</code>")
-						}
-					}
-					if len(pkgTags) > 0 {
-						introLines = append(introLines, fmt.Sprintf("%s %s", head, strings.Join(pkgTags, ", ")))
-						continue
-					}
-				}
-				introLines = append(introLines, formatRichRefsHTML(tl))
-			}
-		}
+			if m := pkgLineRe.FindStringSubmatch(tl); m != nil {
+				pkgName := escapeTelegramHTML(m[1])
+				ver := strings.TrimSpace(m[2])
+				detail := strings.TrimSpace(m[3])
+				// Strip trailing [LP: ...] / [CVE-...] from detail since we show refs in table
+				detailClean := regexp.MustCompile(`\s*\[[^\]]+\]\s*$`).ReplaceAllString(detail, "")
 
-		if len(introLines) > 0 {
-			b.WriteString("\n" + strings.Join(introLines, "\n") + "\n")
-		}
-		if len(bulletLines) > 0 {
-			b.WriteString("<blockquote>" + strings.Join(bulletLines, "\n\n") + "</blockquote>\n")
-		}
-		if len(statusLines) > 0 {
-			for _, st := range statusLines {
-				stIcon := "⚡"
-				if strings.Contains(st, "защищена") || strings.Contains(st, "protected") {
-					stIcon = "🛡️"
+				verDisplay := actionWord
+				if ver != "" {
+					verDisplay = escapeTelegramHTML(ver)
 				}
-				b.WriteString(fmt.Sprintf("%s <i>%s</i>\n", stIcon, escapeTelegramHTML(st)))
+				pkgRows = append(pkgRows, [2]string{
+					fmt.Sprintf("%s <b>%s</b> · %s", dotEmoji, pkgName, actionWord),
+					verDisplay,
+				})
+				descParagraphs = append(descParagraphs, fmt.Sprintf("<b>%s:</b> <i>%s</i>", pkgName, formatRichRefsHTML(detailClean)))
+			} else if !strings.HasPrefix(tl, "Доступны обновления") &&
+				!strings.HasPrefix(tl, "Security updates") &&
+				!strings.HasPrefix(tl, "Обновлены:") &&
+				!strings.HasPrefix(tl, "Updated:") &&
+				!strings.Contains(tl, "Запуск авто-патча") &&
+				!strings.Contains(tl, "Система защищена") {
+				descParagraphs = append(descParagraphs, "<i>"+formatRichRefsHTML(tl)+"</i>")
 			}
 		}
 	}
 
+	// If pkgRows is still empty, check rec["packages"]
+	if len(pkgRows) == 0 {
+		if pkgsAny, ok := rec["packages"].([]any); ok {
+			for _, p := range pkgsAny {
+				switch v := p.(type) {
+				case string:
+					pkgRows = append(pkgRows, [2]string{
+						fmt.Sprintf("%s <b>%s</b> · %s", dotEmoji, escapeTelegramHTML(v), actionWord),
+						actionWord,
+					})
+				case map[string]any:
+					pname := escapeTelegramHTML(fmt.Sprint(v["name"]))
+					oldV := fmt.Sprint(v["old_version"])
+					newV := fmt.Sprint(v["new_version"])
+					verDisp := actionWord
+					if oldV != "" && oldV != "<nil>" && newV != "" && newV != "<nil>" {
+						verDisp = escapeTelegramHTML(oldV + " → " + newV)
+					}
+					pkgRows = append(pkgRows, [2]string{
+						fmt.Sprintf("%s <b>%s</b> · %s", dotEmoji, pname, actionWord),
+						verDisp,
+					})
+				}
+			}
+		}
+	}
+
+	topRows := [][2]string{
+		{"Событие", fmt.Sprintf("<b>%s</b>", escapeTelegramHTML(title))},
+		{"Статус", fmt.Sprintf("<b>%s</b>", escapeTelegramHTML(statusText))},
+	}
+	if len(allRefs) > 0 {
+		topRows = append(topRows, [2]string{"Бюллетень / Код", strings.Join(allRefs, ", ")})
+	}
+
+	var b strings.Builder
+	b.WriteString(fmt.Sprintf("<h2>%s %s</h2>\n", icon, escapeTelegramHTML(sysName)))
+	b.WriteString(richTable(topRows, "bordered compact") + "\n")
+
+	if len(pkgRows) > 0 {
+		b.WriteString("<h3>Пакеты</h3>\n")
+		b.WriteString(richTable(pkgRows, "striped compact") + "\n")
+	}
+
+	if len(descParagraphs) > 0 {
+		b.WriteString("<p>" + strings.Join(descParagraphs, "<br/>") + "</p>\n")
+	}
+
+	footerText := "Beszel Security"
 	if ts != "" && ts != "<nil>" {
-		b.WriteString(fmt.Sprintf("🕒 <code>%s</code>", escapeTelegramHTML(ts)))
+		footerText = fmt.Sprintf("%s · Beszel Security", escapeTelegramHTML(ts))
 	}
+	b.WriteString(fmt.Sprintf("<footer>%s</footer>", footerText))
 
 	return b.String()
 }
