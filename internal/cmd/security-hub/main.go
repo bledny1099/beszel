@@ -153,6 +153,147 @@ func sendTelegramMessage(token, chatID, htmlText string) (bool, string) {
 	return resp.StatusCode == http.StatusOK, string(respBytes)
 }
 
+func formatRichRefsHTML(text string) string {
+	escaped := escapeTelegramHTML(text)
+	cveRe := regexp.MustCompile(`CVE-\d{4}-\d+`)
+	escaped = cveRe.ReplaceAllStringFunc(escaped, func(cve string) string {
+		return fmt.Sprintf(`<a href="https://ubuntu.com/security/%s"><b>%s</b></a>`, cve, cve)
+	})
+	lpRe := regexp.MustCompile(`LP:\s*#(\d+)`)
+	escaped = lpRe.ReplaceAllString(escaped, `<a href="https://bugs.launchpad.net/bugs/$1"><b>LP: #$1</b></a>`)
+	debRe := regexp.MustCompile(`Debian\s*#(\d+)`)
+	escaped = debRe.ReplaceAllString(escaped, `<a href="https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=$1"><b>Debian #$1</b></a>`)
+	return escaped
+}
+
+func formatRichSummaryLine(line string) string {
+	trimmed := strings.TrimSpace(line)
+	trimmed = strings.TrimPrefix(trimmed, "• ")
+	// Pattern: pkgName (oldVer → newVer): detail [refs]
+	pkgLineRe := regexp.MustCompile(`^([a-zA-Z0-9._+-]+)(?:\s+\(([^)]+)\))?:\s+(.+)$`)
+	if m := pkgLineRe.FindStringSubmatch(trimmed); m != nil {
+		pkg := escapeTelegramHTML(m[1])
+		ver := strings.TrimSpace(m[2])
+		rest := m[3]
+		verHTML := ""
+		if ver != "" {
+			parts := strings.Split(ver, "→")
+			if len(parts) == 2 {
+				verHTML = fmt.Sprintf(" (<code>%s</code> → <code>%s</code>)",
+					escapeTelegramHTML(strings.TrimSpace(parts[0])),
+					escapeTelegramHTML(strings.TrimSpace(parts[1])))
+			} else {
+				verHTML = fmt.Sprintf(" (<code>%s</code>)", escapeTelegramHTML(ver))
+			}
+		}
+		return fmt.Sprintf("📦 <b><code>%s</code></b>%s\n└ %s", pkg, verHTML, formatRichRefsHTML(rest))
+	}
+	return "• " + formatRichRefsHTML(trimmed)
+}
+
+func buildRichTelegramMessage(rec map[string]any) string {
+	evType := fmt.Sprint(rec["type"])
+	sysName := fmt.Sprint(rec["system_name"])
+	if sysName == "" || sysName == "<nil>" {
+		sysName = fmt.Sprint(rec["system_id"])
+	}
+	title := fmt.Sprint(rec["title_ru"])
+	if title == "" || title == "<nil>" {
+		title = fmt.Sprint(rec["title_en"])
+	}
+	summary := fmt.Sprint(rec["summary_ru"])
+	if summary == "" || summary == "<nil>" {
+		summary = fmt.Sprint(rec["summary_en"])
+	}
+	ts := fmt.Sprint(rec["timestamp"])
+
+	var icon, badge string
+	switch evType {
+	case "vuln_patched":
+		icon = "✅"
+		badge = "ПАТЧ УСТАНОВЛЕН"
+	case "vuln_detected":
+		icon = "🚨"
+		badge = "УЯЗВИМОСТЬ"
+	case "auto_update":
+		icon = "🔄"
+		badge = "АВТО-ОБНОВЛЕНИЕ"
+	case "reboot_required":
+		icon = "⚠️"
+		badge = "ТРЕБУЕТСЯ РЕБУТ"
+	case "auto_rollback":
+		icon = "⏪"
+		badge = "АВТО-ОТКАТ"
+	default:
+		icon = "🛡️"
+		badge = "БЕЗОПАСНОСТЬ"
+	}
+
+	var b strings.Builder
+	b.WriteString(fmt.Sprintf("%s <b>Beszel · %s</b>  <code>[%s]</code>\n", icon, escapeTelegramHTML(sysName), badge))
+	b.WriteString(fmt.Sprintf("<b>%s</b>\n", escapeTelegramHTML(title)))
+
+	if summary != "" && summary != "<nil>" {
+		lines := strings.Split(summary, "\n")
+		var introLines []string
+		var bulletLines []string
+		var statusLines []string
+
+		for _, l := range lines {
+			tl := strings.TrimSpace(l)
+			if tl == "" {
+				continue
+			}
+			if strings.HasPrefix(tl, "•") {
+				bulletLines = append(bulletLines, formatRichSummaryLine(tl))
+			} else if strings.Contains(tl, "Запуск авто-патча") || strings.Contains(tl, "Система защищена") || strings.Contains(tl, "Auto-patch") || strings.Contains(tl, "System protected") || strings.Contains(tl, "Рекомендуется перезагрузить") {
+				statusLines = append(statusLines, tl)
+			} else {
+				// Highlight package names after colon if single-line
+				if idx := strings.Index(tl, ":"); idx != -1 && len(bulletLines) == 0 {
+					head := escapeTelegramHTML(tl[:idx+1])
+					tail := strings.TrimSpace(tl[idx+1:])
+					tail = strings.TrimSuffix(tail, ".")
+					var pkgTags []string
+					for _, p := range strings.Split(tail, ",") {
+						p = strings.TrimSpace(p)
+						if p != "" {
+							pkgTags = append(pkgTags, "<code>"+escapeTelegramHTML(p)+"</code>")
+						}
+					}
+					if len(pkgTags) > 0 {
+						introLines = append(introLines, fmt.Sprintf("%s %s", head, strings.Join(pkgTags, ", ")))
+						continue
+					}
+				}
+				introLines = append(introLines, formatRichRefsHTML(tl))
+			}
+		}
+
+		if len(introLines) > 0 {
+			b.WriteString("\n" + strings.Join(introLines, "\n") + "\n")
+		}
+		if len(bulletLines) > 0 {
+			b.WriteString("<blockquote>" + strings.Join(bulletLines, "\n\n") + "</blockquote>\n")
+		}
+		if len(statusLines) > 0 {
+			for _, st := range statusLines {
+				stIcon := "⚡"
+				if strings.Contains(st, "защищена") || strings.Contains(st, "protected") {
+					stIcon = "🛡️"
+				}
+				b.WriteString(fmt.Sprintf("%s <i>%s</i>\n", stIcon, escapeTelegramHTML(st)))
+			}
+		}
+	}
+
+	if ts != "" && ts != "<nil>" {
+		b.WriteString(fmt.Sprintf("🕒 <code>%s</code>", escapeTelegramHTML(ts)))
+	}
+
+	return b.String()
+}
+
 func dispatchTelegramNotification(rec map[string]any) {
 	cfg := loadAlertConfig()
 	if !cfg.TelegramEnabled || cfg.TelegramBotToken == "" || cfg.TelegramChatID == "" {
@@ -184,44 +325,7 @@ func dispatchTelegramNotification(rec map[string]any) {
 		}
 	}
 
-	sysName := fmt.Sprint(rec["system_name"])
-	if sysName == "" || sysName == "<nil>" {
-		sysName = fmt.Sprint(rec["system_id"])
-	}
-	title := fmt.Sprint(rec["title_ru"])
-	if title == "" {
-		title = fmt.Sprint(rec["title_en"])
-	}
-	summary := fmt.Sprint(rec["summary_ru"])
-	if summary == "" {
-		summary = fmt.Sprint(rec["summary_en"])
-	}
-	ts := fmt.Sprint(rec["timestamp"])
-
-	var icon string
-	switch evType {
-	case "vuln_patched":
-		icon = "✅"
-	case "vuln_detected":
-		icon = "🚨"
-	case "auto_update":
-		icon = "🔄"
-	case "reboot_required":
-		icon = "⚠️"
-	case "auto_rollback":
-		icon = "⏪"
-	default:
-		icon = "🛡️"
-	}
-
-	msg := fmt.Sprintf("%s <b>Beszel: %s</b>\n<b>%s</b>", icon, escapeTelegramHTML(sysName), escapeTelegramHTML(title))
-	if summary != "" && summary != "<nil>" {
-		msg += fmt.Sprintf("\n%s", escapeTelegramHTML(summary))
-	}
-	if ts != "" && ts != "<nil>" {
-		msg += fmt.Sprintf("\n🕒 <i>%s</i>", escapeTelegramHTML(ts))
-	}
-
+	msg := buildRichTelegramMessage(rec)
 	go sendTelegramMessage(cfg.TelegramBotToken, cfg.TelegramChatID, msg)
 }
 
@@ -1091,7 +1195,13 @@ func main() {
 			return
 		}
 		cfg := loadAlertConfig()
-		testMsg := fmt.Sprintf("🛡️ <b>Beszel Security</b>\n✅ Тестовое оповещение успешно доставлено!\n🕒 <i>%s</i>", getDubaiStr())
+		testMsg := buildRichTelegramMessage(map[string]any{
+			"type":        "vuln_patched",
+			"system_name": "Hetzner",
+			"title_ru":    "Тестовое оповещение (1 пак.)",
+			"summary_ru":  "Доступны обновления безопасности: ca-certificates-java.\n• ca-certificates-java (20260311 → 20260311ubuntu0.26.04.2): обновление хранилища корневых сертификатов и проверки TLS/SSL (Common CA certificates (JKS keystore) — set LC_ALL=C.UTF-8 so keytool calls do not fail parsing) [LP: #2173752]\nСистема защищена.",
+			"timestamp":   getDubaiStr(),
+		})
 		ok, resp := sendTelegramMessage(cfg.TelegramBotToken, cfg.TelegramChatID, testMsg)
 		sendJSON(w, http.StatusOK, map[string]any{"ok": ok, "response": resp})
 	})

@@ -2500,9 +2500,37 @@ function renderNotificationsPage() {
                 </div>`
               : "";
 
+            const renderRichNotifSummary = (raw) => {
+              if (!raw) return "";
+              return String(raw)
+                .split("\n")
+                .map((line) => {
+                  const trimmed = line.trim();
+                  if (!trimmed) return "";
+                  let html = escapeHtml(trimmed);
+                  html = html.replace(
+                    /\b(CVE-\d{4}-\d+)\b/g,
+                    `<a class="bszl-cve-tag js-cve-link" href="https://ubuntu.com/security/$1" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:3px;padding:1px 5px;font-size:0.68rem;"><span>$1</span></a>`
+                  );
+                  html = html.replace(
+                    /\bLP:\s*#(\d+)\b/g,
+                    `<a class="bszl-cve-tag js-cve-link" href="https://bugs.launchpad.net/bugs/$1" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:3px;padding:1px 5px;font-size:0.68rem;"><span>LP: #$1</span></a>`
+                  );
+                  if (trimmed.startsWith("•")) {
+                    html = html.replace(
+                      /^•\s*([a-zA-Z0-9._+-]+)(\s*\([^)]+\))?:/,
+                      `• <strong style="color:var(--foreground);font-family:ui-monospace,monospace;">$1</strong><span style="opacity:0.8;font-family:ui-monospace,monospace;">$2</span>:`
+                    );
+                    return `<div style="margin:4px 0;padding:5px 8px;border-left:2px solid hsl(var(--primary));background:rgba(128,128,128,0.06);border-radius:0 6px 6px 0;line-height:1.45;">${html}</div>`;
+                  }
+                  return `<div style="margin:2px 0;">${html}</div>`;
+                })
+                .join("");
+            };
+
             detailsHtml = `
               <div class="bszl-notif-details">
-                ${summary ? `<div class="bszl-notif-summary">${escapeHtml(summary)}</div>` : ""}
+                ${summary ? `<div class="bszl-notif-summary">${renderRichNotifSummary(summary)}</div>` : ""}
                 ${cvesHtml}
                 ${pkgsHtml}
                 ${guardBarHtml}
