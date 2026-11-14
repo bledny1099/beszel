@@ -159,3 +159,93 @@ func TestBuildRichTelegramMessageSystemReboot(t *testing.T) {
 		t.Fatalf("unexpected rich telegram message: %s", msg)
 	}
 }
+
+func TestBuildRichTelegramMessageSystemRebootOk(t *testing.T) {
+	msg := buildRichTelegramMessage(map[string]any{
+		"type":        "system_reboot_ok",
+		"system_name": "Hetzner",
+		"severity":    "sec",
+		"title_ru":    "Сервер успешно перезагружен",
+		"summary_ru":  "Все сохранённые сессии и сервисы подняты автоматически.",
+		"timestamp":   "2026-11-14 16:25:00 DXB",
+		"details": []map[string]string{
+			{"label": "Сессии (screen/tmux)", "value": "5 / 5 восстановлено", "state": "ok"},
+			{"label": "Docker", "value": "14 контейнеров", "state": "ok"},
+			{"label": "Beszel-агент", "value": "online", "state": "ok"},
+			{"label": "Загрузка", "value": "18с · 7.0.0-43-generic", "state": "info"},
+		},
+	})
+	for _, want := range []string{
+		"<h2>✅ Hetzner</h2>",
+		"Сервер успешно перезагружен",
+		"Перезагрузка завершена · Сервер в сети",
+		`<table striped compact>`,
+		"🟢 <b>Сессии (screen/tmux)</b>",
+		"5 / 5 восстановлено",
+		"14 контейнеров",
+		"2026-11-14 16:25:00 DXB · Beszel Security",
+	} {
+		if !strings.Contains(msg, want) {
+			t.Fatalf("expected rich telegram message to contain %q, got:\n%s", want, msg)
+		}
+	}
+}
+
+func TestSecurityEventSystemRebootOkDedupAndStorage(t *testing.T) {
+	setupTestEnv(t)
+	mux := buildMux()
+
+	payload := map[string]any{
+		"id":          "reboot-ok-zotmtzksqho8yof-abc123def456",
+		"system_id":   "zotmtzksqho8yof",
+		"system_name": "Hetzner",
+		"type":        "system_reboot_ok",
+		"title_ru":    "Сервер успешно перезагружен",
+		"title_en":    "Server Rebooted Successfully",
+		"summary_ru":  "Восстановлено 5 сессий и 14 контейнеров.",
+		"summary_en":  "Restored 5 sessions and 14 containers.",
+		"timestamp":   "2026-11-14 16:25:00 DXB",
+		"details": []map[string]string{
+			{"label": "Сессии", "value": "5 / 5", "state": "ok"},
+			{"label": "Docker", "value": "14", "state": "ok"},
+		},
+	}
+	raw, _ := json.Marshal(payload)
+
+	// Rejected without valid token
+	req := httptest.NewRequest(http.MethodPost, "/api/security-event", bytes.NewReader(raw))
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("expected 403 without token, got %d", rec.Code)
+	}
+
+	// First authenticated delivery creates the record
+	req = httptest.NewRequest(http.MethodPost, "/api/security-event", bytes.NewReader(raw))
+	req.Header.Set("X-Beszel-Security-Token", sharedToken)
+	rec = httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200 on first POST, got %d (%s)", rec.Code, rec.Body.String())
+	}
+
+	// Second POST with same boot ID deduplicates without creating a second entry
+	req = httptest.NewRequest(http.MethodPost, "/api/security-event", bytes.NewReader(raw))
+	req.Header.Set("X-Beszel-Security-Token", sharedToken)
+	rec = httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200 on duplicate POST, got %d", rec.Code)
+	}
+
+	items := loadNotifications()
+	if len(items) != 1 {
+		t.Fatalf("expected exactly 1 notification after dedup, got %d", len(items))
+	}
+	if items[0]["severity"] != "sec" || items[0]["type"] != "system_reboot_ok" {
+		t.Fatalf("unexpected stored notification metadata: %#v", items[0])
+	}
+	if items[0]["details"] == nil {
+		t.Fatalf("expected details preserved on stored notification: %#v", items[0])
+	}
+}

@@ -241,6 +241,63 @@ func richTable(rows [][2]string, cls string) string {
 	return b.String()
 }
 
+func formatDetailRow(label, value, state string) ([2]string, bool) {
+	label = strings.TrimSpace(label)
+	value = strings.TrimSpace(value)
+	if label == "" || value == "" || label == "<nil>" || value == "<nil>" {
+		return [2]string{}, false
+	}
+	dot := ""
+	switch strings.ToLower(strings.TrimSpace(state)) {
+	case "ok":
+		dot = "🟢 "
+	case "warn":
+		dot = "🟡 "
+	case "crit":
+		dot = "🔴 "
+	case "info":
+		dot = "🔹 "
+	}
+	return [2]string{
+		fmt.Sprintf("%s<b>%s</b>", dot, escapeTelegramHTML(label)),
+		escapeTelegramHTML(value),
+	}, true
+}
+
+func extractDetailRows(raw any) [][2]string {
+	if raw == nil {
+		return nil
+	}
+	var rows [][2]string
+	switch list := raw.(type) {
+	case []any:
+		for _, item := range list {
+			if m, ok := item.(map[string]any); ok {
+				if row, valid := formatDetailRow(fmt.Sprint(m["label"]), fmt.Sprint(m["value"]), fmt.Sprint(m["state"])); valid {
+					rows = append(rows, row)
+				}
+			} else if m, ok := item.(map[string]string); ok {
+				if row, valid := formatDetailRow(m["label"], m["value"], m["state"]); valid {
+					rows = append(rows, row)
+				}
+			}
+		}
+	case []map[string]string:
+		for _, m := range list {
+			if row, valid := formatDetailRow(m["label"], m["value"], m["state"]); valid {
+				rows = append(rows, row)
+			}
+		}
+	case []map[string]any:
+		for _, m := range list {
+			if row, valid := formatDetailRow(fmt.Sprint(m["label"]), fmt.Sprint(m["value"]), fmt.Sprint(m["state"])); valid {
+				rows = append(rows, row)
+			}
+		}
+	}
+	return rows
+}
+
 func buildRichTelegramMessage(rec map[string]any) string {
 	evType := fmt.Sprint(rec["type"])
 	sysName := fmt.Sprint(rec["system_name"])
@@ -284,6 +341,19 @@ func buildRichTelegramMessage(rec map[string]any) string {
 		statusText = "Состояние сохранено · Сервер перезагружается"
 		dotEmoji = "🟡"
 		actionWord = "Перезагрузка"
+	case "system_reboot_ok":
+		sev := strings.ToLower(strings.TrimSpace(fmt.Sprint(rec["severity"])))
+		if sev == "warn" || sev == "crit" {
+			icon = "⚠️"
+			statusText = "Перезагрузка завершена · Есть замечания"
+			dotEmoji = "🟡"
+			actionWord = "Внимание"
+		} else {
+			icon = "✅"
+			statusText = "Перезагрузка завершена · Сервер в сети"
+			dotEmoji = "🟢"
+			actionWord = "Восстановлено"
+		}
 	case "auto_rollback":
 		icon = "⏪"
 		statusText = "Авто-откат выполнен"
@@ -380,6 +450,7 @@ func buildRichTelegramMessage(rec map[string]any) string {
 	if len(allRefs) > 0 {
 		topRows = append(topRows, [2]string{"Бюллетень / Код", strings.Join(allRefs, ", ")})
 	}
+	detailRows := extractDetailRows(rec["details"])
 
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf("<h2>%s %s</h2>\n", icon, escapeTelegramHTML(sysName)))
@@ -388,6 +459,15 @@ func buildRichTelegramMessage(rec map[string]any) string {
 	if len(pkgRows) > 0 {
 		b.WriteString("<h3>Пакеты</h3>\n")
 		b.WriteString(richTable(pkgRows, "striped compact") + "\n")
+	}
+
+	if len(detailRows) > 0 {
+		detailHeading := "Параметры"
+		if evType == "system_reboot_ok" {
+			detailHeading = "Состояние"
+		}
+		b.WriteString(fmt.Sprintf("<h3>%s</h3>\n", detailHeading))
+		b.WriteString(richTable(detailRows, "striped compact") + "\n")
 	}
 
 	if len(descParagraphs) > 0 {
@@ -427,8 +507,8 @@ func dispatchTelegramNotification(rec map[string]any) {
 		if !cfg.NotifyRebootRequired {
 			return
 		}
-	case "system_reboot":
-		// Always deliver user-initiated reboot confirmation when Telegram alerts are enabled
+	case "system_reboot", "system_reboot_ok":
+		// Always deliver reboot initiation and post-reboot recovery confirmations when Telegram alerts are enabled
 	default:
 		sev := fmt.Sprint(rec["severity"])
 		if sev != "crit" || !cfg.NotifyCritChecks {
@@ -650,7 +730,7 @@ func recordNotification(payload map[string]any, markUnread bool) string {
 	if severity == "" {
 		if evType == "vuln_detected" || evType == "auto_rollback" {
 			severity = "crit"
-		} else if evType == "vuln_patched" {
+		} else if evType == "vuln_patched" || evType == "system_reboot_ok" {
 			severity = "sec"
 		} else {
 			severity = "info"
@@ -695,6 +775,9 @@ func recordNotification(payload map[string]any, markUnread bool) string {
 		"rollback_guard": rbGuard,
 		"rolled_back":    rolledBack,
 		"read":           !markUnread,
+	}
+	if details := payload["details"]; details != nil {
+		record["details"] = details
 	}
 
 	items = append([]map[string]any{record}, items...)

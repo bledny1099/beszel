@@ -143,6 +143,7 @@ const I18N = {
     typeAutoUpdate: "UPD",
     typeAutoRollback: "ОТКАТ",
     typeSystemReboot: "REBOOT",
+    typeSystemRebootOk: "В СЕТИ",
     emptyNotifs: "Событий нет",
     openNotifsBtn: "Уведомления",
     agentBtnTitle: "Установка единого агента",
@@ -264,6 +265,7 @@ const I18N = {
     typeAutoUpdate: "UPD",
     typeAutoRollback: "ROLLBACK",
     typeSystemReboot: "REBOOT",
+    typeSystemRebootOk: "REBOOT OK",
     emptyNotifs: "No events",
     openNotifsBtn: "Notifications",
     agentBtnTitle: "All-in-One Agent Installer",
@@ -2563,7 +2565,7 @@ function renderNotificationsPage() {
   const cardsHtml = filtered.length
     ? filtered
         .map((n) => {
-          const isSec = n.type === "vuln_patched" || n.type === "f2b_ban";
+          const isSec = n.type === "vuln_patched" || n.type === "f2b_ban" || n.type === "system_reboot_ok";
           const isCrit = n.type === "vuln_detected" || n.type === "auto_rollback";
           const isExp = !!state.expandedNotifIds[n.id];
           const borderCls = isCrit
@@ -2589,6 +2591,8 @@ function renderNotificationsPage() {
               ? "SSH"
               : n.type === "system_reboot"
               ? t("typeSystemReboot")
+              : n.type === "system_reboot_ok"
+              ? t("typeSystemRebootOk")
               : t("typeAutoUpdate");
           const rawTitle = isEn ? n.title_en || n.title_ru : n.title_ru || n.title_en;
           const title = String(rawTitle)
@@ -2692,9 +2696,27 @@ function renderNotificationsPage() {
                 .join("");
             };
 
+            const detailRowsHtml =
+              Array.isArray(n.details) && n.details.length
+                ? `<div class="bszl-pkg-row" style="margin-top:4px;">${n.details
+                    .map((d) => {
+                      const dot =
+                        d.state === "ok"
+                          ? `<span class="bszl-dot bszl-dot--ok"></span>`
+                          : d.state === "warn" || d.state === "crit"
+                          ? `<span class="bszl-dot bszl-dot--bad"></span>`
+                          : "";
+                      return `<span class="bszl-pkg-chip" style="display:inline-flex;align-items:center;gap:5px;">${dot}<strong>${escapeHtml(
+                        d.label || ""
+                      )}:</strong> <span>${escapeHtml(d.value || "")}</span></span>`;
+                    })
+                    .join("")}</div>`
+                : "";
+
             detailsHtml = `
               <div class="bszl-notif-details">
                 ${summary ? `<div class="bszl-notif-summary">${renderRichNotifSummary(summary)}</div>` : ""}
+                ${detailRowsHtml}
                 ${cvesHtml}
                 ${pkgsHtml}
                 ${guardBarHtml}
