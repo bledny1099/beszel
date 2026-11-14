@@ -128,6 +128,31 @@ final class AppState {
         }
     }
 
+    func rebootSystem(for system: SystemRecord) async throws -> String {
+        guard let instance = selectedInstance else {
+            throw NSError(
+                domain: "BeszelBar.Reboot",
+                code: -1,
+                userInfo: [NSLocalizedDescriptionKey: "Не выбран активный хаб Beszel."]
+            )
+        }
+        let service = getOrCreateService(for: instance)
+        let message = try await service.rebootSystem(systemID: system.id)
+        loadSystems()
+        loadSecurityReports()
+        Task { [weak self] in
+            for delaySec in [6, 18, 35] {
+                try? await Task.sleep(for: .seconds(delaySec))
+                await MainActor.run {
+                    self?.loadSystems()
+                    self?.loadSystemDetails()
+                    self?.loadSecurityReports()
+                }
+            }
+        }
+        return message
+    }
+
     func loadAlerts() {
         guard let instance = selectedInstance else { return }
 

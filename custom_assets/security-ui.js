@@ -7,6 +7,7 @@ const ICONS = {
   globe: `<span class="bszl-ico bszl-icm bszl-icm-turn"><svg width="16" height="16" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><path d="M168,128c0,64,-40,96,-40,96s-40,-32,-40,-96,40,-96,40,-96S168,64,168,128Z"/><circle cx="128" cy="128" r="96"/><line x1="37.46" y1="96" x2="218.54" y2="96"/><line x1="37.46" y1="160" x2="218.54" y2="160"/></svg></span>`,
   sync: (spinning = false) => `<span class="bszl-ico bszl-ico-sync ${spinning ? "is-spinning" : "bszl-icm bszl-icm-pulse"}"><svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M224,48V96a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h28.69L182.06,73.37a79.56,79.56,0,0,0-56.13-23.43h-.45A79.52,79.52,0,0,0,69.59,72.71,8,8,0,0,1,58.41,61.27a96,96,0,0,1,135,.79L208,76.69V48a8,8,0,0,1,16,0ZM186.41,183.29a80,80,0,0,1-112.47-.66L59.31,168H88a8,8,0,0,0,0-16H40a8,8,0,0,0-8,8v48a8,8,0,0,0,16,0V179.31l14.63,14.63A95.43,95.43,0,0,0,130,222.06h.53a95.36,95.36,0,0,0,67.07-27.33,8,8,0,0,0-11.18-11.44Z"/></svg></span>`,
   rotateCcw: `<span class="bszl-ico bszl-icm bszl-icm-pulse-ccw"><svg width="15" height="15" viewBox="0 0 256 256" fill="currentColor"><path d="M88,104H40a8,8,0,0,1-8-8V48a8,8,0,0,1,16,0V76.69L62.63,62.06A95.43,95.43,0,0,1,130,33.94h.53a95.36,95.36,0,0,1,67.07,27.33,8,8,0,0,1-11.18,11.44,79.52,79.52,0,0,0-55.89-22.77h-.45A79.56,79.56,0,0,0,73.94,73.37L59.31,88H88a8,8,0,0,1,0,16Zm128,48H168a8,8,0,0,0,0,16h28.69l-14.63,14.63a79.56,79.56,0,0,1-56.13,23.43h-.45a79.52,79.52,0,0,1-55.89-22.77,8,8,0,1,0-11.18,11.44,95.36,95.36,0,0,0,67.07,27.33H126a95.43,95.43,0,0,0,67.36-28.12L208,179.31V208a8,8,0,0,0,16,0V160A8,8,0,0,0,216,152Z"/></svg></span>`,
+  power: `<span class="bszl-ico bszl-icm bszl-icm-pulse"><svg width="15" height="15" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"><line x1="128" y1="44" x2="128" y2="124"/><path d="M176,56a88,88,0,1,1-96,0"/></svg></span>`,
   langGlobe: `<svg class="h-[1.2rem] w-[1.2rem] bszl-icm bszl-icm-turn" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><path d="M168,128c0,64,-40,96,-40,96s-40,-32,-40,-96,40,-96,40,-96S168,64,168,128Z"/><circle cx="128" cy="128" r="96"/><line x1="37.46" y1="96" x2="218.54" y2="96"/><line x1="37.46" y1="160" x2="218.54" y2="160"/></svg>`,
   flagUS: `<svg viewBox="0 0 28 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="20" fill="#FFFFFF"/><path d="M0 0H28V1.54H0V0ZM0 3.08H28V4.62H0V3.08ZM0 6.15H28V7.69H0V6.15ZM0 9.23H28V10.77H0V9.23ZM0 12.31H28V13.85H0V12.31ZM0 15.38H28V16.92H0V15.38ZM0 18.46H28V20H0V18.46Z" fill="#B22234"/><rect width="12" height="10.77" fill="#3C3B6E"/><g fill="#FFFFFF"><circle cx="2.2" cy="2" r="0.75"/><circle cx="4.7" cy="2" r="0.75"/><circle cx="7.2" cy="2" r="0.75"/><circle cx="9.7" cy="2" r="0.75"/><circle cx="3.45" cy="3.7" r="0.75"/><circle cx="5.95" cy="3.7" r="0.75"/><circle cx="8.45" cy="3.7" r="0.75"/><circle cx="2.2" cy="5.4" r="0.75"/><circle cx="4.7" cy="5.4" r="0.75"/><circle cx="7.2" cy="5.4" r="0.75"/><circle cx="9.7" cy="5.4" r="0.75"/><circle cx="3.45" cy="7.1" r="0.75"/><circle cx="5.95" cy="7.1" r="0.75"/><circle cx="8.45" cy="7.1" r="0.75"/><circle cx="2.2" cy="8.8" r="0.75"/><circle cx="4.7" cy="8.8" r="0.75"/><circle cx="7.2" cy="8.8" r="0.75"/><circle cx="9.7" cy="8.8" r="0.75"/></g></svg>`,
   flagRU: `<svg viewBox="0 0 28 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="6.67" fill="#FFFFFF"/><rect y="6.67" width="28" height="6.67" fill="#0039A6"/><rect y="13.33" width="28" height="6.67" fill="#D52B1E"/></svg>`,
@@ -81,6 +82,8 @@ const I18N = {
     tabUpdates: "Апдейты",
     checkNow: "Проверка",
     updateNow: "Обновить",
+    rebootNow: "Перезагрузить",
+    rebootBtnTitle: "Сохранить состояние и перезагрузить сервер",
     hide: "Скрыть",
     expand: "Развернуть",
     portPlaceholder: "Порт (8080)",
@@ -139,6 +142,7 @@ const I18N = {
     typeVulnDetected: "УЯЗВ",
     typeAutoUpdate: "UPD",
     typeAutoRollback: "ОТКАТ",
+    typeSystemReboot: "REBOOT",
     emptyNotifs: "Событий нет",
     openNotifsBtn: "Уведомления",
     agentBtnTitle: "Установка единого агента",
@@ -199,6 +203,8 @@ const I18N = {
     tabUpdates: "Updates",
     checkNow: "Check",
     updateNow: "Update",
+    rebootNow: "Reboot",
+    rebootBtnTitle: "Save state and reboot server",
     hide: "Hide",
     expand: "Expand",
     portPlaceholder: "Port (8080)",
@@ -257,6 +263,7 @@ const I18N = {
     typeVulnDetected: "VULN",
     typeAutoUpdate: "UPD",
     typeAutoRollback: "ROLLBACK",
+    typeSystemReboot: "REBOOT",
     emptyNotifs: "No events",
     openNotifsBtn: "Notifications",
     agentBtnTitle: "All-in-One Agent Installer",
@@ -738,6 +745,8 @@ const state = {
   alertSaving: false,
   alertTesting: false,
   alertTestMsg: "",
+  rebootModal: null,
+  rebootBusySystem: null,
   activeTabBySystem: {},
   // Server page cards state
   cardTabs: { security: "ports", services: "all" },
@@ -1488,17 +1497,170 @@ async function triggerAudit(systemId = "all", mode = "check") {
   }
 }
 
+function isTermuxSystem(rep, sysId = "") {
+  const id = String(sysId || rep?.system_id || "").toLowerCase();
+  const name = String(rep?.system_name || "").toLowerCase();
+  const os = String(rep?.os || "").toLowerCase();
+  return Boolean(
+    rep?.profile === "termux" ||
+      id === "lineage" ||
+      id === "4rnyjklpllef0yl" ||
+      name.includes("lineage") ||
+      os.includes("android") ||
+      os.includes("lineage")
+  );
+}
+
+async function triggerSystemReboot(systemId, systemName) {
+  if (state.loadingSystem || state.rebootBusySystem) return;
+  const rep = getReport(systemId);
+  const label = systemName || rep?.system_name || systemId;
+  if (isTermuxSystem(rep, systemId)) {
+    showOverlayToast({
+      title: label,
+      tagText: "INFO",
+      statusType: "stopped",
+      desc: state.lang === "en" ? "Android (LineageOS/Termux) cannot be rebooted remotely." : "Устройство Android (LineageOS/Termux) не поддерживает удаленную перезагрузку.",
+    });
+    return;
+  }
+
+  state.rebootBusySystem = systemId;
+  renderRebootConfirmModal();
+  const panel = document.getElementById("bszl-server-security-panel");
+  if (panel) panel.removeAttribute("data-render-key");
+
+  try {
+    const res = await secFetch("/api/security-reboot", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ system_id: systemId }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      throw new Error(data.message || data.error || `HTTP ${res.status}`);
+    }
+    state.rebootModal = null;
+    renderRebootConfirmModal();
+    showOverlayToast({
+      title: label,
+      tagText: "REBOOT",
+      statusType: "ondemand",
+      desc:
+        data.message ||
+        (state.lang === "en"
+          ? "State saved via server-resurrect. Server is rebooting and will resume automatically."
+          : "Состояние сохранено (server-resurrect). Сервер перезагружается и восстановится сам."),
+    });
+    // Refresh status smoothly once the server finishes rebooting
+    [6000, 15000, 28000, 45000].forEach((delay) => {
+      setTimeout(() => fetchReports().catch(() => {}), delay);
+    });
+  } catch (e) {
+    showOverlayToast({
+      title: label,
+      tagText: "ERR",
+      statusType: "stopped",
+      desc: String(e?.message || e),
+    });
+  } finally {
+    state.rebootBusySystem = null;
+    const p = document.getElementById("bszl-server-security-panel");
+    if (p) p.removeAttribute("data-render-key");
+    renderAll();
+  }
+}
+
+function openRebootConfirmModal(systemId, systemName) {
+  const rep = getReport(systemId);
+  const resolvedId = rep?.system_id || systemId;
+  const label = systemName || rep?.system_name || resolvedId;
+  if (isTermuxSystem(rep, resolvedId)) {
+    showOverlayToast({
+      title: label,
+      tagText: "INFO",
+      statusType: "stopped",
+      desc: state.lang === "en" ? "Android (LineageOS/Termux) cannot be rebooted remotely." : "Устройство Android (LineageOS/Termux) не поддерживает удаленную перезагрузку.",
+    });
+    return;
+  }
+  state.rebootModal = { id: resolvedId, name: label };
+  renderRebootConfirmModal();
+}
+
+function renderRebootConfirmModal() {
+  let modalWrap = document.getElementById("bszl-reboot-modal-wrap");
+  if (!state.rebootModal) {
+    if (modalWrap) modalWrap.remove();
+    return;
+  }
+  if (!modalWrap) {
+    modalWrap = document.createElement("div");
+    modalWrap.id = "bszl-reboot-modal-wrap";
+    document.body.appendChild(modalWrap);
+  }
+
+  const isEn = state.lang === "en";
+  const { id: sysId, name: sysName } = state.rebootModal;
+  const isBusy = state.rebootBusySystem === sysId;
+  const isHubHost = sysId === "kgm0fv4mrdnjw4r" || String(sysName).toLowerCase().includes("private network");
+
+  modalWrap.innerHTML = `
+    <div class="bszl-alerts-modal-overlay js-reboot-overlay">
+      <div class="bszl-alerts-modal" onclick="event.stopPropagation()">
+        <div class="bszl-alerts-modal-hdr">
+          <div class="bszl-alerts-modal-title">
+            ${ICONS.power}
+            <span>${isEn ? `Reboot ${escapeHtml(sysName)}?` : `Перезагрузить «${escapeHtml(sysName)}»?`}</span>
+          </div>
+          <button type="button" class="bszl-icon-btn js-reboot-close" style="width:2rem;height:2rem;padding:0;" ${isBusy ? "disabled" : ""}>${ICONS.x}</button>
+        </div>
+        <div class="bszl-alerts-modal-body">
+          <div class="bszl-reboot-note">
+            ${
+              isEn
+                ? "Before rebooting, <b>server-resurrect</b> will save open <code>screen</code>/<code>tmux</code> sessions, active <b>Claude Code</b> sessions, shell history, and running services, and automatically restore everything as if no reboot occurred."
+                : "Перед перезагрузкой <b>server-resurrect</b> сохранит открытые сессии <code>screen</code>/<code>tmux</code>, активные сессии <b>Claude Code</b>, историю команд и состояние служб, а после загрузки сервера автоматически всё восстановит словно ребута не было."
+            }
+          </div>
+          ${
+            isHubHost
+              ? `<div class="bszl-reboot-note bszl-reboot-note--warn">${
+                  isEn
+                    ? "<b>Note:</b> This node hosts Beszel Hub itself. The web interface will briefly go offline for ~15–30 seconds during startup."
+                    : "<b>Внимание:</b> на этом сервере работает сам Beszel Hub. Веб-интерфейс будет недоступен ~15–30 секунд во время загрузки."
+                }</div>`
+              : ""
+          }
+        </div>
+        <div class="bszl-alerts-modal-ftr" style="justify-content:flex-end;">
+          <button type="button" class="bszl-icon-btn js-reboot-close" ${isBusy ? "disabled" : ""}>${isEn ? "Cancel" : "Отмена"}</button>
+          <button type="button" class="bszl-act-btn bszl-act-btn--crit js-reboot-confirm" ${isBusy ? "disabled" : ""}>
+            ${isBusy ? ICONS.sync(true) : ICONS.power}
+            <span>${isBusy ? (isEn ? "Saving state..." : "Сохранение...") : isEn ? "Save & Reboot" : "Сохранить и перезагрузить"}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const closeModal = () => {
+    if (state.rebootBusySystem) return;
+    state.rebootModal = null;
+    renderRebootConfirmModal();
+  };
+  modalWrap.querySelectorAll(".js-reboot-close, .js-reboot-overlay").forEach((el) => {
+    el.onclick = closeModal;
+  });
+  const confirmBtn = modalWrap.querySelector(".js-reboot-confirm");
+  if (confirmBtn) {
+    confirmBtn.onclick = () => triggerSystemReboot(sysId, sysName);
+  }
+}
+
 async function triggerPortAction(systemId, payload, busyKey) {
   const rep = getReport(systemId);
-  const isTermux = Boolean(
-    rep && (
-      rep.profile === "termux" ||
-      rep.system_id === "Lineage" ||
-      rep.system_id === "4rnyjklpllef0yl" ||
-      String(rep.os || "").toLowerCase().includes("android") ||
-      String(rep.os || "").toLowerCase().includes("lineage")
-    )
-  );
+  const isTermux = isTermuxSystem(rep, systemId);
   if (isTermux) {
     showOverlayToast({
       title: `Port · ${payload.port || ""}`,
@@ -2425,6 +2587,8 @@ function renderNotificationsPage() {
               ? "F2B"
               : n.type === "ssh_login"
               ? "SSH"
+              : n.type === "system_reboot"
+              ? t("typeSystemReboot")
               : t("typeAutoUpdate");
           const rawTitle = isEn ? n.title_en || n.title_ru : n.title_ru || n.title_en;
           const title = String(rawTitle)
@@ -2877,10 +3041,27 @@ function renderHomeTable() {
         else tr.appendChild(tdSec);
       }
 
+      const isTermux = isTermuxSystem(rep, sysId);
+      const isRebootReq = !!(rep?.reboot_required || rep?.updates?.reboot_required);
       const secHtml = buildBriefTableCellHtml(rep);
-      if (tdSec.getAttribute("data-hash") !== secHtml) {
-        tdSec.innerHTML = secHtml;
-        tdSec.setAttribute("data-hash", secHtml);
+      const rowRebootBtnHtml = !isTermux
+        ? `<button type="button" class="bszl-row-reboot-btn js-row-reboot-btn ${isRebootReq ? "is-needed" : ""}" data-sys-id="${escapeHtml(rep?.system_id || sysId)}" data-sys-name="${escapeHtml(rep?.system_name || sysId)}" title="${escapeHtml(t("rebootBtnTitle"))}">${ICONS.power}</button>`
+        : "";
+      const secCellHtml = `<div class="bszl-sec-cell-row">${secHtml}${rowRebootBtnHtml}</div>`;
+      if (tdSec.getAttribute("data-hash") !== secCellHtml) {
+        tdSec.innerHTML = secCellHtml;
+        tdSec.setAttribute("data-hash", secCellHtml);
+      }
+      const rbBtn = tdSec.querySelector(".js-row-reboot-btn");
+      if (rbBtn) {
+        rbBtn.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          openRebootConfirmModal(
+            rbBtn.getAttribute("data-sys-id") || sysId,
+            rbBtn.getAttribute("data-sys-name") || sysId
+          );
+        };
       }
     });
   }
@@ -3920,14 +4101,7 @@ function renderSystemDetailPage() {
   const fwCheck = allChecks.find((c) => c.id === "firewall");
   const portsList = portsCheck?.metrics?.ports || [];
   const fwRules = fwCheck?.metrics?.rules || [];
-  const isTermux = Boolean(
-    rep &&
-      (rep.profile === "termux" ||
-        rep.system_id === "Lineage" ||
-        rep.system_id === "4rnyjklpllef0yl" ||
-        String(rep.os || "").toLowerCase().includes("android") ||
-        String(rep.os || "").toLowerCase().includes("lineage"))
-  );
+  const isTermux = isTermuxSystem(rep, sysId);
   const hasUfw = Boolean(!isTermux && fwCheck && fwCheck.status !== "off" && Array.isArray(fwRules));
   const f2b = rep.ssh_fail2ban || {};
 
@@ -4129,11 +4303,13 @@ function renderSystemDetailPage() {
   }
 
   const isChecking = state.loadingSystem === `${sysId}:check`;
+  const isRebooting = state.rebootBusySystem === sysId;
+  const isRebootReq = !!rep.reboot_required || !!rep.updates?.reboot_required;
   const collapsed = state.cardsCollapsed;
   const fb = state.portFeedback[sysId];
   const vSep = `<div class="bszl-v-sep"></div>`;
 
-  const renderKey = `${sysId}:${rep.checked_at_iso}:${curTab}:${state.unifiedSearch || ""}:${state.unifiedFilter || ""}:${collapsed.security ? 1 : 0}:${state.loadingSystem}:${state.portBusyKey}:${state.serviceBusyKey || ""}:${state.lang}:${vpsAuditList.length}:${portsList.length}:${unifiedRows.length}:${fb?.ts || 0}`;
+  const renderKey = `${sysId}:${rep.checked_at_iso}:${curTab}:${state.unifiedSearch || ""}:${state.unifiedFilter || ""}:${collapsed.security ? 1 : 0}:${state.loadingSystem}:${state.rebootBusySystem || ""}:${state.portBusyKey}:${state.serviceBusyKey || ""}:${state.lang}:${vpsAuditList.length}:${portsList.length}:${unifiedRows.length}:${fb?.ts || 0}`;
   if (panel.getAttribute("data-render-key") === renderKey) return;
   panel.setAttribute("data-render-key", renderKey);
 
@@ -4185,15 +4361,24 @@ function renderSystemDetailPage() {
   ];
 
   const cardActionsHtml = `
-    <button type="button" id="bszl-btn-srv-check" class="bszl-icon-btn" title="${escapeHtml(t("checkNow"))}" ${state.loadingSystem ? "disabled" : ""}>
+    <button type="button" id="bszl-btn-srv-check" class="bszl-icon-btn" title="${escapeHtml(t("checkNow"))}" ${state.loadingSystem || state.rebootBusySystem ? "disabled" : ""}>
       ${ICONS.sync(isChecking)}
       <span>${escapeHtml(t("checkNow"))}</span>
     </button>
     ${
       pendingCount > 0
         ? `
-      <button type="button" id="bszl-btn-srv-update" class="bszl-icon-btn" title="${escapeHtml(t("updateNow"))}" ${state.loadingSystem ? "disabled" : ""}>
+      <button type="button" id="bszl-btn-srv-update" class="bszl-icon-btn" title="${escapeHtml(t("updateNow"))}" ${state.loadingSystem || state.rebootBusySystem ? "disabled" : ""}>
         <span>${escapeHtml(t("updateNow"))} (${pendingCount})</span>
+      </button>`
+        : ""
+    }
+    ${
+      !isTermux
+        ? `
+      <button type="button" id="bszl-btn-srv-reboot" class="bszl-icon-btn" title="${escapeHtml(t("rebootBtnTitle"))}" ${state.loadingSystem || state.rebootBusySystem ? "disabled" : ""}>
+        ${isRebooting ? ICONS.sync(true) : ICONS.power}
+        <span>${escapeHtml(t("rebootNow"))}</span>
       </button>`
         : ""
     }
@@ -4468,7 +4653,6 @@ function renderSystemDetailPage() {
     `;
   }
 
-  const isRebootReq = !!rep.reboot_required || !!rep.updates?.reboot_required;
   const pendingSec = rep.pending_security_count || rep.updates?.pending_security_count || 0;
   let bannersHtml = "";
   if (isRebootReq) {
@@ -4477,8 +4661,13 @@ function renderSystemDetailPage() {
         <span class="bszl-alert-banner-ico">⚠️</span>
         <div class="bszl-alert-banner-body">
           <div class="bszl-alert-banner-title">${isEn ? "System Reboot Required" : "Требуется перезагрузка системы"}</div>
-          <div class="bszl-alert-banner-sub">${isEn ? "A kernel or core system update was applied. Reboot the server to finalize." : "Обновлены ядро или базовые библиотеки. Рекомендуется перезагрузить сервер."}</div>
+          <div class="bszl-alert-banner-sub">${isEn ? "A kernel or core system update was applied. server-resurrect will restore all sessions after reboot." : "Обновлены ядро или базовые библиотеки. server-resurrect сохранит и восстановит все сессии после ребута."}</div>
         </div>
+        ${
+          !isTermux
+            ? `<button type="button" class="bszl-act-btn js-btn-banner-reboot" ${state.loadingSystem || state.rebootBusySystem ? "disabled" : ""}>${isRebooting ? ICONS.sync(true) : ICONS.power}<span>${escapeHtml(t("rebootNow"))}</span></button>`
+            : ""
+        }
       </div>
     `;
   }
@@ -4558,6 +4747,11 @@ function renderSystemDetailPage() {
   if (btnUpdate) btnUpdate.onclick = () => triggerAudit(sysId, "update");
   const btnAuditUpd = qOne("#bszl-btn-audit-update");
   if (btnAuditUpd) btnAuditUpd.onclick = () => triggerAudit(sysId, "update");
+
+  const btnReboot = qOne("#bszl-btn-srv-reboot");
+  if (btnReboot) btnReboot.onclick = () => openRebootConfirmModal(sysId, rep.system_name || sysId);
+  const btnBannerReboot = qOne(".js-btn-banner-reboot");
+  if (btnBannerReboot) btnBannerReboot.onclick = () => openRebootConfirmModal(sysId, rep.system_name || sysId);
 
   // Tab switching
   qAll(".bszl-tab-btn[data-card-tab]").forEach((btn) => {
@@ -4904,6 +5098,7 @@ function renderAll() {
   syncLangFromNativeDom();
   renderTopNavbarLangSwitcher();
   renderNotificationsPage();
+  renderRebootConfirmModal();
   updateFooterLinks();
   if (!state.notificationsPageOpen) {
     renderHomeTable();
@@ -4973,7 +5168,7 @@ function init() {
       if (target && target.nodeType === 1) {
         if (
           target.closest(
-            "#bszl-server-security-panel, #bszl-server-services-panel, .bszl-lang-wrap, .bszl-rearrange-banner, .bszl-notifications-modal, #bszl-notif-btn, .bszl-home-row-pill, #bszl-agent-modal, #bszl-svc-logs-modal, .bszl-toast-stack, #bszl-rearrange-menu, .bszl-chart-drag-bar"
+            "#bszl-server-security-panel, #bszl-server-services-panel, .bszl-lang-wrap, .bszl-rearrange-banner, .bszl-notifications-modal, #bszl-notif-btn, .bszl-home-row-pill, #bszl-agent-modal, #bszl-svc-logs-modal, .bszl-toast-stack, #bszl-rearrange-menu, .bszl-chart-drag-bar, #bszl-reboot-modal-wrap, #bszl-alerts-modal-wrap, .bszl-row-reboot-btn"
           )
         ) {
           continue;

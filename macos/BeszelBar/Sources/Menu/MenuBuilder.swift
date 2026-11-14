@@ -261,6 +261,30 @@ enum MenuBuilder {
         auditItem.image?.size = NSSize(width: 14, height: 14)
         submenu.addItem(auditItem)
 
+        if !isAndroidSystem(system, security: security) {
+            let needsReboot = security?.rebootRequired == true
+            let rebootTitle = needsReboot ? "Перезагрузить сервер (нужен ребут)..." : "Перезагрузить сервер..."
+            let rebootItem = NSMenuItem(
+                title: rebootTitle,
+                action: #selector(MenuActions.rebootSystem(_:)),
+                keyEquivalent: ""
+            )
+            rebootItem.target = MenuActions.shared
+            rebootItem.representedObject = system.id
+            if let symbol = NSImage(systemSymbolName: "power", accessibilityDescription: nil) {
+                if needsReboot {
+                    let config = NSImage.SymbolConfiguration(paletteColors: [.systemOrange])
+                    let tinted = symbol.withSymbolConfiguration(config) ?? symbol
+                    tinted.size = NSSize(width: 14, height: 14)
+                    rebootItem.image = tinted
+                } else {
+                    symbol.size = NSSize(width: 14, height: 14)
+                    rebootItem.image = symbol
+                }
+            }
+            submenu.addItem(rebootItem)
+        }
+
         let openItem = NSMenuItem(
             title: "Открыть в браузере",
             action: #selector(MenuActions.openSystemInBrowser(_:)),
@@ -287,5 +311,13 @@ enum MenuBuilder {
         }
 
         return submenu
+    }
+
+    private static func isAndroidSystem(_ system: SystemRecord, security: SecuritySummaryRecord?) -> Bool {
+        let id = system.id.lowercased()
+        let name = system.name.lowercased()
+        let role = (security?.roleTitle ?? "").lowercased()
+        let roleRu = (security?.roleTitleRu ?? "").lowercased()
+        return id == "4rnyjklpllef0yl" || id == "lineage" || name.contains("lineage") || role.contains("android") || roleRu.contains("android")
     }
 }

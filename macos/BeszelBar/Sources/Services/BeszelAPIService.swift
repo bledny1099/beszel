@@ -184,6 +184,54 @@ final class BeszelAPIService: @unchecked Sendable {
         _ = try await self.session.data(for: request)
     }
 
+    func rebootSystem(systemID: String) async throws -> String {
+        guard let url = URL(string: "\(instance.url)/api/security-reboot") else {
+            throw URLError(.badURL)
+        }
+
+        struct RebootResponse: Decodable {
+            let ok: Bool?
+            let message: String?
+            let error: String?
+        }
+
+        let bodyData = try JSONEncoder().encode(["system_id": systemID])
+        for attempt in 0...1 {
+            let token = try await getValidToken(forceRefresh: attempt > 0)
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.timeoutInterval = 30
+            request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = bodyData
+
+            let (data, response) = try await self.session.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw URLError(.badServerResponse)
+            }
+            if httpResponse.statusCode == 401 && attempt == 0 {
+                lock.lock()
+                authToken = nil
+                lock.unlock()
+                continue
+            }
+
+            let decoded = try? JSONDecoder().decode(RebootResponse.self, from: data)
+            if (200..<300).contains(httpResponse.statusCode), decoded?.ok == true {
+                return decoded?.message ?? "Состояние сохранено. Сервер перезагружается."
+            }
+
+            let errMsg = decoded?.message ?? decoded?.error ?? "HTTP \(httpResponse.statusCode)"
+            throw NSError(
+                domain: "BeszelBar.Reboot",
+                code: httpResponse.statusCode,
+                userInfo: [NSLocalizedDescriptionKey: errMsg]
+            )
+        }
+
+        throw URLError(.userAuthenticationRequired)
+    }
+
     func fetchSystemStats(systemID: String, limit: Int = 1) async throws -> [SystemStatsRecord] {
         guard var components = URLComponents(string: instance.url) else {
             throw URLError(.badURL)

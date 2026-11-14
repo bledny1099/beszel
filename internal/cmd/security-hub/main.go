@@ -33,7 +33,9 @@ var (
 	notificationMtx sync.Mutex
 )
 
-const sshOpts = "-i /root/.ssh/beszel_audit_ed25519 -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=6 -o ControlMaster=auto -o ControlPath=/tmp/bszl-ssh-%r@%h:%p -o ControlPersist=600"
+const sshOpts = "-i /root/.ssh/beszel_audit_ed25519 -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=6 -o ServerAliveInterval=5 -o ServerAliveCountMax=2 -o ControlMaster=auto -o ControlPath=/tmp/bszl-ssh-%r@%h:%p -o ControlPersist=600"
+
+var runCommandOnTarget = runOnTarget
 
 var triggerFlags = map[string]string{
 	"check":         "--check-only",
@@ -277,6 +279,11 @@ func buildRichTelegramMessage(rec map[string]any) string {
 		statusText = "Требуется перезагрузка"
 		dotEmoji = "🟡"
 		actionWord = "Ожидает ребута"
+	case "system_reboot":
+		icon = "🔄"
+		statusText = "Состояние сохранено · Сервер перезагружается"
+		dotEmoji = "🟡"
+		actionWord = "Перезагрузка"
 	case "auto_rollback":
 		icon = "⏪"
 		statusText = "Авто-откат выполнен"
@@ -420,6 +427,8 @@ func dispatchTelegramNotification(rec map[string]any) {
 		if !cfg.NotifyRebootRequired {
 			return
 		}
+	case "system_reboot":
+		// Always deliver user-initiated reboot confirmation when Telegram alerts are enabled
 	default:
 		sev := fmt.Sprint(rec["severity"])
 		if sev != "crit" || !cfg.NotifyCritChecks {
@@ -878,12 +887,39 @@ func saveLayouts(obj map[string]any) {
 	}
 }
 
-func runOnTarget(systemID, remoteCmd string, timeoutSec int) (bool, string) {
+func resolveSystemTarget(systemID string) (string, SystemTarget, bool) {
+	id := strings.TrimSpace(systemID)
+	if id == "" || id == "<nil>" {
+		return "", SystemTarget{}, false
+	}
 	targets := getAllSystems()
-	target, exists := targets[systemID]
+	if tgt, ok := targets[id]; ok {
+		return tgt.ID, tgt, true
+	}
+	lower := strings.ToLower(id)
+	for _, tgt := range targets {
+		if strings.ToLower(tgt.ID) == lower || strings.ToLower(tgt.Name) == lower {
+			return tgt.ID, tgt, true
+		}
+	}
+	return "", SystemTarget{}, false
+}
+
+func isAndroidTarget(systemID string, target SystemTarget) bool {
+	lowerID := strings.ToLower(strings.TrimSpace(systemID))
+	lowerName := strings.ToLower(strings.TrimSpace(target.Name))
+	return target.User == "u0_a161" ||
+		lowerID == "4rnyjklpllef0yl" ||
+		lowerID == "lineage" ||
+		strings.Contains(lowerName, "lineage")
+}
+
+func runOnTarget(systemID, remoteCmd string, timeoutSec int) (bool, string) {
+	resolvedID, target, exists := resolveSystemTarget(systemID)
 	if !exists {
 		return false, fmt.Sprintf("Unknown system_id: %s", systemID)
 	}
+	_ = resolvedID
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSec)*time.Second)
 	defer cancel()
@@ -903,6 +939,88 @@ func runOnTarget(systemID, remoteCmd string, timeoutSec int) (bool, string) {
 	outBytes, err := cmd.CombinedOutput()
 	outStr := strings.TrimSpace(string(outBytes))
 	return err == nil, outStr
+}
+
+func closeSSHControlMaster(target SystemTarget) {
+	if target.Type == "local" || target.Host == "" {
+		return
+	}
+	user := target.User
+	if user == "" {
+		user = "root"
+	}
+	port := target.Port
+	if port <= 0 {
+		port = 22
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	closeCmd := fmt.Sprintf(
+		"ssh -o ControlPath=/tmp/bszl-ssh-%%r@%%h:%%p -o ControlMaster=no -O exit -p %d %s@%s >/dev/null 2>&1 || true",
+		port, user, target.Host,
+	)
+	_ = exec.CommandContext(ctx, "sh", "-c", closeCmd).Run()
+}
+
+func executeSystemReboot(systemID string) (int, bool, string, string, string) {
+	cleanID := strings.TrimSpace(systemID)
+	if cleanID == "" || cleanID == "<nil>" || strings.EqualFold(cleanID, "all") {
+		return http.StatusBadRequest, false, "Укажите конкретный сервер для перезагрузки", "", ""
+	}
+
+	resolvedID, target, exists := resolveSystemTarget(cleanID)
+	if !exists {
+		return http.StatusNotFound, false, fmt.Sprintf("Неизвестный сервер: %s", cleanID), "", ""
+	}
+	sysName := target.Name
+	if sysName == "" {
+		sysName = resolvedID
+	}
+
+	if isAndroidTarget(resolvedID, target) {
+		return http.StatusBadRequest, false, "Устройство Android (LineageOS/Termux) не поддерживает удаленную перезагрузку", resolvedID, sysName
+	}
+
+	saveCmd := "if [ -x /usr/local/bin/server-resurrect ]; then /usr/local/bin/server-resurrect save --shutdown || exit 1; fi; sync"
+	if ok, out := runCommandOnTarget(resolvedID, saveCmd, 25); !ok {
+		return http.StatusBadGateway, false, fmt.Sprintf("Не удалось сохранить состояние перед перезагрузкой: %s", out), resolvedID, sysName
+	}
+
+	delaySec := 1
+	if target.Type == "local" {
+		delaySec = 2
+	}
+	innerReboot := fmt.Sprintf(
+		"sleep %d; sync; if command -v systemctl >/dev/null 2>&1; then exec systemctl reboot; fi; if command -v sudo >/dev/null 2>&1; then exec sudo -n reboot; fi; exec reboot",
+		delaySec,
+	)
+	triggerCmd := fmt.Sprintf(
+		"if command -v setsid >/dev/null 2>&1; then setsid -f bash -c %s </dev/null >/dev/null 2>&1; else nohup bash -c %s </dev/null >/dev/null 2>&1 & fi",
+		escapeShellArg(innerReboot),
+		escapeShellArg(innerReboot),
+	)
+	if ok, out := runCommandOnTarget(resolvedID, triggerCmd, 15); !ok {
+		return http.StatusInternalServerError, false, fmt.Sprintf("Ошибка запуска перезагрузки: %s", out), resolvedID, sysName
+	}
+
+	if target.Type != "local" {
+		closeSSHControlMaster(target)
+	}
+
+	recordNotification(map[string]any{
+		"system_id":   resolvedID,
+		"system_name": sysName,
+		"type":        "system_reboot",
+		"severity":    "info",
+		"title_ru":    "Запущена перезагрузка сервера",
+		"title_en":    "Server Reboot Initiated",
+		"summary_ru":  fmt.Sprintf("Состояние (%s) сохранено через server-resurrect (screen/tmux, Claude Code, службы и история). После загрузки всё восстановится автоматически.", sysName),
+		"summary_en":  fmt.Sprintf("State on %s saved via server-resurrect (screen/tmux, Claude Code, services, shell history). Everything will resume automatically after boot.", sysName),
+		"timestamp":   getDubaiStr(),
+	}, true)
+
+	msg := fmt.Sprintf("Состояние %s сохранено. Сервер перезагружается и восстановит работу автоматически.", sysName)
+	return http.StatusOK, true, msg, resolvedID, sysName
 }
 
 func escapeShellArg(arg string) string {
@@ -1198,7 +1316,7 @@ func sendJSON(w http.ResponseWriter, status int, payload any) {
 	_ = json.NewEncoder(w).Encode(payload)
 }
 
-func main() {
+func buildMux() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/api/security-reports", func(w http.ResponseWriter, r *http.Request) {
@@ -1520,6 +1638,31 @@ func main() {
 		sendJSON(w, http.StatusOK, map[string]any{"ok": true, "results": results, "reports": buildFullResponse()})
 	})
 
+	mux.HandleFunc("/api/security-reboot", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			sendJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "Method not allowed"})
+			return
+		}
+		var payload map[string]any
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			sendJSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid JSON"})
+			return
+		}
+		sysID := fmt.Sprint(payload["system_id"])
+		statusCode, ok, msg, resolvedID, sysName := executeSystemReboot(sysID)
+		sendJSON(w, statusCode, map[string]any{
+			"ok":          ok,
+			"message":     msg,
+			"system_id":   resolvedID,
+			"system_name": sysName,
+		})
+	})
+
+	return mux
+}
+
+func main() {
+	mux := buildMux()
 	slog.Info("Starting Beszel Security Hub API in Go", "listen", listenAddr)
 	if err := http.ListenAndServe(listenAddr, mux); err != nil {
 		slog.Error("Security Hub server failed", "error", err)

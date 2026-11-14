@@ -3044,6 +3044,60 @@ div.grid.gap-4.mb-14 > div.rounded-lg.border.bg-card .flex.text-nowrap {
   background-color: color-mix(in oklab, var(--muted) 40%, transparent);
 }
 
+.bszl-sec-cell-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.bszl-row-reboot-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  padding: 0;
+  border-radius: calc(var(--radius, 0.8rem) - 4px);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.bszl-row-reboot-btn:hover:not(:disabled) {
+  background-color: color-mix(in oklab, #ef4444 14%, transparent);
+  border-color: color-mix(in oklab, #ef4444 45%, var(--border));
+  color: #ef4444;
+}
+
+.bszl-row-reboot-btn.is-needed {
+  border-color: color-mix(in oklab, #f59e0b 55%, var(--border));
+  color: #f59e0b;
+}
+
+.bszl-row-reboot-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.bszl-reboot-note {
+  padding: 0.75rem 0.875rem;
+  border-radius: calc(var(--radius, 0.8rem) - 4px);
+  background-color: var(--muted);
+  border: 1px solid var(--border);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--muted-foreground);
+}
+
+.bszl-reboot-note--warn {
+  background-color: color-mix(in oklab, #f59e0b 12%, transparent);
+  border-color: color-mix(in oklab, #f59e0b 40%, var(--border));
+  color: var(--foreground);
+}
+
 
 
 
